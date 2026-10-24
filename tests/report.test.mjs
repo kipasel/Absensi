@@ -98,6 +98,9 @@ function seedAbsensi(env, opts) {
     jarak_meter: opts.jarak_meter === undefined ? '10.5' : opts.jarak_meter,
     sumber: opts.sumber || 'reguler',
     id_bukti: opts.id_bukti === undefined ? 'BKT-TEST' : opts.id_bukti,
+    status: opts.status || '',
+    uraian_pekerjaan: opts.uraian_pekerjaan || '',
+    output_pekerjaan: opts.output_pekerjaan || '',
     dibuat_pada: waktu,
     diubah_pada: waktu,
     diubah_oleh: opts.id_pegawai
@@ -346,6 +349,43 @@ check('filter rentang + join nama/NIP; urutan kronologis (tanggal lalu waktu nai
   eq('ada_bukti false pada R4', res.items[3].ada_bukti, false);
   return true;
 });
+check('laporan menampilkan pulang tanpa masuk tanpa membuat data masuk', () => {
+  const { env, tokenAdmin } = envAdmin();
+  seedAbsensi(env, {
+    id_absensi: 'ABS-PULANG-TANPA-MASUK', id_pegawai: 'PEG-EMP-1',
+    tanggal: '2026-10-15', jenis: 'pulang',
+    waktu_server: '2026-10-15T09:00:00.000Z',
+    lintang: '', bujur: '', jarak_meter: '', status: 'TANPA_ABSEN_MASUK',
+    uraian_pekerjaan: 'Administrasi selesai TEST', output_pekerjaan: 'Dokumen TEST'
+  });
+  const list = env.sandbox.handleReportAbsensiList_({ token: tokenAdmin, ...RANGE }, 'POST');
+  const item = list.items.find((r) => r.id_absensi === 'ABS-PULANG-TANPA-MASUK');
+  eq('waktu pulang server', item.waktu_server, '2026-10-15T09:00:00.000Z');
+  eq('status catatan', item.status, 'TANPA_ABSEN_MASUK');
+  eq('kondisi hari', item.kondisi_harian, 'TANPA_MASUK_DENGAN_PULANG');
+  eq('waktu masuk kosong', item.waktu_masuk, '');
+  eq('waktu pulang aktual', item.waktu_pulang, '2026-10-15T09:00:00.000Z');
+  eq('uraian pekerjaan', item.uraian_pekerjaan, 'Administrasi selesai TEST');
+  eq('output pekerjaan', item.output_pekerjaan, 'Dokumen TEST');
+  const rekap = env.sandbox.handleReportRekap_({ token: tokenAdmin, ...RANGE }, 'POST');
+  const day = rekap.harian.find((r) => r.tanggal === '2026-10-15');
+  eq('pulang terhitung', day.catatan_pulang, 1);
+  eq('pulang tanpa masuk terpisah', day.pulang_tanpa_masuk, 1);
+  return true;
+});
+check('laporan membedakan masuk+pulang dan masuk tanpa pulang', () => {
+  const { env, tokenAdmin } = envAdmin();
+  seedLaporanDasar(env);
+  const list = env.sandbox.handleReportAbsensiList_({ token: tokenAdmin, ...RANGE }, 'POST');
+  const complete = list.items.find((r) => r.id_absensi === 'ABS-R1');
+  eq('hari lengkap', complete.kondisi_harian, 'ADA_MASUK_DAN_PULANG');
+  eq('waktu masuk pasangan', complete.waktu_masuk, '2026-10-05T00:30:00.000Z');
+  eq('waktu pulang pasangan', complete.waktu_pulang, '2026-10-05T10:00:00.000Z');
+  const entryOnly = list.items.find((r) => r.id_absensi === 'ABS-R3');
+  eq('masuk tanpa pulang', entryOnly.kondisi_harian, 'ADA_MASUK_TANPA_PULANG');
+  eq('waktu pulang kosong', entryOnly.waktu_pulang, '');
+  return true;
+});
 check('filter id_pegawai bekerja; id tak ada → NOT_FOUND', () => {
   const { env, tokenAdmin } = envAdmin();
   seedLaporanDasar(env);
@@ -471,7 +511,7 @@ check('rekap: mode_kerja & sumber terhitung benar', () => {
   eq('WFO', res.mode_kerja.WFO, 3);
   eq('WFH_WFA', res.mode_kerja.WFH_WFA, 1);
   eq('reguler', res.sumber.reguler, 3);
-  eq('susulan_disetujui', res.sumber.susulan_disetujui, 1);
+  eq('susulan_disetujui nonaktif', res.sumber.susulan_disetujui, 0);
   return true;
 });
 check('rekap: susulan dihitung per status berdasar tanggal_absensi dalam rentang', () => {
@@ -481,10 +521,10 @@ check('rekap: susulan dihitung per status berdasar tanggal_absensi dalam rentang
   seedPengajuan(env, { id_pengajuan: 'PJN-R3', id_pegawai: 'PEG-EMP-1', tanggal_absensi: '2026-10-12', status: 'ditolak' });
   seedPengajuan(env, { id_pengajuan: 'PJN-R4', id_pegawai: 'PEG-EMP-1', tanggal_absensi: '2026-09-01', status: 'menunggu' });
   const res = env.sandbox.handleReportRekap_({ token: tokenAdmin, ...RANGE }, 'POST');
-  eq('susulan total', res.susulan.total, 3);
-  eq('menunggu', res.susulan.menunggu, 1);
-  eq('diterima', res.susulan.diterima, 1);
-  eq('ditolak', res.susulan.ditolak, 1);
+  eq('susulan total nonaktif', res.susulan.total, 0);
+  eq('menunggu nonaktif', res.susulan.menunggu, 0);
+  eq('diterima nonaktif', res.susulan.diterima, 0);
+  eq('ditolak nonaktif', res.susulan.ditolak, 0);
   return true;
 });
 check('rekap: pengajuan menunggu TIDAK dihitung sebagai absensi (tetap dihitung terpisah)', () => {
@@ -492,7 +532,7 @@ check('rekap: pengajuan menunggu TIDAK dihitung sebagai absensi (tetap dihitung 
   seedPengajuan(env, { id_pengajuan: 'PJN-R5', id_pegawai: 'PEG-EMP-1', tanggal_absensi: '2026-10-10', status: 'menunggu' });
   const res = env.sandbox.handleReportRekap_({ token: tokenAdmin, ...RANGE }, 'POST');
   eq('catatan total 0', res.catatan.total, 0);
-  eq('susulan menunggu 1', res.susulan.menunggu, 1);
+  eq('susulan tidak direkap saat nonaktif', res.susulan.menunggu, 0);
   return true;
 });
 check('rekap konsisten dengan detail: total rekap == total daftar pada filter sama', () => {
@@ -561,7 +601,7 @@ check('ekspor dasar: filename, content_type, BOM, header, jumlah baris', () => {
   eq('BOM UTF-8', res.csv.charCodeAt(0), 0xfeff);
   const rows = parseCsv(res.csv);
   eq('baris = header + data', rows.length, 5);
-  eq('header', rows[0].join(','), 'id_absensi,tanggal,id_pegawai,nama,nip_nipk,jenis,mode_kerja,waktu_server,sumber,jarak_meter,ada_bukti');
+  eq('header', rows[0].join(','), 'id_absensi,tanggal,id_pegawai,nama,nip_nipk,jenis,mode_kerja,waktu_server,sumber,jarak_meter,ada_bukti,status,kondisi_harian,waktu_masuk,waktu_pulang,uraian_pekerjaan,output_pekerjaan');
   eq('baris pertama id', rows[1][0], 'ABS-R1');
   return true;
 });
@@ -612,7 +652,7 @@ check('karakter khusus (koma, kutip, baris baru) di-quote RFC 4180 & round-trip 
     { token: tokenAdmin, tanggal_dari: '2026-10-08', tanggal_sampai: '2026-10-08' }, 'POST');
   const rows = parseCsv(res.csv);
   eq('nama round-trip', rows[1][3], 'Doe, "John"\nJr.');
-  eq('jumlah kolom tetap', rows[1].length, 11);
+  eq('jumlah kolom tetap', rows[1].length, 17);
   return true;
 });
 check('pencegahan formula injection: nilai berawalan = + - @ diapostrofi', () => {
@@ -669,7 +709,7 @@ check('nilai kosong tetap kolom kosong (jarak_meter null tidak menggeser kolom)'
   const res = env.sandbox.handleReportAbsensiExportCsv_(
     { token: tokenAdmin, tanggal_dari: '2026-10-07', tanggal_sampai: '2026-10-07' }, 'POST');
   const rows = parseCsv(res.csv);
-  eq('jumlah kolom', rows[1].length, 11);
+  eq('jumlah kolom', rows[1].length, 17);
   eq('jarak kosong', rows[1][9], '');
   eq('ada_bukti tidak', rows[1][10], 'tidak');
   return true;

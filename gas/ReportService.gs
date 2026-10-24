@@ -48,7 +48,7 @@ var REKAP_DEFINITIONS = Object.freeze({
   susulan_menunggu: 'jumlah baris PengajuanSusulan dengan status=menunggu & tanggal_absensi pada rentang (+ filter pegawai/jenis/mode/status pegawai; filter sumber TIDAK berlaku)',
   susulan_diterima: 'sama, status=diterima',
   susulan_ditolak: 'sama, status=ditolak',
-  harian: 'daftar tanggal yang memiliki >=1 baris Absensi pada rentang + filter aktif, beserta hitungan masuk/pulang per tanggal (bukan daftar seluruh hari kalender; ketiadaan catatan BUKAN bukti ketidakhadiran)'
+  harian: 'daftar tanggal yang memiliki >=1 baris Absensi pada rentang + filter aktif, beserta hitungan masuk/pulang dan pulang_tanpa_masuk per tanggal; penanda tanpa masuk hanya berarti catatan masuk tidak tersedia'
 });
 
 /* ---------------- Util input ---------------- */
@@ -221,8 +221,37 @@ function filterSusulanRows_(rows, range, filters, statusMap) {
   return out;
 }
 
-function reportAbsensiFields_(row, statusMap) {
+function reportAbsensiDayMap_(rows) {
+  var out = {};
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var key = String(row.id_pegawai) + '|' + String(row.tanggal);
+    if (!out[key]) out[key] = {
+      ada_masuk: false, ada_pulang: false, waktu_masuk: '', waktu_pulang: '',
+      uraian_pekerjaan: '', output_pekerjaan: ''
+    };
+    if (String(row.jenis) === 'masuk' && !out[key].ada_masuk) {
+      out[key].ada_masuk = true;
+      out[key].waktu_masuk = String(row.waktu_server || '');
+    } else if (String(row.jenis) === 'pulang') {
+      if (!out[key].ada_pulang) out[key].waktu_pulang = String(row.waktu_server || '');
+      out[key].ada_pulang = true;
+      out[key].uraian_pekerjaan = String(row.uraian_pekerjaan || '');
+      out[key].output_pekerjaan = String(row.output_pekerjaan || '');
+    }
+  }
+  Object.keys(out).forEach(function (key) {
+    var day = out[key];
+    day.kondisi_harian = day.ada_masuk
+      ? (day.ada_pulang ? 'ADA_MASUK_DAN_PULANG' : 'ADA_MASUK_TANPA_PULANG')
+      : (day.ada_pulang ? 'TANPA_MASUK_DENGAN_PULANG' : '');
+  });
+  return out;
+}
+
+function reportAbsensiFields_(row, statusMap, dayMap) {
   var info = statusMap[String(row.id_pegawai)] || { nama: '', nip_nipk: '' };
+  var day = (dayMap || {})[String(row.id_pegawai) + '|' + String(row.tanggal)] || {};
   return {
     id_absensi: String(row.id_absensi),
     id_pegawai: String(row.id_pegawai),
@@ -237,8 +266,11 @@ function reportAbsensiFields_(row, statusMap) {
       ? null : row.jarak_meter,
     ada_bukti: Boolean(row.id_bukti),
     status: String(row.status || ''),
-    uraian_pekerjaan: row.uraian_pekerjaan === undefined || row.uraian_pekerjaan === null ? '' : String(row.uraian_pekerjaan),
-    output_pekerjaan: row.output_pekerjaan === undefined || row.output_pekerjaan === null ? '' : String(row.output_pekerjaan)
+    kondisi_harian: String(day.kondisi_harian || ''),
+    waktu_masuk: String(day.waktu_masuk || ''),
+    waktu_pulang: String(day.waktu_pulang || ''),
+    uraian_pekerjaan: String(day.uraian_pekerjaan || row.uraian_pekerjaan || ''),
+    output_pekerjaan: String(day.output_pekerjaan || row.output_pekerjaan || '')
   };
 }
 
@@ -252,10 +284,12 @@ function handleReportAbsensiList_(payload, method) {
   var offset = parseReportOffset_(payload.offset);
 
   var statusMap = pegawaiStatusMap_();
-  var matched = filterAbsensiRows_(readObjects_('Absensi'), range, filters, statusMap);
+  var allRows = readObjects_('Absensi');
+  var dayMap = reportAbsensiDayMap_(allRows);
+  var matched = filterAbsensiRows_(allRows, range, filters, statusMap);
   var items = [];
   for (var i = offset; i < matched.length && items.length < limit; i++) {
-    items.push(reportAbsensiFields_(matched[i], statusMap));
+    items.push(reportAbsensiFields_(matched[i], statusMap, dayMap));
   }
   return {
     ok: true,
@@ -291,9 +325,14 @@ function handleReportRekap_(payload, method) {
     if (sumber === 'susulan_disetujui') { susulanSetuju++; } else { reguler++; }
     unik[String(r.id_pegawai)] = true;
     var t = String(r.tanggal);
-    if (!harianMap[t]) harianMap[t] = { tanggal: t, catatan_masuk: 0, catatan_pulang: 0 };
+    if (!harianMap[t]) harianMap[t] = {
+      tanggal: t, catatan_masuk: 0, catatan_pulang: 0, pulang_tanpa_masuk: 0
+    };
     if (jenis === 'masuk') harianMap[t].catatan_masuk++;
-    else if (jenis === 'pulang') harianMap[t].catatan_pulang++;
+    else if (jenis === 'pulang') {
+      harianMap[t].catatan_pulang++;
+      if (String(r.status || '') === 'TANPA_ABSEN_MASUK') harianMap[t].pulang_tanpa_masuk++;
+    }
   }
   susulanSetuju = 0;
   var harian = [];
@@ -358,7 +397,7 @@ function csvEscapeField_(value) {
 var CSV_REPORT_HEADERS = Object.freeze([
   'id_absensi', 'tanggal', 'id_pegawai', 'nama', 'nip_nipk', 'jenis',
   'mode_kerja', 'waktu_server', 'sumber', 'jarak_meter', 'ada_bukti', 'status',
-  'uraian_pekerjaan', 'output_pekerjaan'
+  'kondisi_harian', 'waktu_masuk', 'waktu_pulang', 'uraian_pekerjaan', 'output_pekerjaan'
 ]);
 
 /**
@@ -366,10 +405,10 @@ var CSV_REPORT_HEADERS = Object.freeze([
  * (kompatibel Excel), baris CRLF, tanpa nilai selain kolom di atas
  * (TANPA drive_file_id/URL foto, PIN, atau token).
  */
-function buildAbsensiCsv_(matched, statusMap) {
+function buildAbsensiCsv_(matched, statusMap, dayMap) {
   var lines = [CSV_REPORT_HEADERS.join(',')];
   for (var i = 0; i < matched.length; i++) {
-    var f = reportAbsensiFields_(matched[i], statusMap);
+    var f = reportAbsensiFields_(matched[i], statusMap, dayMap);
     lines.push([
       csvEscapeField_(f.id_absensi),
       csvEscapeField_(f.tanggal),
@@ -383,6 +422,9 @@ function buildAbsensiCsv_(matched, statusMap) {
       csvEscapeField_(f.jarak_meter === null ? '' : f.jarak_meter),
       csvEscapeField_(f.ada_bukti ? 'ya' : 'tidak'),
       csvEscapeField_(f.status),
+      csvEscapeField_(f.kondisi_harian),
+      csvEscapeField_(f.waktu_masuk),
+      csvEscapeField_(f.waktu_pulang),
       csvEscapeField_(f.uraian_pekerjaan),
       csvEscapeField_(f.output_pekerjaan)
     ].join(','));
@@ -395,7 +437,9 @@ function handleReportAbsensiExportCsv_(payload, method) {
   var range = parseReportRange_(payload);
   var filters = parseReportFilters_(payload);
   var statusMap = pegawaiStatusMap_();
-  var matched = filterAbsensiRows_(readObjects_('Absensi'), range, filters, statusMap);
+  var allRows = readObjects_('Absensi');
+  var dayMap = reportAbsensiDayMap_(allRows);
+  var matched = filterAbsensiRows_(allRows, range, filters, statusMap);
 
   if (matched.length > REPORT_EXPORT_MAX_ROWS) {
     throw AppError_('EXPORT_TOO_LARGE',
@@ -403,7 +447,7 @@ function handleReportAbsensiExportCsv_(payload, method) {
       ' baris. Persempit rentang tanggal atau filter.', true);
   }
 
-  var csv = buildAbsensiCsv_(matched, statusMap);
+  var csv = buildAbsensiCsv_(matched, statusMap, dayMap);
   var filename = 'laporan-absensi_' + range.dari + '_' + range.sampai + '.csv';
 
   logActivity_('report_exported', ctx.account.id_akun, ctx.account.peran, 'laporan',

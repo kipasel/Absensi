@@ -119,6 +119,7 @@
       cell(tr, item.tanggal);
       cell(tr, item.catatan_masuk);
       cell(tr, item.catatan_pulang);
+      cell(tr, item.pulang_tanpa_masuk || 0);
       tbody.appendChild(tr);
     });
   }
@@ -161,9 +162,15 @@
       cell(tr, item.jenis);
       cell(tr, item.mode_kerja);
       cell(tr, item.waktu_server);
+      cell(tr, item.status || '-');
+      cell(tr, item.kondisi_harian || '-');
+      cell(tr, item.waktu_masuk || '-');
+      cell(tr, item.waktu_pulang || '-');
       cell(tr, item.sumber);
       cell(tr, item.jarak_meter === null ? '-' : String(item.jarak_meter));
       cell(tr, item.ada_bukti ? 'Ada' : 'Tidak ada');
+      cell(tr, item.uraian_pekerjaan || '-');
+      cell(tr, item.output_pekerjaan || '-');
       tbody.appendChild(tr);
     });
   }

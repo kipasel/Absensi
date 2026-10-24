@@ -45,7 +45,7 @@ function getSheet_(name) {
   return sh;
 }
 
-/** Membuat sheet + header bila belum ada. */
+/** Membuat sheet + menambahkan kolom baru tanpa mengubah urutan/data lama. */
 function ensureAllSheets_() {
   var ss = getSpreadsheet_();
   ALL_SHEET_NAMES.forEach(function (name) {
@@ -53,8 +53,53 @@ function ensureAllSheets_() {
     if (!sh) {
       sh = ss.insertSheet(name);
       sh.appendRow(SHEET_HEADERS[name]);
+    } else {
+      ensureSheetHeaders_(name, sh);
     }
+    if (name === 'Absensi') ensureLateStatusFormatting_(sh);
   });
+}
+
+function ensureSheetHeaders_(name, sh) {
+  var data = sh.getDataRange().getValues();
+  if (!data.length || !data[0].length) {
+    sh.appendRow(SHEET_HEADERS[name]);
+    return SHEET_HEADERS[name].slice();
+  }
+  var headers = data[0].map(function (h) { return String(h); });
+  var missing = SHEET_HEADERS[name].filter(function (h) { return headers.indexOf(h) === -1; });
+  if (missing.length) {
+    sh.getRange(1, headers.length + 1, 1, missing.length).setValues([missing]);
+    headers = headers.concat(missing);
+  }
+  return headers;
+}
+
+/** Tandai status TERLAMBAT merah tanpa mengganti conditional formatting lain. */
+function ensureLateStatusFormatting_(sh) {
+  var headers = sh.getDataRange().getValues()[0].map(function (h) { return String(h); });
+  var statusColumn = headers.indexOf('status') + 1;
+  if (!statusColumn || !sh.getConditionalFormatRules ||
+      !sh.setConditionalFormatRules || !SpreadsheetApp.newConditionalFormatRule) return;
+  var rules = sh.getConditionalFormatRules();
+  var found = rules.some(function (rule) {
+    var condition = rule.getBooleanCondition && rule.getBooleanCondition();
+    if (!condition || condition.getCriteriaType() !== SpreadsheetApp.BooleanCriteria.TEXT_EQUAL_TO) return false;
+    var values = condition.getCriteriaValues();
+    if (!values || String(values[0]) !== 'TERLAMBAT') return false;
+    return (rule.getRanges() || []).some(function (range) {
+      return range.getColumn() === statusColumn;
+    });
+  });
+  if (found) return;
+  var range = sh.getRange(2, statusColumn, Math.max(1, sh.getMaxRows() - 1), 1);
+  rules.push(SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo('TERLAMBAT')
+    .setBackground('#fce8e6')
+    .setFontColor('#b3261e')
+    .setRanges([range])
+    .build());
+  sh.setConditionalFormatRules(rules);
 }
 
 /**
@@ -80,7 +125,8 @@ function readObjects_(name) {
 
 function appendObject_(name, obj) {
   var sh = getSheet_(name);
-  var headers = SHEET_HEADERS[name];
+  var headers = ensureSheetHeaders_(name, sh);
+  if (name === 'Absensi') ensureLateStatusFormatting_(sh);
   var row = headers.map(function (h) {
     return (obj[h] !== undefined && obj[h] !== null) ? obj[h] : '';
   });
@@ -89,7 +135,7 @@ function appendObject_(name, obj) {
 
 function updateObjectRow_(name, rowNumber, obj) {
   var sh = getSheet_(name);
-  var headers = SHEET_HEADERS[name];
+  var headers = ensureSheetHeaders_(name, sh);
   var row = headers.map(function (h) {
     return (obj[h] !== undefined && obj[h] !== null) ? obj[h] : '';
   });

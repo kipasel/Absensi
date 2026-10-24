@@ -56,8 +56,16 @@ tetap wajib memverifikasi identitas & peran di backend.
    *Who has access* = **Anyone**. Nilai ini ada di `appsscript.json` blok `webapp`.
 6. Jalankan `initializeSheets()` lalu `seedAdmin()` (lihat `gas/README.md`).
    Hapus `ADMIN_SETUP_PIN` setelah berhasil.
+   Untuk backend yang sudah aktif, unggah versi terbaru `Repo.gs` dan
+   `Attendance.gs`, jalankan `initializeSheets()` sekali. Fungsi ini
+   menambahkan header absensi yang belum ada di kolom baru dan mempertahankan
+   data/baris historis; kolom baru `status`, `uraian_pekerjaan`, dan
+   `output_pekerjaan` tidak memerlukan pengisian ulang. Pastikan aturan
+   conditional formatting `TERLAMBAT` merah muncul pada kolom `status`.
 7. Deploy sebagai Web app → salin URL `/exec`.
 8. Salin URL `/exec` ke `assets/js/config.js` → `API_BASE_URL` (publik, bukan rahasia).
+9. Deploy Apps Script sebagai versi Web App baru setelah perubahan absensi;
+   lalu terbitkan frontend dengan `VERSION` dan `CACHE_VERSION` yang sama.
 
 ## E. Menguji Akses Resource (setelah dikonfigurasi)
 1. Buka `https://script.google.com/macros/s/<ID>/exec?action=health`.

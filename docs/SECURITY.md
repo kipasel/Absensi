@@ -32,7 +32,7 @@ Lihat `docs/PHASE2_AUDIT.md` §2 untuk sumber dan implikasi.
 | T-04 | Manipulasi parameter ID pegawai | Akses/pengubahan data pegawai lain | Otorisasi per-identitas di backend; token sesi terikat ke pegawai | Sebagian (admin: ID diverifikasi terhadap sheet, bukan klien; akses pegawai-sendiiri belum) |
 | T-05 | Akses data lintas pegawai | Kebocoran data pribadi | Backend hanya mengembalikan data milik pemanggil (kecuali admin) | Sebagian (endpoint admin ber-otorisasi; endpoint data pegawai non-admin belum ada) |
 | T-06 | Akses foto via tautan publik | Foto privat bocor | Drive privat; dilarang anyone-with-link; akses via backend ber-otorisasi (AMB-20/DEC-P25) | Sebagian (tanggap admin TANPA `drive_file_id`/URL; endpoint foto blob ber-token; runtime belum) |
-| T-07 | Penyalahgunaan endpoint admin | Manipulasi data | Cek peran admin di backend setiap request (jangan percaya klien) | Sebagian (**PHASE 4: 11 endpoint `requireAdmin_`, diuji lokal 171 cek LULUS; runtime & browser belum**) |
+| T-07 | Penyalahgunaan endpoint admin | Manipulasi data | Cek peran admin di backend setiap request (jangan percaya klien) | Sebagian (**PHASE 4; diuji lokal 166 cek LULUS; runtime & browser belum**) |
 | T-08 | Permintaan ganda / race condition | Duplikasi absensi | `LockService` + kunci unik (pegawai+tanggal+jenis); idempotency; nama file tetap | Sebagian (tulisan absensi & admin dibungkus lock di kode; keputusan susulan ganda → CONFLICT; uji runtime belum) |
 | T-09 | Penyalahgunaan token/sesi | Akses tidak sah | Token acak kuat, disimpan sebagai hash, masa berlaku, revoke saat logout | Sebagian (kode; token di memori — atau `localStorage` bila "Ingat saya" DEC-P30) |
 | T-10 | Kebocoran konfigurasi/log | Eksposur resource | Secrets via Script Properties; log tanpa data pribadi/PIN/token | Sebagian (kode + uji lokal LULUS; log admin diuji tanpa token/PIN) |
@@ -95,7 +95,7 @@ Kontrol di `gas/AdminService.gs` (semua aksi `admin.*`):
 - **Otorisasi server penuh:** setiap aksi → `requirePost_` + `requireAdmin_`;
   peran diambil dari sesi terverifikasi server, TIDAK dari body klien.
   Diuji: tanpa token → `UNAUTHORIZED`; token pegawai → `FORBIDDEN`;
-  peran palsu di body diabaikan; GET → `METHOD_NOT_ALLOWED` (156 cek LULUS).
+  peran palsu di body diabaikan; GET → `METHOD_NOT_ALLOWED` (166 cek LULUS).
 - **Rahasia tidak dikirim:** `pin_hash`/`pin_salt` tidak pernah masuk respons
   pegawai; log admin diuji tanpa token/PIN mentah.
 - **Foto:** respons absensi/susulan hanya metadata bukti (ada/mime/ukuran/path);
@@ -121,7 +121,7 @@ Kontrol di `gas/ReportService.gs` (semua aksi `report.*`):
 - **Otorisasi server penuh:** `requirePost_` + `requireAdmin_`; peran diambil
   dari sesi terverifikasi server, TIDAK dari body klien. Penerima laporan =
   admin (DEC-P07). Diuji: tanpa token → `UNAUTHORIZED`; token pegawai →
-  `FORBIDDEN`; peran palsu diabaikan; GET → `METHOD_NOT_ALLOWED` (162 cek LULUS).
+  `FORBIDDEN`; peran palsu diabaikan; GET → `METHOD_NOT_ALLOWED` (178 cek LULUS).
 - **Ekspor CSV aman secara konten:** kolom tetap (tidak mengikuti filter apa
   pun ke keamanan); TIDAK memuat `drive_file_id`, tautan/URL foto, `pin_hash`,
   `pin_salt`, atau token. Guard formula-injection (nilai berawalan

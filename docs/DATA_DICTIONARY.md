@@ -52,6 +52,9 @@ Legenda: `PK` kunci utama internal · `FK` referensi · `?` belum tersedia/opsio
 | `jarak_meter` | Number? | Jarak ke kantor (WFO masuk) |
 | `sumber` | Enum | `reguler` \| `susulan_disetujui` |
 | `id_bukti` (FK)? | String | → BuktiAbsensi |
+| `status` | String | `masuk`: `TEPAT_WAKTU`/`TERLAMBAT`; `pulang`: `TANPA_ABSEN_MASUK` bila tidak ada catatan masuk, selain itu kosong. Bukan indikator ketidakhadiran. |
+| `uraian_pekerjaan` | String | Wajib pada catatan pulang; kosong pada catatan masuk |
+| `output_pekerjaan` | String | Wajib pada catatan pulang; kosong pada catatan masuk |
 | `dibuat_pada` | DateTime | Metadata |
 | `diubah_pada` | DateTime | Metadata |
 | `diubah_oleh` | String | Aktor |
@@ -69,8 +72,10 @@ Legenda: `PK` kunci utama internal · `FK` referensi · `?` belum tersedia/opsio
 
 > Catatan DEC-P29: struktur folder di atas menggantikan usulan lama
 > `YYYY/MM/Foto_Masuk|Foto_Pulang/`. Nama file tetap per jenis; duplikat
-> dicegah oleh prasyarat (satu masuk + satu pulang per pegawai per tanggal),
-> idempotensi `id_absensi`, dan `LockService`. Foto diamankan via
+> dicegah oleh batas unik satu catatan untuk setiap jenis per pegawai/tanggal,
+> idempotensi `id_absensi`, dan `LockService`. Catatan pulang boleh berdiri
+> sendiri; status `TANPA_ABSEN_MASUK` menandai data masuk yang tidak tersedia.
+> Foto diamankan via
 > `drive_file_id` (bukan nama file).
 
 ## 5. `Pengaturan`
@@ -150,6 +155,12 @@ Dibuat `report.absensi.exportCsv` sesuai DEC-P07 (CSV saja). Urutan kolom tetap:
 | `sumber` | Absensi | `reguler` / `susulan_disetujui` |
 | `jarak_meter` | Absensi | Jarak ke kantor (WFO); kosong bila tidak berlaku |
 | `ada_bukti` | Absensi | `ada` / `tidak ada` (hanya metadata; tanpa referensi foto) |
+| `status` | Absensi | Status baris masuk atau marker `TANPA_ABSEN_MASUK` pada pulang |
+| `kondisi_harian` | Absensi (turunan) | `ADA_MASUK_DAN_PULANG`, `ADA_MASUK_TANPA_PULANG`, atau `TANPA_MASUK_DENGAN_PULANG` |
+| `waktu_masuk` | Absensi (turunan) | Waktu server masuk yang ada; kosong jika tidak ada catatan masuk |
+| `waktu_pulang` | Absensi (turunan) | Waktu server pulang yang ada; kosong jika tidak ada catatan pulang |
+| `uraian_pekerjaan` | Absensi | Uraian dari baris pulang; kosong bila tidak ada |
+| `output_pekerjaan` | Absensi | Output dari baris pulang; kosong bila tidak ada |
 
 Catatan:
 - TIDAK ada `drive_file_id`, URL foto, `pin_hash`, `pin_salt`, atau token.

@@ -263,7 +263,6 @@
       UNAUTHORIZED: 'Sesi tidak valid atau kedaluwarsa. Silakan masuk ulang.',
       TIME_WINDOW: 'Di luar jendela jam absensi reguler.',
       DUPLICATE: 'Absensi sudah tercatat untuk jenis ini pada tanggal tersebut.',
-      PRECONDITION: 'Absensi pulang memerlukan absensi masuk yang tercatat.',
       OFFICE_NOT_CONFIGURED: 'Validasi lokasi kantor belum dikonfigurasi.',
       ATTENDANCE_STORAGE_PARTIAL: 'Penyimpanan gagal sebagian. Absensi BELUM tercatat; silakan coba lagi.',
       NOT_CONFIGURED: 'Backend belum dikonfigurasi.',
@@ -367,7 +366,9 @@
     setText('att-result-detail',
       (res.jenis === 'masuk' ? 'Masuk' : 'Pulang') + ' (' +
       (res.mode_kerja === 'WFO' ? 'WFO' : 'WFH/WFA') + ') pada ' + res.tanggal +
-      ' pukul ' + formatServerTime(res.waktu_server) + ' WIB.');
+      ' pukul ' + formatServerTime(res.waktu_server) + ' WIB.' +
+      (res.status_absensi === 'TANPA_ABSEN_MASUK'
+        ? ' Catatan absensi masuk pada tanggal ini tidak tersedia.' : ''));
     show(el('att-result'));
     hide(el('att-step-summary'));
     setStatus('', '');

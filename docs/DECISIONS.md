@@ -335,3 +335,21 @@ Sumber: jawaban pengguna atas pertanyaan D0–D8 (lihat `docs/PHASE2_AUDIT.md`).
 - Penerapan: `assets/js/api.js` (kapsul `localStorage`, `restoreToken`),
   `assets/js/auth.js` (`restoreSession`, centang "Ingat saya"),
   `index.html` (`#remember`).
+
+### DEC-P31 — Absensi pulang mandiri dan status catatan masuk
+- Tanggal: 2026-10-24; Status: DISETUJUI (instruksi pengguna).
+- Mengubah DEC-003/DEC-005 untuk aturan berikut: masuk sebelum 07:00:00 ditolak;
+  07:00:00–08:30:00 diterima dengan status `TEPAT_WAKTU`; setelah 08:30:00
+  sampai 23:59:59 diterima dengan status `TERLAMBAT`. `TERLAMBAT` ditandai
+  merah melalui conditional formatting pada kolom status Google Sheets.
+- Pulang 16:00:00–23:59:59 tidak mensyaratkan baris masuk. Pulang tetap butuh
+  sesi valid, foto kamera, Uraian Pekerjaan, dan Output Pekerjaan; GPS tidak
+  diwajibkan. Duplikat pulang per pegawai/tanggal tetap ditolak di bawah lock.
+- Bila baris masuk tanggal tersebut tidak ditemukan, hanya baris pulang yang
+  disimpan dengan status `TANPA_ABSEN_MASUK`. Ini menyatakan catatan masuk tidak
+  tersedia; bukan bukti ketidakhadiran. Tidak ada baris masuk/foto/GPS sintetis.
+- Laporan detail menampilkan status, waktu catatan, uraian, dan output; rekap
+  harian memisahkan jumlah pulang tanpa catatan masuk. Header baru ditambahkan
+  di kanan pada sheet lama dan baris historis tidak diubah.
+- Form pengajuan susulan tetap nonaktif dalam antarmuka dan router aktif.
+- Sumber: MASTER CHANGE PROMPT pengguna "IZINKAN ABSENSI PULANG TANPA ABSENSI MASUK".

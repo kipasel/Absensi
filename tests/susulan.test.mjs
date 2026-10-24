@@ -351,8 +351,7 @@ check('route_ terhubung (bukan UNKNOWN_ACTION)', () => {
   } catch (err) {
     code = err && err.code;
   }
-  if (code === 'UNKNOWN_ACTION') throw new Error('susulan.submit tidak terhubung');
-  if (code !== 'UNAUTHORIZED') throw new Error('kode: ' + code);
+  if (code !== 'NOT_AVAILABLE') throw new Error('kode: ' + code);
   return true;
 });
 check('doPost susulan.submit tanpa token → JSON NOT_AVAILABLE (bukan crash)', () => {
@@ -361,7 +360,7 @@ check('doPost susulan.submit tanpa token → JSON NOT_AVAILABLE (bukan crash)', 
     postData: { contents: JSON.stringify({ action: 'susulan.submit', data: {} }) }
   });
   const parsed = JSON.parse(out.getContent());
-  eq('error', parsed.error, 'UNAUTHORIZED');
+  eq('error', parsed.error, 'NOT_AVAILABLE');
   eq('status', parsed.status, 'error');
   return true;
 });

@@ -4,6 +4,8 @@
  * Endpoint: action 'attendance.submit' (POST, token sesi wajib).
  *
  * Keputusan yang diterapkan:
+ * - Aturan waktu masuk dan prasyarat pulang di bawah diperbarui DEC-P31;
+ *   lihat implementasi fungsi untuk rentang terbaru.
  * - Identitas pegawai diambil dari SESI TERVERIFIKASI server; id_pegawai,
  *   peran, tanggal, dan timestamp dari klien TIDAK PERNAH dipercaya.
  * - Waktu server Asia/Jakarta (DEC-002/003); jendela masuk 07:00.00–08:29.59,
@@ -14,7 +16,7 @@
  * - Foto JPEG wajib; batas ukuran PHASE3_PHOTO_MAX_BYTES, default 1.000.000
  *   byte (DEC-P17); magic bytes diperiksa, tidak hanya MIME kiriman.
  * - Satu masuk + satu pulang per pegawai per tanggal bisnis; pulang
- *   mensyaratkan masuk tercatat (DEC-005).
+ *   boleh tanpa catatan masuk dan diberi status TANPA_ABSEN_MASUK (DEC-P31).
  * - Idempotensi: klien mengirim id_absensi (UUID) sebagai kunci permintaan;
  *   retry dengan ID sama mengembalikan sukses yang sama tanpa duplikat.
  *
@@ -65,6 +67,28 @@ function handleAttendanceSubmit_(payload, method) {
   }
   var tanggal = timeEval.tanggal;
 
+  // Data pekerjaan wajib divalidasi sebelum menyimpan foto atau bukti.
+  var uraianPekerjaan = '';
+  var outputPekerjaan = '';
+  if (jenis === 'pulang') {
+    uraianPekerjaan = payload.uraian_pekerjaan === null || payload.uraian_pekerjaan === undefined
+      ? '' : String(payload.uraian_pekerjaan).trim();
+    outputPekerjaan = payload.output_pekerjaan === null || payload.output_pekerjaan === undefined
+      ? '' : String(payload.output_pekerjaan).trim();
+    if (!uraianPekerjaan) {
+      throw AppError_('INVALID_INPUT', 'Uraian Pekerjaan wajib diisi.', true);
+    }
+    if (!outputPekerjaan) {
+      throw AppError_('INVALID_INPUT', 'Output Pekerjaan wajib diisi.', true);
+    }
+    if (uraianPekerjaan.length > 1000) {
+      throw AppError_('INVALID_INPUT', 'Uraian Pekerjaan maksimal 1000 karakter.', true);
+    }
+    if (outputPekerjaan.length > 1000) {
+      throw AppError_('INVALID_INPUT', 'Output Pekerjaan maksimal 1000 karakter.', true);
+    }
+  }
+
   // --- GPS (hanya masuk WFO) ---
   var lintang = '';
   var bujur = '';
@@ -110,13 +134,13 @@ function handleAttendanceSubmit_(payload, method) {
       throw AppError_('DUPLICATE', 'Absensi ' + jenis + ' pada ' + tanggal + ' sudah tercatat.', true);
     }
 
-    // Pulang mensyaratkan masuk tercatat (DEC-005).
-    if (jenis === 'pulang') {
-      var masuk = findAbsensiByUniq_(idPegawai, tanggal, 'masuk');
-      if (!masuk) {
-        throw AppError_('PRECONDITION', 'Absensi pulang memerlukan absensi masuk yang tercatat pada tanggal yang sama.', true);
-      }
-    }
+    // Pulang boleh tercatat tanpa masuk; status ini hanya menandai data masuk
+    // yang tidak tersedia dan bukan kesimpulan bahwa pegawai tidak hadir.
+    var masukHariIni = jenis === 'pulang'
+      ? findAbsensiByUniq_(idPegawai, tanggal, 'masuk') : null;
+    var statusAbsensi = jenis === 'masuk'
+      ? getMasukStatus_(timeEval.detikHari)
+      : (masukHariIni ? '' : 'TANPA_ABSEN_MASUK');
 
     // Unggah foto ke Drive (masih di dalam lock agar tidak ada baris ganda).
     var saved;
@@ -151,27 +175,6 @@ function handleAttendanceSubmit_(payload, method) {
         dibuat_pada: waktuServerIso
       });
 
-      var statusAbsensi = jenis === 'masuk' ? getMasukStatus_(timeEval.detikHari) : '';
-      var uraianPekerjaan = '';
-      var outputPekerjaan = '';
-      if (jenis === 'pulang') {
-        uraianPekerjaan = payload.uraian_pekerjaan === null || payload.uraian_pekerjaan === undefined
-          ? '' : String(payload.uraian_pekerjaan).trim();
-        outputPekerjaan = payload.output_pekerjaan === null || payload.output_pekerjaan === undefined
-          ? '' : String(payload.output_pekerjaan).trim();
-        if (!uraianPekerjaan) {
-          throw AppError_('INVALID_INPUT', 'Uraian Pekerjaan wajib diisi.', true);
-        }
-        if (!outputPekerjaan) {
-          throw AppError_('INVALID_INPUT', 'Output Pekerjaan wajib diisi.', true);
-        }
-        if (uraianPekerjaan.length > 1000) {
-          throw AppError_('INVALID_INPUT', 'Uraian Pekerjaan maksimal 1000 karakter.', true);
-        }
-        if (outputPekerjaan.length > 1000) {
-          throw AppError_('INVALID_INPUT', 'Output Pekerjaan maksimal 1000 karakter.', true);
-        }
-      }
       appendObject_('Absensi', {
         id_absensi: idAbsensi,
         id_pegawai: idPegawai,
@@ -251,6 +254,7 @@ function attendanceSuccessResponse_(record) {
     waktu_server: String(record.waktu_server),
     jarak_meter: (record.jarak_meter === '' || record.jarak_meter === undefined || record.jarak_meter === null)
       ? null : record.jarak_meter,
-    status: 'tercatat'
+    status: 'tercatat',
+    status_absensi: String(record.status || '')
   };
 }

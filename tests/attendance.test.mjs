@@ -112,8 +112,12 @@ function submit(env, token, overrides = {}) {
     delete payload.gps;
   }
   if (payload.jenis === 'pulang') {
-    if (!payload.uraian_pekerjaan) payload.uraian_pekerjaan = 'Pekerjaan hari ini';
-    if (!payload.output_pekerjaan) payload.output_pekerjaan = 'Output pekerjaan';
+    if (!Object.prototype.hasOwnProperty.call(overrides, 'uraian_pekerjaan')) {
+      payload.uraian_pekerjaan = 'Pekerjaan hari ini';
+    }
+    if (!Object.prototype.hasOwnProperty.call(overrides, 'output_pekerjaan')) {
+      payload.output_pekerjaan = 'Output pekerjaan';
+    }
   }
   return env.sandbox.handleAttendanceSubmit_(payload, 'POST');
 }
@@ -502,14 +506,21 @@ check('masuk 06:59:59 → TIME_WINDOW, tanpa tulisan apa pun', () => {
   }
   return true;
 });
-check('masuk 08:30:00 → diterima TERLAMBAT', () => {
+check('masuk 08:30:00 diterima TEPAT_WAKTU', () => {
   const { env, token } = envAttendance();
   atTime(env, T.afterMasuk);
   const r = submit(env, token);
-  assert.strictEqual(r.status, 'tercatat');
-  const rec = findAbsensi(env, r.id_absensi);
-  assert.strictEqual(rec.status, 'TERLAMBAT');
-  assert.strictEqual(env.driveRegistry.files.length, 1);
+  eq('status respons', r.status, 'tercatat');
+  const rec = env.sandbox.findAbsensiById_(r.id_absensi);
+  eq('status masuk 08:30', rec.status, 'TEPAT_WAKTU');
+  eq('foto tersimpan', env.driveRegistry.files.length, 1);
+  return true;
+});
+check('masuk 08:30:01 diterima TERLAMBAT', () => {
+  const { env, token } = envAttendance();
+  atTime(env, T.afterMasuk + 1000);
+  const r = submit(env, token);
+  eq('status masuk setelah batas', env.sandbox.findAbsensiById_(r.id_absensi).status, 'TERLAMBAT');
   return true;
 });
 check('pulang 15:59:59 → TIME_WINDOW', () => {
@@ -585,11 +596,72 @@ check('retry dengan id_absensi sama (respons hilang) → sukses idempoten, 1 bar
   if (env.driveRegistry.files.length !== 1) throw new Error('file ganda');
   return true;
 });
-check('pulang tanpa masuk → PRECONDITION', () => {
+check('pulang tanpa masuk berhasil dengan TANPA_ABSEN_MASUK', () => {
   const { env, token } = envAttendance();
   atTime(env, T.openPulang);
-  throwsCode('PRECONDITION',
-    () => submit(env, token, { jenis: 'pulang', gps: null }), 'PRECONDITION');
+  const res = submit(env, token, { jenis: 'pulang', mode_kerja: 'WFH_WFA', gps: null });
+  const row = env.sandbox.findAbsensiById_(res.id_absensi);
+  eq('tanggal server', row.tanggal, '2026-10-15');
+  eq('status kondisi', row.status, 'TANPA_ABSEN_MASUK');
+  eq('uraian tersimpan', row.uraian_pekerjaan, 'Pekerjaan hari ini');
+  eq('output tersimpan', row.output_pekerjaan, 'Output pekerjaan');
+  eq('baris tunggal tanpa masuk palsu', countAbsensi(env), 1);
+  eq('jenis tersimpan', row.jenis, 'pulang');
+  eq('GPS kosong', row.lintang, '');
+  eq('foto tersimpan', countBukti(env), 1);
+  return true;
+});
+check('pulang tanpa uraian ditolak sebelum Drive/Sheets', () => {
+  const { env, token } = envAttendance();
+  atTime(env, T.openPulang);
+  throwsCode('INVALID_INPUT', () => submit(env, token, {
+    jenis: 'pulang', gps: null, uraian_pekerjaan: ''
+  }), 'INVALID_INPUT');
+  eq('tanpa absensi', countAbsensi(env), 0);
+  eq('tanpa bukti', countBukti(env), 0);
+  eq('tanpa file', env.driveRegistry.files.length, 0);
+  return true;
+});
+check('pulang tanpa output ditolak sebelum Drive/Sheets', () => {
+  const { env, token } = envAttendance();
+  atTime(env, T.openPulang);
+  throwsCode('INVALID_INPUT', () => submit(env, token, {
+    jenis: 'pulang', gps: null, output_pekerjaan: ''
+  }), 'INVALID_INPUT');
+  eq('tanpa absensi', countAbsensi(env), 0);
+  eq('tanpa file', env.driveRegistry.files.length, 0);
+  return true;
+});
+check('pulang tanpa foto ditolak', () => {
+  const { env, token } = envAttendance();
+  atTime(env, T.openPulang);
+  throwsCode('INVALID_INPUT', () => submit(env, token, {
+    jenis: 'pulang', gps: null, foto_base64: undefined
+  }), 'INVALID_INPUT');
+  eq('tanpa absensi', countAbsensi(env), 0);
+  eq('tanpa file', env.driveRegistry.files.length, 0);
+  return true;
+});
+check('status pulang normal tidak menyalin status TERLAMBAT', () => {
+  const { env, token } = envAttendance();
+  atTime(env, T.afterMasuk + 60 * 60 * 1000);
+  const masukRes = submit(env, token);
+  eq('masuk terlambat', env.sandbox.findAbsensiById_(masukRes.id_absensi).status, 'TERLAMBAT');
+  atTime(env, T.openPulang);
+  const pulangRes = submit(env, token, { jenis: 'pulang', gps: null });
+  eq('status pulang normal kosong', env.sandbox.findAbsensiById_(pulangRes.id_absensi).status, '');
+  return true;
+});
+check('status TERLAMBAT diformat merah satu kali', () => {
+  const { env } = envAttendance();
+  const sheet = env.spreadsheet.getSheetByName('Absensi');
+  const late = sheet.getConditionalFormatRules().filter((rule) =>
+    rule._style && rule._style.value === 'TERLAMBAT');
+  eq('satu rule', late.length, 1);
+  eq('latar merah muda', late[0]._style.background, '#fce8e6');
+  eq('teks merah', late[0]._style.fontColor, '#b3261e');
+  env.sandbox.initializeSheets();
+  eq('idempotensi', sheet.getConditionalFormatRules().length, 1);
   return true;
 });
 check('pulang ganda → DUPLICATE', () => {
@@ -601,6 +673,16 @@ check('pulang ganda → DUPLICATE', () => {
   throwsCode('DUPLICATE',
     () => submit(env, token, { jenis: 'pulang', gps: null }), 'DUPLICATE');
   if (countAbsensi(env) !== 2) throw new Error('baris ' + countAbsensi(env));
+  return true;
+});
+check('pulang tanpa masuk kedua kali tetap DUPLICATE', () => {
+  const { env, token } = envAttendance();
+  atTime(env, T.openPulang);
+  const first = submit(env, token, { jenis: 'pulang', gps: null });
+  throwsCode('DUPLICATE', () => submit(env, token, { jenis: 'pulang', gps: null }), 'DUPLICATE');
+  eq('satu catatan', countAbsensi(env), 1);
+  eq('satu file', env.driveRegistry.files.length, 1);
+  eq('status marker', env.sandbox.findAbsensiById_(first.id_absensi).status, 'TANPA_ABSEN_MASUK');
   return true;
 });
 check('id_absensi dipakai untuk pegawai lain → INVALID_INPUT (bentrok ID)', () => {
@@ -919,13 +1001,12 @@ check('foto privat: setSharing defensif dipanggil pada struktur baru', () => {
     env.sandbox.readObjects_('BuktiAbsensi')[0].drive_file_id));
   eq('byte utuh', photo.ukuran, env.driveRegistry.files[0]._bytes.length);
 });
-check('aturan absensi lama tetap berlaku (jam di luar jendela ditolak)', () => {
+check('absensi masuk pada batas 08:30:00 tepat waktu', () => {
   const { env, token } = envAttendance();
   atTime(env, T.afterMasuk);
-  let code = null;
-  try { submit(env, token); } catch (err) { code = err && err.code; }
-  eq('kode', code, 'TIME_WINDOW');
-  eq('jumlah file', env.driveRegistry.files.length, 0);
+  const res = submit(env, token);
+  eq('status absensi', env.sandbox.findAbsensiById_(res.id_absensi).status, 'TEPAT_WAKTU');
+  eq('jumlah file', env.driveRegistry.files.length, 1);
 });
 check('PIN/token/foto tidak muncul di log', () => {
   const { env, token } = envAttendance();
@@ -975,6 +1056,31 @@ check('doPost attendance.submit mengembalikan JSON', () => {
   });
   const parsed = JSON.parse(out.getContent());
   if (!parsed.ok) throw new Error('bukan ok: ' + out.getContent());
+  return true;
+});
+
+check('migrasi header Absensi mempertahankan data lama dan menambah kolom baru', () => {
+  const env = createEnv({ props: { SPREADSHEET_ID: 'TEST_SS_ID' } });
+  const old = env.spreadsheet.insertSheet('Absensi');
+  old.appendRow(['id_absensi', 'id_pegawai', 'tanggal', 'jenis', 'mode_kerja', 'waktu_server',
+    'lintang', 'bujur', 'akurasi', 'jarak_meter', 'sumber', 'id_bukti',
+    'dibuat_pada', 'diubah_pada', 'diubah_oleh']);
+  old.appendRow(['ABS-HIST-1', 'PEG-HIST-1', '2026-10-01', 'masuk', 'WFO',
+    '2026-10-01T00:00:00.000Z', '', '', '', '', 'reguler', 'BKT-HIST-1',
+    '2026-10-01T00:00:00.000Z', '2026-10-01T00:00:00.000Z', 'PEG-HIST-1']);
+  env.sandbox.initializeSheets();
+  const prior = env.sandbox.readObjects_('Absensi')[0];
+  eq('historical id', prior.id_absensi, 'ABS-HIST-1');
+  eq('historical timestamp', prior.dibuat_pada, '2026-10-01T00:00:00.000Z');
+  env.sandbox.appendObject_('Absensi', {
+    id_absensi: 'ABS-NEW-1', id_pegawai: 'PEG-NEW-1', tanggal: '2026-10-24',
+    jenis: 'pulang', status: 'TANPA_ABSEN_MASUK',
+    uraian_pekerjaan: 'Uraian TEST', output_pekerjaan: 'Output TEST'
+  });
+  const rows = env.sandbox.readObjects_('Absensi');
+  eq('legacy retained', rows.length, 2);
+  eq('new status by header', rows[1].status, 'TANPA_ABSEN_MASUK');
+  eq('new work field by header', rows[1].uraian_pekerjaan, 'Uraian TEST');
   return true;
 });
 

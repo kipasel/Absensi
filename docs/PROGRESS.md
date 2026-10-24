@@ -563,3 +563,48 @@ Pengguna memberikan URL Web App terbaru (DEC-P21 diperbarui):
   `officeLocationConfigured:true`, `phase:report`, `timezone:Asia/Jakarta`.
 - `node tests/check-foundation.mjs` → **71 lulus, 0 gagal** (FD-09 format URL valid,
   versi config == CACHE_VERSION).
+
+## Pasca-PHASE 6 — Absensi pulang tanpa catatan masuk (2026-10-24, DEC-P31)
+
+Instruksi pengguna mengubah aturan: pulang boleh dicatat walau tidak ada catatan
+masuk pada tanggal yang sama; Uraian Pekerjaan dan Output Pekerjaan wajib;
+status keterlambatan masuk disimpan terpisah; laporan menandai pulang tanpa
+catatan masuk. Pengajuan susulan tetap nonaktif pada aplikasi.
+
+Perubahan:
+- `gas/Attendance.gs` — menghapus prasyarat masuk untuk pulang; menjaga sesi,
+  jendela waktu, foto, GPS khusus masuk WFO, pemeriksaan duplikat dan lock.
+  Validasi uraian/output terjadi sebelum penyimpanan Drive. Baris pulang tanpa
+  masuk mendapat status `TANPA_ABSEN_MASUK`, tanpa membuat data masuk sintetis.
+- `gas/Repo.gs` — migrasi header aditif pada sheet lama (kolom baru ditambahkan
+  ke kanan, baris lama dipertahankan); conditional formatting status
+  `TERLAMBAT` memakai latar dan teks merah.
+- `gas/ReportService.gs`, `assets/js/report.js`, `index.html` — daftar detail
+  memuat kondisi dan pasangan waktu masuk/pulang per pegawai-hari, status,
+  uraian/output; rekap harian memisahkan jumlah pulang tanpa catatan masuk.
+  Ekspor CSV memuat pasangan waktu dan kondisi; waktu yang tidak ada dibiarkan
+  kosong. Respons sukses dan UI memberi keterangan saat marker berlaku.
+- Tes: `tests/attendance.test.mjs`, `tests/report.test.mjs`, `tests/admin.test.mjs`,
+  `tests/harness.mjs`, `tests/susulan.test.mjs`; pembaruan skenario fitur
+  susulan nonaktif dan kolom ekspor.
+- Dokumentasi: `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`,
+  `docs/DATA_DICTIONARY.md`, `docs/TEST_PLAN.md`, `docs/DEPLOYMENT.md`,
+  `docs/DECISIONS.md`, `AGENTS.md`.
+- Versi frontend dinaikkan ke `0.6.6`; cache service worker selaras.
+
+Pengujian lokal (Node + stub):
+- `check-foundation` **74/0**; `auth` **56/0**; `attendance` **200/0**;
+  `admin` **166/0**; `report` **178/0**; `susulan` **67/0**.
+- Uji runtime Apps Script, konkurensi nyata, browser/kamera, penerapan Apps
+  Script dan GitHub Pages **belum dijalankan**.
+- Deployment: jalankan `initializeSheets()` untuk menambahkan header baru pada
+  spreadsheet aktif, deploy versi Apps Script baru, lalu terbitkan frontend.
+  Belum ada perubahan yang dideploy.
+
+## Pasca-PHASE 6 — Pembaruan URL Web App (2026-10-24)
+
+Pengguna memberikan URL Web App baru (DEC-P21 diperbarui):
+`https://script.google.com/macros/s/AKfycbzPrzom2yQUH2G0STiVb1o0P5axU03yadiUnwmmyUIy-tjR3TAr4Q_0irNRcvbr271c/exec`.
+- `assets/js/config.js` — `API_BASE_URL` diperbarui.
+- Versi frontend/cache dinaikkan menjadi `0.6.7` agar service worker mengambil konfigurasi baru.
+- Status endpoint dan deployment belum diverifikasi.

@@ -139,9 +139,6 @@ const ADMIN_ACTIONS = [
   'admin.pegawai.setActive',
   'admin.absensi.list',
   'admin.absensi.detail',
-  'admin.susulan.list',
-  'admin.susulan.detail',
-  'admin.susulan.decide',
   'admin.log.list'
 ];
 
@@ -784,18 +781,16 @@ check('doPost aksi admin tanpa token → JSON UNAUTHORIZED (bukan crash)', () =>
   eq('status', parsed.status, 'error');
   return true;
 });
-check('route_ foto terhubung (bukan UNKNOWN_ACTION)', () => {
+check('route foto absensi berotorisasi; foto susulan dinonaktifkan', () => {
   const { env } = envAdmin();
-  ['admin.absensi.photo', 'admin.susulan.photo'].forEach((action) => {
-    let code = null;
-    try {
-      env.sandbox.route_(action, {}, 'POST');
-    } catch (err) {
-      code = err && err.code;
-    }
-    if (code === 'UNKNOWN_ACTION') throw new Error(action + ' tidak terhubung');
-    if (code !== 'UNAUTHORIZED') throw new Error(action + ': ' + code);
-  });
+  let attendanceCode = null;
+  try { env.sandbox.route_('admin.absensi.photo', {}, 'POST'); }
+  catch (err) { attendanceCode = err && err.code; }
+  if (attendanceCode !== 'UNAUTHORIZED') throw new Error('admin.absensi.photo: ' + attendanceCode);
+  let susulanCode = null;
+  try { env.sandbox.route_('admin.susulan.photo', {}, 'POST'); }
+  catch (err) { susulanCode = err && err.code; }
+  if (susulanCode !== 'NOT_AVAILABLE') throw new Error('admin.susulan.photo: ' + susulanCode);
   return true;
 });
 check('health phase = report (PHASE 5)', () => {

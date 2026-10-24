@@ -4,8 +4,8 @@
 > hasil apa adanya (lulus/gagal/tidak dijalankan). Pengujian otomatis berjalan di
 > Node dengan stub; integrasi runtime Apps Script & browser BELUM dijalankan.
 >
-> Catatan 2026-10-21: suite otomatis kini `check-foundation` 71, `auth` 56,
-> `attendance` 157, `admin` 171, `report` 162, `susulan` 67 — semua LULUS.
+> Catatan 2026-10-24 (DEC-P31): suite otomatis `check-foundation` 74, `auth` 56,
+> `attendance` 200, `admin` 166, `report` 178, `susulan` 67 — semua LULUS.
 
 ## Strategi
 - Unit test logika murni (perhitungan jarak, evaluasi jam, validasi input) bila memungkinkan di JS.
@@ -33,20 +33,22 @@ Dijalankan dengan `node tests/check-foundation.mjs`.
 | FD-13 | Responsivitas visual di berbagai ukuran layar | BELUM DIJALANKAN |
 | FD-14 | Integrasi backend (`action=health`) | BELUM DIJALANKAN |
 | FD-15 | Instalabilitas PWA | BELUM DIJALANKAN |
-| FD-16 | Pengujian autentikasi otomatis (`tests/auth.test.mjs`, 42 cek) | LULUS |
+| FD-16 | Pengujian autentikasi otomatis (`tests/auth.test.mjs`, 56 cek) | LULUS |
 | FD-17 | Vektor PBKDF2-HMAC-SHA256 RFC 7914 §11 (c=1, c=80000) | LULUS |
 | FD-18 | Benchmark iterasi PBKDF2 di runtime Apps Script nyata | BELUM DIJALANKAN |
-| FD-19 | Pengujian mesin absensi (`tests/attendance.test.mjs`, 157 cek) | LULUS |
-| FD-20 | Pengujian panel admin (`tests/admin.test.mjs`, 171 cek) | LULUS |
-| FD-21 | Pengujian laporan (`tests/report.test.mjs`, 162 cek) | LULUS |
+| FD-19 | Pengujian mesin absensi (`tests/attendance.test.mjs`, 200 cek) | LULUS |
+| FD-20 | Pengujian panel admin (`tests/admin.test.mjs`, 166 cek) | LULUS |
+| FD-21 | Pengujian laporan (`tests/report.test.mjs`, 178 cek) | LULUS |
 | FD-22 | Pengujian pengajuan susulan (`tests/susulan.test.mjs`, 67 cek) | LULUS |
 
 ## 1. Aturan Waktu (zona `Asia/Jakarta`)
 | ID | Kasus | Ekspektasi |
 |----|-------|------------|
 | WT-01 | Masuk 07:00:00 | Diterima |
-| WT-02 | Masuk 08:29:59 | Diterima |
-| WT-03 | Masuk 08:30:00 | Ditolak |
+| WT-02 | Masuk 08:29:59 | Diterima `TEPAT_WAKTU` |
+| WT-03 | Masuk 08:30:00 | Diterima `TEPAT_WAKTU` |
+| WT-03a | Masuk 08:30:01 | Diterima `TERLAMBAT` |
+| WT-03b | Masuk setelah 08:30 sampai 23:59:59 | Diterima `TERLAMBAT` |
 | WT-04 | Masuk 06:59:59 | Ditolak |
 | WT-05 | Pulang 16:00:00 | Diterima |
 | WT-06 | Pulang 23:59:59 | Diterima |
@@ -97,9 +99,13 @@ diuji otomatis di Node dengan stub (`tests/auth.test.mjs`) — BUKAN runtime App
 | ID | Kasus | Ekspektasi |
 |----|-------|------------|
 | TX-01 | Dua absen masuk pada tanggal sama | Yang kedua ditolak |
-| TX-02 | Absen pulang tanpa masuk valid | Ditolak |
+| TX-02 | Absen pulang tanpa catatan masuk | Diterima; status `TANPA_ABSEN_MASUK`; tanpa baris masuk sintetis |
+| TX-02a | Absen pulang dengan/tanpa masuk, syarat pekerjaan dan foto lengkap | Diterima |
+| TX-02b | Uraian/output/foto wajib tidak tersedia | Ditolak sebelum file/row ditulis |
+| TX-02c | Pulang tanpa masuk kedua kali pada hari yang sama | Ditolak sebagai `DUPLICATE` |
 | TX-03 | Dua request masuk bersamaan | Hanya satu tercatat |
 | TX-04 | Klik ganda | Tidak menghasilkan duplikat |
+| TX-05 | Laporan harian: masuk+pulang, masuk tanpa pulang, pulang tanpa masuk | Kondisi per pegawai/hari dibedakan; waktu yang tidak memiliki catatan kosong; uraian/output pulang tersedia |
 
 ## 6. PWA & Privasi
 | ID | Kasus | Ekspektasi |
@@ -109,7 +115,7 @@ diuji otomatis di Node dengan stub (`tests/auth.test.mjs`) — BUKAN runtime App
 | PW-03 | Tautan file Drive diakses tanpa izin | Gagal (privat) |
 
 ## 7. Panel Admin (PHASE 4) — otomatis
-Dijalankan dengan `node tests/admin.test.mjs` (171 cek) — Node + stub,
+Dijalankan dengan `node tests/admin.test.mjs` (166 cek) — Node + stub,
 BUKAN runtime Apps Script. Data uji sintetis berlabel `TEST`.
 | ID | Kasus | Hasil |
 |----|-------|-------|
@@ -137,7 +143,7 @@ BUKAN runtime Apps Script. Data uji sintetis berlabel `TEST`.
 | AD-22 | Referensi foto mengikuti catatan absensi; struktur folder baru (DEC-P29) | LULUS (otomatis) |
 
 ## 8. Laporan & Ekspor (PHASE 5) — otomatis
-Dijalankan dengan `node tests/report.test.mjs` (162 cek) — Node + stub,
+Dijalankan dengan `node tests/report.test.mjs` (178 cek) — Node + stub,
 BUKAN runtime Apps Script. Data uji sintetis berlabel `TEST`.
 | ID | Kasus | Hasil |
 |----|-------|-------|
@@ -194,7 +200,7 @@ BUKAN runtime Apps Script. Data uji sintetis berlabel `TEST`.
 | SU-11 | Otorisasi & penyimpanan susulan pada Web App nyata (runtime) | BELUM DIJALANKAN |
 
 ## 8d. Struktur Folder Foto Absensi (DEC-P29) — otomatis
-Dijalankan di `tests/attendance.test.mjs` (157 cek) — Node + stub Drive
+Dijalankan di `tests/attendance.test.mjs` (200 cek) — Node + stub Drive
 in-memory. Struktur diverifikasi lewat `BuktiAbsensi.path`, nama file, dan
 pohon folder stub. Data uji sintetis.
 | ID | Kasus | Hasil |
@@ -220,7 +226,7 @@ pohon folder stub. Data uji sintetis.
 - Kasus laporan RP-15/RP-16/RP-17 (browser & runtime) — baru otomatis Node.
 - Kasus panel admin AD-18/AD-19 (browser & runtime) — baru otomatis Node.
 - Kasus fungsional absensi (WT/GP/PH/TX) dijalankan otomatis via
-  `tests/attendance.test.mjs` (112 cek) tetapi **belum** diuji di runtime &
+  `tests/attendance.test.mjs` (200 cek) tetapi **belum** diuji di runtime &
   browser nyata; kasus AU-13/AU-14 dan integrasi runtime (FD-14, FD-18) belum.
 - Pengujian autentikasi E2E di browser (form masuk, sesi di memori, offline).
 - Kasus PWA (PW-01..03).

@@ -32,13 +32,16 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 - Perubahan sekecil mungkin; jangan refactor tak berkaitan.
 
 ## Status Saat Ini
+- Perubahan DEC-P31 (2026-10-24) mengizinkan absen pulang tanpa catatan masuk,
+  menambahkan status `TANPA_ABSEN_MASUK`, dan memisahkan status terlambat masuk.
+  Perubahan lokal versi aset `0.6.7` belum dideploy.
 - PHASE 0–6 dikerjakan. PHASE 3 (mesin absensi), PHASE 4 (panel admin),
   PHASE 5 (laporan & ekspor) **selesai (lokal)**. PHASE 6 (QA rilis) **selesai
   (lokal)**: audit kode & keamanan, 3 perbaikan frontend, verifikasi runtime.
   Keputusan rilis: **BELUM SIAP RILIS** (lihat `docs/PROGRESS.md` PHASE 6).
 - Pasca-PHASE 6 (2026-10-21): PIN admin 6 digit (buat/reset), endpoint foto admin
-  ber-token, pengajuan susulan pegawai (`susulan.submit`), retensi permanen;
-  keputusan DEC-P22..P28; suite uji jadi 6 berkas (tambah `tests/susulan.test.mjs`).
+  ber-token, handler susulan, retensi permanen; keputusan DEC-P22..P28; suite uji
+  jadi 6 berkas. Per 2026-10-24 route/UI pengajuan susulan nonaktif (DEC-P31).
 - Keputusan D0–D8 sudah dijawab pengguna (lihat `docs/DECISIONS.md` DEC-P09..P16);
   aturan waktu & foto: DEC-P17/P18; ekspor **CSV saja** + laporan = admin:
   DEC-P07 (AMB-19 ANSWERED).
@@ -56,7 +59,7 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 - Perintah uji: `node tests/check-foundation.mjs`, `node tests/auth.test.mjs`,
   `node tests/attendance.test.mjs`, `node tests/admin.test.mjs`,
   `node tests/report.test.mjs`, `node tests/susulan.test.mjs`.
-  Hasil terakhir: 71 / 56 / 157 / 175 / 162 / 67 — semua **0 gagal**.
+  Hasil terakhir (2026-10-24): 74 / 56 / 200 / 166 / 178 / 67 — semua **0 gagal**.
 - Jalankan lokal: `py -m http.server 8765` lalu buka `http://127.0.0.1:8765/`.
 
 ## Blocker Aktif (jangan diimplementasikan sebelum dijawab)
@@ -101,6 +104,12 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 - Probe `POST action=login` (NIP sintetis) → `AUTH_FAILED` → sheet `Akun` sudah ada.
 - Frontend live: `https://kipasel.github.io/Absensi/` (HTTP 200, versi 0.6.2);
   uji browser nyata belum dijalankan.
+
+## Catatan Runtime Terbaru (2026-10-24)
+- Pengguna memberi URL Web App baru (DEC-P21 diperbarui):
+  `https://script.google.com/macros/s/AKfycbzPrzom2yQUH2G0STiVb1o0P5axU03yadiUnwmmyUIy-tjR3TAr4Q_0irNRcvbr271c/exec`.
+- URL disetel di `assets/js/config.js`; versi frontend/cache lokal menjadi `0.6.7`.
+- Jangan menyatakan endpoint sudah berfungsi atau frontend telah terbit sebelum verifikasi nyata.
 
 ## Format Laporan Phase
 Lihat bagian 14 master prompt: PHASE, STATUS, PERUBAHAN, VALIDASI, KEAMANAN,

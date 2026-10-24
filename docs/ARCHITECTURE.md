@@ -19,7 +19,7 @@ Google Apps Script Web App  (doGet/doPost; satu-satunya lapisan tepercaya)
 - `index.html` — **app shell mobile**: app bar lengket (navigasi atas + chip
   pengguna) + **bilah navigasi bawah** (Beranda/Absensi/Admin/Profil) + tampilan
   `home-view` (status aplikasi/jaringan/backend/versi), `login-view`,
-  `attendance-view`, `admin-view` (tab Pegawai/Absensi/Susulan/Laporan/Log audit),
+  `attendance-view`, `admin-view` (tab Pegawai/Absensi/Laporan/Log audit),
   `session-view`. Tidak ada data fiktif.
 - `manifest.webmanifest` — manifest PWA (`start_url`/`scope` relatif `./` agar
   kompatibel dengan sub-path GitHub Pages).
@@ -32,7 +32,8 @@ Google Apps Script Web App  (doGet/doPost; satu-satunya lapisan tepercaya)
   tanpa aset gambar); app bar, kartu, tombol besar, bilah navigasi bawah; mode
   gelap sistem.
 - `assets/js/config.js` — konfigurasi publik (nama, versi, `API_BASE_URL`). Tanpa rahasia.
-- `assets/js/api.js` — klien POST `text/plain`; token sesi HANYA di memori (D1).
+- `assets/js/api.js` — klien POST `text/plain`; token di memori, atau `localStorage`
+  bila opsi "Ingat saya" aktif (DEC-P30).
 - `assets/js/app.js` — status jaringan, status backend (health check), registrasi SW.
 - `assets/js/auth.js` — UI login/logout (NIP/NIPK + PIN); dispatch event
   `auth:login`/`auth:logout`.
@@ -53,11 +54,12 @@ Google Apps Script Web App  (doGet/doPost; satu-satunya lapisan tepercaya)
 - `gas/Code.gs` — `doGet`/`doPost`, router aksi, respons JSON konsisten.
   Aksi: `health`, `login`, `logout`, `session.check`,
   `admin.account.create`, `admin.account.setActive`, `admin.account.resetPin`,
-  `attendance.submit`, 11 aksi PHASE 4
+  `attendance.submit`, aksi admin PHASE 4
   (`admin.pegawai.list|detail|create|update|setActive`,
-  `admin.absensi.list|detail`, `admin.susulan.list|detail|decide`,
+  `admin.absensi.list|detail`,
   `admin.log.list`), dan 3 aksi PHASE 5:
   `report.absensi.list`, `report.rekap`, `report.absensi.exportCsv`.
+  Route pengajuan dan panel susulan tetap nonaktif sesuai DEC-P31.
 - `gas/Config.gs` — konfigurasi Script Properties + kebijakan (iterasi PBKDF2,
   TTL sesi, lockout) + `AppError_`.
 - `gas/Auth.gs` — primitif PBKDF2-HMAC-SHA256, PIN, token, lockout, validitas sesi.
@@ -72,6 +74,13 @@ Google Apps Script Web App  (doGet/doPost; satu-satunya lapisan tepercaya)
   filter wajib rentang tanggal ≤92 hari; ekspor CSV (BOM UTF-8, guard
   formula-injection, ≤5000 baris) + `logActivity_('report_exported')`.
 - `gas/TimeRule.gs`, `gas/Geo.gs`, `gas/Drive.gs`, `gas/Attendance.gs` — mesin absensi (PHASE 3).
+- `attendance.submit`: validasi sesi, jenis, waktu server, GPS khusus masuk WFO,
+  foto JPEG, dan data pekerjaan untuk pulang dilakukan backend. Pulang tetap
+  boleh dicatat tanpa masuk pada tanggal tersebut. Seluruh pemeriksaan duplikat
+  dan penulisan berjalan di dalam `LockService`; status `TANPA_ABSEN_MASUK`
+  dicatat hanya pada baris pulang. `Repo.gs` menambahkan header baru ke kanan
+  tanpa mengubah kolom atau baris historis. Status `TERLAMBAT` diberi
+  conditional formatting merah di sheet `Absensi`.
 - `gas/Bootstrap.gs` — `initializeSheets()` & `seedAdmin()` (manual, tanpa PIN default).
 - `gas/appsscript.json` — timezone `Asia/Jakarta`, runtime V8, blok `webapp` (D8).
 

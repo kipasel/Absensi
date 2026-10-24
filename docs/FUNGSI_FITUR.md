@@ -3,7 +3,7 @@
 > Ringkasan fungsi aplikasi dan fitur yang tersedia, untuk memudahkan
 > orientasi. Sumber kebenaran tetap `docs/REQUIREMENTS.md`, `docs/DECISIONS.md`,
 > dan kode. Dokumen ini **tidak** menambah/mengubah aturan.
-> Terakhir diperbarui: 2026-10-21 (versi aplikasi `0.6.5`).
+> Terakhir diperbarui: 2026-10-24 (kode lokal `0.6.6`, DEC-P31; belum dideploy).
 
 ## 1. Ringkasan Aplikasi
 
@@ -17,7 +17,7 @@ Aplikasi absensi pegawai **KPU Kabupaten Aceh Selatan** berbentuk **PWA**
 | Database | Google Sheets (satu Spreadsheet) |
 | Foto | Google Drive **privat** |
 | Zona waktu | `Asia/Jakarta` (SEMUA keputusan waktu memakai waktu server) |
-| Versi | `0.6.5` (`assets/js/config.js`) |
+| Versi | `0.6.6` (`assets/js/config.js`, lokal; live masih `0.6.5`) |
 
 Alur data: `Browser/PWA → HTTPS → Apps Script → Sheets + Drive`.
 
@@ -25,19 +25,17 @@ Alur data: `Browser/PWA → HTTPS → Apps Script → Sheets + Drive`.
 
 1. **Pegawai** melakukan **absensi masuk & pulang** dengan **foto** sebagai
    bukti, memakai **kamera** (bukan unggah galeri).
-2. **Pegawai** dapat mengajukan **absensi susulan** bila absensi reguler
-   terlewat (maksimal 3 hari ke belakang).
+2. Pengajuan absensi susulan **nonaktif** pada UI dan router yang digunakan.
 3. **Admin** mengelola **data pegawai & akun** (termasuk PIN).
-4. **Admin** memantau **catatan absensi**, **memutuskan pengajuan susulan**,
-   dan **melihat foto bukti** (tanpa tautan publik).
+4. **Admin** memantau **catatan absensi** dan **melihat foto bukti** (tanpa tautan publik).
 5. **Admin** membuat **laporan** periode tertentu dan **mengekspor CSV**.
 
 ## 3. Fitur per Peran
 
 ### 3.1 Otentikasi (semua pengguna)
 - Login dengan **NIP/NIPK + PIN**.
-- Token sesi **hanya di memori** (hilang saat halaman dimuat ulang) — tanpa
-  cookie/`localStorage`.
+- Token sesi di memori; opsi "Ingat saya" menyimpan token hingga TTL server
+  8 jam di `localStorage`. Cookie tidak digunakan.
 - **Lockout**: 5 kali gagal → terkunci 15 menit (per akun).
 - Akun **nonaktif** tidak dapat login; sesi aktif dicabut saat akun dinonaktifkan.
 - Pesan login seragam (tidak membedakan akun tidak ada vs PIN salah).
@@ -46,23 +44,24 @@ Alur data: `Browser/PWA → HTTPS → Apps Script → Sheets + Drive`.
 - **Jenis**: `masuk` / `pulang`.
 - **Mode kerja**: `WFO` / `WFH_WFA` (dipilih pegawai).
 - **Jendela waktu (WIB, setiap hari, DEC-P18)**:
-  - Masuk: **07:00:00–08:29:59**
+  - Masuk sebelum 07:00:00: ditolak.
+  - 07:00:00–08:30:00: diterima `TEPAT_WAKTU`.
+  - Setelah 08:30:00 sampai 23:59:59: diterima `TERLAMBAT` (status ditandai merah di Sheet).
   - Pulang: **16:00:00–23:59:59**
 - **GPS wajib untuk masuk WFO**; radius kantor ≤ **50 m** (Haversine).
   Mode `WFH_WFA` tidak memerlukan GPS.
 - **Foto JPEG wajib** (dari kamera, dikonversi di canvas; batas default
   ±1.000.000 byte; magic-bytes diperiksa server).
-- **Aturan**: satu masuk + satu pulang per pegawai per tanggal; pulang
-  memerlukan masuk tercatat.
+- Pulang tidak membutuhkan catatan masuk. Jika masuk belum tercatat, pulang
+  disimpan dengan `TANPA_ABSEN_MASUK`; ini hanya menandai catatan masuk yang
+  tidak tersedia, bukan bukti ketidakhadiran. Tidak dibuat catatan masuk palsu.
+- Pulang wajib Uraian Pekerjaan, Output Pekerjaan, dan foto dari kamera;
+  GPS tidak diwajibkan. Tetap hanya satu catatan pulang per pegawai/tanggal.
 - **Idempoten**: kirim ulang dengan `id_absensi` sama tidak menghasilkan duplikat.
 
-### 3.3 Pengajuan Susulan (pegawai)
-- Untuk absensi yang terlewat, maksimal **3 hari** sebelum hari berjalan
-  (tidak boleh tanggal mendatang).
-- Wajib **alasan** (maks. 500 karakter) + **foto bukti JPEG**.
-- Status awal **`menunggu`**; belum menjadi catatan absensi.
-- Tidak boleh mengajukan ganda untuk (pegawai + tanggal + jenis) yang masih
-  `menunggu`/`diterima`.
+### 3.3 Pengajuan Susulan (nonaktif)
+- Aksi pengajuan dan panel susulan tidak tersedia pada aplikasi aktif.
+- Baris historis tidak dihapus otomatis.
 
 ### 3.4 Panel Admin
 - **Pegawai**: daftar (filter nama/NIP & status), detail, tambah, edit,
@@ -71,17 +70,19 @@ Alur data: `Browser/PWA → HTTPS → Apps Script → Sheets + Drive`.
   lockout).
 - **Absensi**: daftar (filter tanggal/jenis/pegawai), detail + metadata bukti,
   **lihat foto** (endpoint blob ber-token).
-- **Susulan**: daftar (filter status), detail + alasan + foto, **setujui/tolak**
-  (keputusan tidak otomatis menulis catatan absensi).
+- **Susulan**: fitur UI/router nonaktif sesuai instruksi DEC-P31.
 - **Log audit**: daftar aktivitas (tanpa PIN/token mentah).
 
 ### 3.5 Laporan & Ekspor (admin)
 - Filter: periode (wajib, maks. 92 hari), pegawai, jenis, mode, sumber, status.
-- **Rekapitulasi fakta terhitung** + tabel harian + rincian berpaginasi.
+- **Rekapitulasi fakta terhitung** + tabel harian + rincian berpaginasi;
+  detail dan CSV menampilkan kondisi serta pasangan waktu masuk/pulang,
+  status, uraian dan output pekerjaan. Waktu yang tidak tercatat tetap kosong.
+  Rekap memisahkan pulang tanpa catatan masuk.
 - **Ekspor CSV** (BOM UTF-8, quote RFC 4180, guard formula-injection,
   maks. 5000 baris) — **tanpa** PIN/token/referensi foto.
-- **Tanpa indikator kebijakan** (terlambat/persentase kehadiran) — aturannya
-  belum ditetapkan (DEC-P07/DEC-P28).
+- Status `TERLAMBAT` dicatat per baris masuk sesuai DEC-P31; rekap tidak
+  menghitung persentase kehadiran atau indikator kebijakan lain.
 
 ### 3.6 Tampilan / PWA
 - Antarmuka **mobile app shell**: app bar + **bilah navigasi bawah**
@@ -124,13 +125,11 @@ Contoh: `ABSENSI_KPU/2026/10_Oktober/15/Budi_Santoso_PEG-00123/`.
 | `logout` | sesi | Keluar (cabut sesi) |
 | `session.check` | sesi | Periksa sesi |
 | `attendance.submit` | pegawai | Absensi reguler |
-| `susulan.submit` | pegawai | Pengajuan susulan |
 | `admin.account.create` | admin | Buat akun + PIN |
 | `admin.account.setActive` | admin | Aktif/nonaktif akun |
 | `admin.account.resetPin` | admin | Reset PIN |
 | `admin.pegawai.list/detail/create/update/setActive` | admin | Kelola pegawai |
 | `admin.absensi.list/detail/photo` | admin | Absensi + foto |
-| `admin.susulan.list/detail/photo/decide` | admin | Susulan + keputusan |
 | `admin.log.list` | admin | Log audit |
 | `report.absensi.list` / `report.rekap` / `report.absensi.exportCsv` | admin | Laporan & ekspor |
 
@@ -153,7 +152,7 @@ Contoh: `ABSENSI_KPU/2026/10_Oktober/15/Budi_Santoso_PEG-00123/`.
 
 - **BELUM SIAP RILIS**: tersisa **uji integrasi/browser nyata** (kamera, GPS,
   PWA/service worker, login & absensi akun nyata).
-- Uji otomatis Node (stub): foundation 71, auth 56, attendance 157,
-  admin 175, report 162, susulan 67 — semua lulus.
+- Uji otomatis Node (stub): foundation 74, auth 56, attendance 200,
+  admin 166, report 178, susulan 67 — semua lulus.
 - Ikon masih **placeholder** (bukan logo resmi KPU).
 - Benchmark PBKDF2 di runtime nyata **belum** dijalankan (nilai iterasi sementara).

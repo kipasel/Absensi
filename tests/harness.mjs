@@ -39,6 +39,7 @@ function unsigned(arr) {
 
 function makeSheet(name) {
   const data = [];
+  let conditionalRules = [];
   return {
     name,
     getDataRange() {
@@ -47,6 +48,9 @@ function makeSheet(name) {
     getLastRow() {
       return data.length;
     },
+    getMaxRows() { return 1000; },
+    getConditionalFormatRules() { return conditionalRules.slice(); },
+    setConditionalFormatRules(rules) { conditionalRules = rules.slice(); },
     appendRow(row) {
       data.push(row.slice());
     },
@@ -55,6 +59,7 @@ function makeSheet(name) {
     },
     getRange(rowStart, colStart, numRows, numCols) {
       return {
+        getColumn: () => colStart,
         setValues(values) {
           for (let i = 0; i < numRows; i++) {
             const idx = rowStart - 1 + i;
@@ -190,7 +195,30 @@ export function createEnv(options = {}) {
         deleteProperty: (k) => props.delete(k)
       })
     },
-    SpreadsheetApp: { openById: () => spreadsheet },
+    SpreadsheetApp: {
+      BooleanCriteria: { TEXT_EQUAL_TO: 'TEXT_EQUAL_TO' },
+      newConditionalFormatRule() {
+        const rule = { value: '', background: '', fontColor: '', ranges: [] };
+        const builder = {
+          whenTextEqualTo(value) { rule.value = value; return builder; },
+          setBackground(value) { rule.background = value; return builder; },
+          setFontColor(value) { rule.fontColor = value; return builder; },
+          setRanges(value) { rule.ranges = value; return builder; },
+          build() {
+            return {
+              getBooleanCondition: () => ({
+                getCriteriaType: () => 'TEXT_EQUAL_TO',
+                getCriteriaValues: () => [rule.value]
+              }),
+              getRanges: () => rule.ranges,
+              _style: rule
+            };
+          }
+        };
+        return builder;
+      },
+      openById: () => spreadsheet
+    },
     LockService: {
       getScriptLock: () => ({ waitLock() {}, releaseLock() {} })
     },
