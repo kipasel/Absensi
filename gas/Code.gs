@@ -94,6 +94,8 @@ function route_(action, payload, method) {
       return handleResetPin_(payload, method);
     case 'attendance.submit':
       return handleAttendanceSubmit_(payload, method);
+    case 'attendance.mine':
+      return handleMyAttendance_(payload, method);
     case 'susulan.submit':
       throw AppError_('NOT_AVAILABLE', 'Fitur absensi susulan telah dinonaktifkan.', true);
     case 'admin.pegawai.list':

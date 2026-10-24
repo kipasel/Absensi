@@ -38,6 +38,7 @@ Token sesi HANYA dikirim di body (bukan query string).
 | `admin.account.setActive` | POST | Ya (admin) | Aktif/nonaktif akun; nonaktif mencabut semua sesi. |
 | `admin.account.resetPin` | POST | Ya (admin) | Reset PIN 6 digit dan membuka lockout akun. |
 | `attendance.submit` | POST | Ya | Absensi reguler (foto JPEG + GPS masuk WFO). |
+| `attendance.mine` | POST | Ya (pegawai) | Riwayat pribadi per bulan dan status absen masuk/pulang hari ini; identitas ditentukan dari sesi. |
 | `susulan.submit` | POST | Ya | **NOT_AVAILABLE**; fitur susulan dinonaktifkan pada route aktif (DEC-P31). |
 | `admin.pegawai.list` | POST | Ya (admin) | Daftar pegawai (filter q/status/limit). |
 | `admin.pegawai.detail` | POST | Ya (admin) | Detail pegawai + info akun (tanpa hash PIN). |

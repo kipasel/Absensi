@@ -106,6 +106,15 @@
           </div>
         </section>
 
+        <section id="home-my-attendance" class="my-attendance-today" aria-labelledby="my-attendance-today-title" hidden>
+          <div>
+            <p class="section-heading__eyebrow">Status pribadi</p>
+            <h3 id="my-attendance-today-title">Absensi masuk hari ini</h3>
+            <p id="my-attendance-today-status" role="status" aria-live="polite">Memuat status…</p>
+          </div>
+          <strong id="my-attendance-today-time">—</strong>
+        </section>
+
         <section class="notice" role="status" aria-live="polite">
           <h3 class="notice__title">Informasi</h3>
           <p class="notice__text">
@@ -152,6 +161,23 @@
             <p class="card__hint">Versi layanan yang sedang digunakan.</p>
           </article>
         </section>
+      </section>
+
+      <section id="history-view" class="view panel" aria-labelledby="history-title" hidden>
+        <div class="panel__heading">
+          <div><p class="section-heading__eyebrow">Catatan pribadi</p>
+            <h2 class="panel__title" id="history-title">Riwayat absensi</h2></div>
+          <label class="form-field history-month">Bulan
+            <input id="my-attendance-month" type="month" />
+          </label>
+        </div>
+        <p id="my-attendance-message" class="form-message" role="status" aria-live="polite"></p>
+        <div class="history-summary" aria-label="Ringkasan bulanan">
+          <article><span>Total catatan</span><strong id="my-attendance-total">—</strong></article>
+          <article><span>Absen masuk</span><strong id="my-attendance-masuk">—</strong></article>
+          <article><span>Absen pulang</span><strong id="my-attendance-pulang">—</strong></article>
+        </div>
+        <div id="my-attendance-list" class="history-list" aria-live="polite"></div>
       </section>
 
       <section id="attendance-view" class="view panel" aria-labelledby="att-title" hidden>
@@ -506,6 +532,11 @@
           </svg>
           <span>Absensi</span>
         </button>
+        <button class="app-nav__item" type="button" data-nav="history" data-role="pegawai" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h3"/>
+          </svg><span>Riwayat</span>
+        </button>
         <button class="app-nav__item" type="button" data-nav="admin" data-role="admin" hidden>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -540,6 +571,7 @@
   <script src="./assets/js/auth.js"></script>
   <script src="./assets/js/admin.js"></script>
   <script src="./assets/js/report.js"></script>
+  <script src="./assets/js/my-attendance.js"></script>
   <script src="./assets/js/nav.js"></script>
 </body>
 </html>

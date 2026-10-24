@@ -1,5 +1,21 @@
 # PROGRESS
 
+## PHASE 7 — Riwayat pribadi pegawai (2026-10-24)
+
+- `attendance.mine` ditambahkan untuk pegawai terautentikasi; identitas berasal
+  dari sesi backend, bukan parameter browser. Mengembalikan catatan bulanan
+  berupa tanggal, waktu server, jenis, mode, dan status serta status absen hari
+  ini menurut tanggal Asia/Jakarta.
+- Ditambahkan status hari ini di Beranda dan tab Riwayat untuk pegawai dengan
+  pemilih bulan, jumlah catatan masuk/pulang, serta daftar catatan. Data dirender
+  sebagai teks; respons API tidak di-cache service worker.
+- Status: implementasi lokal. Deployment Apps Script belum dilakukan; GitHub
+  Pages hanya memperbarui frontend dan tidak menerbitkan `gas/*.gs`.
+- Pengujian lokal: foundation **78/0**, auth **57/0**, attendance **200/0**,
+  admin **168/0**, report **178/0**, susulan **67/0**; `git diff --check` bersih.
+- Probe aman tanpa token ke Web App saat ini menghasilkan `UNKNOWN_ACTION` untuk
+  `attendance.mine`; endpoint baru belum aktif di deployment Apps Script.
+
 ## Ringkasan Phase
 | Phase | Nama | Status |
 |-------|------|--------|

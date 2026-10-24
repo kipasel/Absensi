@@ -353,3 +353,14 @@ Sumber: jawaban pengguna atas pertanyaan D0–D8 (lihat `docs/PHASE2_AUDIT.md`).
   di kanan pada sheet lama dan baris historis tidak diubah.
 - Form pengajuan susulan tetap nonaktif dalam antarmuka dan router aktif.
 - Sumber: MASTER CHANGE PROMPT pengguna "IZINKAN ABSENSI PULANG TANPA ABSENSI MASUK".
+
+### DEC-P32 — Riwayat absensi pribadi pegawai
+- Tanggal: 2026-10-24; Status: DISETUJUI (permintaan pengguna).
+- Pegawai yang sudah masuk dapat melihat catatan absensinya sendiri, difilter
+  per bulan, dengan tanggal, waktu server, jenis, mode kerja, dan status yang
+  tersimpan. Ringkasan hanya jumlah catatan masuk/pulang; tidak menghitung
+  persentase atau kesimpulan kehadiran.
+- Beranda menampilkan apakah catatan absen masuk tersedia untuk tanggal server
+  hari ini beserta waktu tersimpan. Server menentukan tanggal Asia/Jakarta dan
+  identitas dari sesi tervalidasi. Klien tidak dapat memilih `id_pegawai`.
+- Sumber: permintaan pengguna 2026-10-24.

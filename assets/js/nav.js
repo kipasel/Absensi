@@ -38,7 +38,9 @@
   }
 
   function canShow(tab) {
-    return tab !== 'admin' || isAdmin();
+    if (tab === 'admin') return isAdmin();
+    if (tab === 'history') return Boolean(currentUser && currentUser.peran === 'pegawai');
+    return true;
   }
 
   function hideAllViews() {
@@ -61,7 +63,8 @@
     var items = nav.querySelectorAll('[data-nav]');
     for (var i = 0; i < items.length; i++) {
       var role = items[i].getAttribute('data-role');
-      var allowed = !role || (role === 'admin' && isAdmin());
+      var allowed = !role || (role === 'admin' && isAdmin()) ||
+        (role === 'pegawai' && currentUser && currentUser.peran === 'pegawai');
       items[i].hidden = !loggedIn || !allowed;
     }
   }
@@ -96,6 +99,11 @@
 
   function setUser(user) {
     currentUser = user || null;
+
+    var personalStatus = el('home-my-attendance');
+    if (personalStatus) {
+      personalStatus.hidden = !(currentUser && currentUser.peran === 'pegawai');
+    }
 
     var chip = el('nav-user');
     var logout = el('nav-logout');

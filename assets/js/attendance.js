@@ -372,6 +372,7 @@
     show(el('att-result'));
     hide(el('att-step-summary'));
     setStatus('', '');
+    document.dispatchEvent(new CustomEvent('attendance:recorded'));
   }
 
   function formatServerTime(iso) {
