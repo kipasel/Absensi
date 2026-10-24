@@ -113,7 +113,10 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 - Probe health: `ok:true`, `backendConfigured:true`, `officeLocationConfigured:true`.
 - Probe login kosong: `UNKNOWN_ACTION`; deployment baru tampaknya belum
   menyediakan aksi frontend ini atau kontraknya berbeda.
-- Foundation lokal: 74/0. Belum dideploy ke Pages dan belum di-commit.
+- Suite Node pada tree gabungan lulus: foundation 74, auth 57, attendance 200,
+  admin 168, report 178, susulan 67 (semua 0 gagal).
+- Commit `82dd095` masuk GitHub; merge `9f47efc` diterbitkan dari `master`.
+  Pages run `40096085564` berhasil; URL live memuat versi `0.6.9` dan API baru.
 - Pengguna memberi URL Web App baru (DEC-P21 diperbarui):
   `https://script.google.com/macros/s/AKfycbwSt9-bh1pwbVK7lOupLWfQi4Np3RQT0LqRLUPvXN7icLuN27PbnKH21A2LCSt3Lj9M/exec`.
 - URL disetel di `assets/js/config.js`; versi frontend/cache lokal menjadi `0.6.8`.

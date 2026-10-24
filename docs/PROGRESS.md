@@ -613,7 +613,15 @@ Pembaruan terbaru setelah URL Web App baru diberikan:
   baru tampaknya belum menyediakan aksi frontend ini atau kontraknya berbeda.
 - `node tests/check-foundation.mjs` → 74 lulus, 0 gagal; `git diff --check`
   bersih (hanya peringatan normal konversi LF/CRLF dari Git untuk Windows).
-- Belum dideploy ke GitHub Pages dan belum di-commit.
+- Semua suite Node lulus pada tree gabungan: foundation 74, auth 57,
+  attendance 200, admin 168, report 178, susulan 67; 0 gagal.
+- Commit `82dd095` didorong ke GitHub; perubahan digabung dengan `master`
+  (sumber Pages) pada `9f47efc`. Build/deployment Pages run `40096085564`
+  berhasil pada 2026-10-24.
+- Verifikasi file live di `https://kipasel.github.io/Absensi/` menunjukkan
+  versi `0.6.9`, cache `app-v0.6.9`, dan URL API terbaru.
+- Login runtime tetap belum terverifikasi; probe login kosong menghasilkan
+  `UNKNOWN_ACTION`.
 
 Pengguna memberikan URL Web App baru (DEC-P21 diperbarui):
 `https://script.google.com/macros/s/AKfycbzPrzom2yQUH2G0STiVb1o0P5axU03yadiUnwmmyUIy-tjR3TAr4Q_0irNRcvbr271c/exec`.
