@@ -3,7 +3,7 @@
  * Jalankan: node tests/auth.test.mjs
  *
  * Mencakup: vektor PBKDF2-HMAC-SHA256 RFC 7914 §11, primitif PIN/token/lockout,
- * serta alur AuthService (login, sesi, logout, admin, reset PIN ditolak).
+ * serta alur AuthService (login, sesi, logout, admin, dan reset PIN).
  */
 import { createEnv, nodeHmac, seedAccount } from './harness.mjs';
 
@@ -502,6 +502,15 @@ check('doPost health mengembalikan JSON ok', () => {
   const text = out.getContent();
   const parsed = JSON.parse(text);
   if (!parsed.ok) throw new Error('bukan ok: ' + text);
+  return true;
+});
+check('doPost login tanpa kredensial memberi AUTH_FAILED, bukan INTERNAL_ERROR', () => {
+  const { sandbox } = createEnv();
+  const out = sandbox.doPost({
+    postData: { contents: JSON.stringify({ action: 'login', data: { nip: '', pin: '' } }) }
+  });
+  const parsed = JSON.parse(out.getContent());
+  if (parsed.error !== 'AUTH_FAILED') throw new Error('kode: ' + parsed.error);
   return true;
 });
 check('error internal disamarkan (tidak bocorkan detail)', () => {

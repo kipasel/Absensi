@@ -603,6 +603,18 @@ Pengujian lokal (Node + stub):
 
 ## Pasca-PHASE 6 — Pembaruan URL Web App (2026-10-24)
 
+Pembaruan terbaru setelah URL Web App baru diberikan:
+`https://script.google.com/macros/s/AKfycbykCQVMRUNLR8SQAdHDX-J0HCPyKeb-WOkZa9fiLWDoxMtKh7szvQRb8o-dEwFHF4ez/exec`.
+- `assets/js/config.js` diarahkan ke URL tersebut; versi frontend dan cache
+  service worker dinaikkan menjadi `0.6.9`.
+- Probe `POST action=health` → `ok:true`, `backendConfigured:true`,
+  `officeLocationConfigured:true`.
+- Probe `POST action=login` dengan input kosong → `UNKNOWN_ACTION`; deployment
+  baru tampaknya belum menyediakan aksi frontend ini atau kontraknya berbeda.
+- `node tests/check-foundation.mjs` → 74 lulus, 0 gagal; `git diff --check`
+  bersih (hanya peringatan normal konversi LF/CRLF dari Git untuk Windows).
+- Belum dideploy ke GitHub Pages dan belum di-commit.
+
 Pengguna memberikan URL Web App baru (DEC-P21 diperbarui):
 `https://script.google.com/macros/s/AKfycbzPrzom2yQUH2G0STiVb1o0P5axU03yadiUnwmmyUIy-tjR3TAr4Q_0irNRcvbr271c/exec`.
 - `assets/js/config.js` — `API_BASE_URL` diperbarui.
@@ -610,4 +622,29 @@ Pengguna memberikan URL Web App baru (DEC-P21 diperbarui):
 - URL berikutnya yang diberikan pengguna menggantikan URL di atas:
   `https://script.google.com/macros/s/AKfycbwSt9-bh1pwbVK7lOupLWfQi4Np3RQT0LqRLUPvXN7icLuN27PbnKH21A2LCSt3Lj9M/exec`.
 - `assets/js/config.js` dan cache service worker diperbarui ke versi `0.6.8`.
-- Status endpoint dan deployment frontend belum diverifikasi.
+- Health endpoint baru merespons `ok:true`, `backendConfigured:true`, dan
+  `officeLocationConfigured:true`; tangkapan layar pengguna mengonfirmasi frontend
+  live menampilkan versi `0.6.8`.
+- Probe POST login kosong ke API baru mengembalikan `INTERNAL_ERROR`, berbeda dari
+  hasil yang seharusnya diberikan kode lokal (`AUTH_FAILED`). Akar penyebab runtime
+  belum diketahui.
+- Eksekusi `seedAdmin` pada Apps Script ditolak karena admin aktif sudah ada;
+  ini mencegah duplikasi dan bukan bukti kegagalan login.
+
+## Audit & perbaikan backend lokal (2026-10-24)
+
+- `gas/Repo.gs` — sheet lama yang benar-benar kosong kini mendapat header mulai
+  kolom pertama; sheet tanpa header tetapi berisi baris data ditolak dengan
+  `SCHEMA_INVALID` agar data tidak tertimpa atau salah dipetakan.
+- `gas/Drive.gs` — menghapus pemanggilan `setSharing(ANYONE_WITH_LINK, NONE)` yang
+  tidak valid menurut referensi Apps Script dan tidak dapat menjamin privasi.
+  Foto mengikuti ACL folder induk yang wajib privat; konfigurasi folder produksi
+  tetap harus diperiksa di Drive.
+- `gas/AdminService.gs` dan `gas/Attendance.gs` — komentar diselaraskan dengan
+  fitur aktif dan aturan waktu DEC-P31.
+- Regresi ditambahkan untuk migrasi sheet kosong, proteksi sheet berisi data,
+  ACL foto yang tidak dimutasi, dan respons `doPost` login kosong.
+- Pengujian lokal sesudah perbaikan (Node + stub): foundation **74/0**, auth
+  **57/0**, attendance **200/0**, admin **168/0**, report **178/0**, susulan **67/0**.
+- Belum dideploy ke Apps Script. Error login runtime tetap memerlukan detail
+  eksekusi Web App; perbaikan lokal tidak mengonfirmasi deployment.

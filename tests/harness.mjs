@@ -112,7 +112,7 @@ function makeDriveFolder(name, registry, parentPath) {
         _name: blob.getName ? blob.getName() : 'file',
         _bytes: blob.getBytes ? blob.getBytes() : [],
         _trashed: false,
-        _shared: false,
+        _sharingCalls: [],
         _path: path + '/' + (blob.getName ? blob.getName() : 'file'),
         getId: () => fileId,
         getName() { return this._name; },
@@ -125,7 +125,7 @@ function makeDriveFolder(name, registry, parentPath) {
             getContentType: () => (blob.getContentType ? blob.getContentType() : '')
           };
         },
-        setSharing() { this._shared = true; return this; },
+        setSharing(...args) { this._sharingCalls.push(args); return this; },
         setTrashed(v) { this._trashed = Boolean(v); return this; }
       };
       files.push(file);

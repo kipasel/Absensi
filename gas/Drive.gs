@@ -7,7 +7,8 @@
  *   nama file tetap Absen_Masuk.jpg / Absen_Pulang.jpg.
  * - DRIVE_FOLDER_ID adalah folder ROOT wadah (dibuat operator); sub-folder
  *   ABSENSI_KPU dibuat otomatis oleh backend.
- * - File dibuat privat (akun pengelola); tanpa "anyone with link".
+ * - File tidak mengubah ACL saat dibuat; folder induk wajib privat dan akses
+ *   foto pegawai hanya melalui endpoint admin ber-token.
  * - Foto susulan TIDAK memakai struktur ini (bukan catatan absensi reguler,
  *   DEC-P24) — lihat saveSusulanPhoto_.
  *
@@ -193,15 +194,9 @@ function saveAttendancePhoto_(params) {
   var blob = Utilities.newBlob(params.bytes, PHOTO_MIME_ALLOWED, fileName);
   var file = folder.createFile(blob);
 
-  // Pertahanan defensif: pastikan file tidak dibagikan publik.
-  try {
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.NONE);
-  } catch (err) {
-    // Jika API sharing tidak tersedia, file tetap privat secara default.
-    if (typeof Logger !== 'undefined') {
-      Logger.log('saveAttendancePhoto_: setSharing dilewati: ' + (err && err.message));
-    }
-  }
+  // Jangan mengubah ACL file. File mewarisi akses dari folder induk yang
+  // wajib privat (lihat docs/DEPLOYMENT.md); Permission.NONE bukan permission
+  // yang dapat dipakai bersama ANYONE_WITH_LINK pada DriveApp.
 
   var path = DRIVE_ROOT_FOLDER_NAME + '/' + yyyy + '/' + monthFolderName_(mm) + '/' +
     dd + '/' + pegawaiFolderName_(params.idPegawaiNama, params.idPegawai) + '/' + fileName;
@@ -236,13 +231,7 @@ function saveSusulanPhoto_(params) {
   var blob = Utilities.newBlob(params.bytes, PHOTO_MIME_ALLOWED, fileName);
   var file = folder.createFile(blob);
 
-  try {
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.NONE);
-  } catch (err) {
-    if (typeof Logger !== 'undefined') {
-      Logger.log('saveSusulanPhoto_: setSharing dilewati: ' + (err && err.message));
-    }
-  }
+  // Jangan mengubah ACL file; folder induk harus privat seperti foto reguler.
 
   var path = DRIVE_ROOT_FOLDER_NAME + '/' + yyyy + '/' + mm + '/Foto_Susulan/' + fileName;
   return {

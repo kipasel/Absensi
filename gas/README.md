@@ -3,7 +3,7 @@
 Backend Sistem Absensi KPU Kabupaten Aceh Selatan. Tersedia: autentikasi
 (login NIP/NIPK + PIN, sesi, logout, manajemen akun admin), mesin absensi
 reguler (PHASE 3), **panel admin** (PHASE 4: pengelolaan pegawai,
-daftar/detail absensi, putuskan susulan, log audit), dan **laporan & ekspor
+daftar/detail absensi, foto ber-token, log audit), dan **laporan & ekspor
 CSV** (PHASE 5: filter periode, rekapitulasi, ekspor CSV — admin saja).
 
 ## Berkas
@@ -34,11 +34,11 @@ Token sesi HANYA dikirim di body (bukan query string).
 | `login` | POST | Tidak | `data:{nip,pin,agen}` → `{token, peran, nama, expiresAt}`. |
 | `logout` | POST | Ya | Mencabut sesi (`dicabut_pada`). |
 | `session.check` | POST | Ya | Memvalidasi sesi aktif. |
-| `admin.account.create` | POST | Ya (admin) | Membuat akun untuk pegawai terdaftar (TANPA menerbitkan PIN). |
+| `admin.account.create` | POST | Ya (admin) | Membuat akun untuk pegawai terdaftar dengan PIN 6 digit yang ditentukan admin. |
 | `admin.account.setActive` | POST | Ya (admin) | Aktif/nonaktif akun; nonaktif mencabut semua sesi. |
-| `admin.account.resetPin` | POST | — | **NOT_AVAILABLE** (menunggu keputusan D5). |
+| `admin.account.resetPin` | POST | Ya (admin) | Reset PIN 6 digit dan membuka lockout akun. |
 | `attendance.submit` | POST | Ya | Absensi reguler (foto JPEG + GPS masuk WFO). |
-| `susulan.submit` | POST | Ya | Pengajuan susulan pegawai (tanggal ≤3 hari lampau, alasan + foto JPEG). |
+| `susulan.submit` | POST | Ya | **NOT_AVAILABLE**; fitur susulan dinonaktifkan pada route aktif (DEC-P31). |
 | `admin.pegawai.list` | POST | Ya (admin) | Daftar pegawai (filter q/status/limit). |
 | `admin.pegawai.detail` | POST | Ya (admin) | Detail pegawai + info akun (tanpa hash PIN). |
 | `admin.pegawai.create` | POST | Ya (admin) | Tambah pegawai (kolom DATA_DICTIONARY §1). |
@@ -47,10 +47,7 @@ Token sesi HANYA dikirim di body (bukan query string).
 | `admin.absensi.list` | POST | Ya (admin) | Daftar absensi (filter tanggal/jenis/pegawai); tanpa referensi foto. |
 | `admin.absensi.detail` | POST | Ya (admin) | Detail absensi + metadata bukti (ada/mime/ukuran/path). |
 | `admin.absensi.photo` | POST | Ya (admin) | Isi foto absensi (base64+mime) via referensi `id_bukti` (DEC-P25). |
-| `admin.susulan.list` | POST | Ya (admin) | Daftar pengajuan susulan (filter status). |
-| `admin.susulan.detail` | POST | Ya (admin) | Detail pengajuan + alasan + status keputusan. |
-| `admin.susulan.photo` | POST | Ya (admin) | Isi foto bukti susulan (base64+mime) via `id_pengajuan` (DEC-P25). |
-| `admin.susulan.decide` | POST | Ya (admin) | `keputusan:'terima'|'tolak'` + `catatan_keputusan`; hanya dari `menunggu`. |
+| `admin.susulan.*` | POST | Ya (admin) | **NOT_AVAILABLE**; fitur susulan dinonaktifkan pada route aktif (DEC-P31). |
 | `admin.log.list` | POST | Ya (admin) | Log audit (filter aksi/limit). |
 | `report.absensi.list` | POST | Ya (admin) | Daftar absensi untuk laporan (rentang wajib, filter; join nama). |
 | `report.rekap` | POST | Ya (admin) | Rekapitulasi fakta terhitung per filter (tanpa indikator kebijakan). |

@@ -840,12 +840,12 @@ check('Sheets gagal setelah Drive → ATTENDANCE_STORAGE_PARTIAL; bukti dikompen
   if (countAbsensi(env) !== 1) throw new Error('retry menghasilkan ' + countAbsensi(env) + ' baris');
   return true;
 });
-check('foto Drive privat: setSharing defensif dipanggil (bukan publik)', () => {
+check('foto Drive tidak mengubah ACL file', () => {
   const { env, token } = envAttendance();
   atTime(env, T.midMasuk);
   submit(env, token);
   const file = env.driveRegistry.files[0];
-  if (!file._shared) throw new Error('setSharing defensif tidak dipanggil');
+  if (file._sharingCalls.length) throw new Error('ACL file diubah: ' + JSON.stringify(file._sharingCalls));
   return true;
 });
 check('struktur folder ABSENSI_KPU/YYYY/MM_NamaBulan/DD/Nama_ID dibuat', () => {
@@ -991,12 +991,12 @@ check('KEGAGALAN SHEETS: baris tak tertulis, file orphan dicatat (bukan sukses)'
     throw new Error('detail orphan tidak dicatat: ' + partial.detail);
   }
 });
-check('foto privat: setSharing defensif dipanggil pada struktur baru', () => {
+check('foto pada struktur baru tidak mengubah ACL Drive', () => {
   const { env, token } = envAttendance();
   atTime(env, T.midMasuk);
   submit(env, token);
   const file = env.driveRegistry.files[0];
-  if (!file._shared) throw new Error('setSharing tidak dipanggil');
+  if (file._sharingCalls.length) throw new Error('ACL file diubah: ' + JSON.stringify(file._sharingCalls));
   const photo = env.sandbox.readAttendancePhoto_(String(
     env.sandbox.readObjects_('BuktiAbsensi')[0].drive_file_id));
   eq('byte utuh', photo.ukuran, env.driveRegistry.files[0]._bytes.length);

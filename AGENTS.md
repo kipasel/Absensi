@@ -34,7 +34,8 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 ## Status Saat Ini
 - Perubahan DEC-P31 (2026-10-24) mengizinkan absen pulang tanpa catatan masuk,
   menambahkan status `TANPA_ABSEN_MASUK`, dan memisahkan status terlambat masuk.
-  Perubahan lokal versi aset `0.6.8` belum dideploy.
+  Frontend `0.6.8` terlihat live menurut tangkapan layar pengguna. Perbaikan audit
+  backend terbaru masih lokal.
 - PHASE 0–6 dikerjakan. PHASE 3 (mesin absensi), PHASE 4 (panel admin),
   PHASE 5 (laporan & ekspor) **selesai (lokal)**. PHASE 6 (QA rilis) **selesai
   (lokal)**: audit kode & keamanan, 3 perbaikan frontend, verifikasi runtime.
@@ -59,7 +60,7 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 - Perintah uji: `node tests/check-foundation.mjs`, `node tests/auth.test.mjs`,
   `node tests/attendance.test.mjs`, `node tests/admin.test.mjs`,
   `node tests/report.test.mjs`, `node tests/susulan.test.mjs`.
-  Hasil terakhir (2026-10-24): 74 / 56 / 200 / 166 / 178 / 67 — semua **0 gagal**.
+  Hasil terakhir (2026-10-24): 74 / 57 / 200 / 168 / 178 / 67 — semua **0 gagal**.
 - Jalankan lokal: `py -m http.server 8765` lalu buka `http://127.0.0.1:8765/`.
 
 ## Blocker Aktif (jangan diimplementasikan sebelum dijawab)
@@ -106,10 +107,20 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   uji browser nyata belum dijalankan.
 
 ## Catatan Runtime Terbaru (2026-10-24)
+- URL Web App terbaru dari pengguna:
+  `https://script.google.com/macros/s/AKfycbykCQVMRUNLR8SQAdHDX-J0HCPyKeb-WOkZa9fiLWDoxMtKh7szvQRb8o-dEwFHF4ez/exec`.
+- Disetel di `assets/js/config.js`; versi frontend/cache lokal menjadi `0.6.9`.
+- Probe health: `ok:true`, `backendConfigured:true`, `officeLocationConfigured:true`.
+- Probe login kosong: `UNKNOWN_ACTION`; deployment baru tampaknya belum
+  menyediakan aksi frontend ini atau kontraknya berbeda.
+- Foundation lokal: 74/0. Belum dideploy ke Pages dan belum di-commit.
 - Pengguna memberi URL Web App baru (DEC-P21 diperbarui):
   `https://script.google.com/macros/s/AKfycbwSt9-bh1pwbVK7lOupLWfQi4Np3RQT0LqRLUPvXN7icLuN27PbnKH21A2LCSt3Lj9M/exec`.
 - URL disetel di `assets/js/config.js`; versi frontend/cache lokal menjadi `0.6.8`.
-- Jangan menyatakan endpoint sudah berfungsi atau frontend telah terbit sebelum verifikasi nyata.
+- Health API merespons `ok:true`; probe POST login kosong menghasilkan `INTERNAL_ERROR`.
+- Eksekusi `seedAdmin` gagal karena admin aktif sudah ada (duplikasi dicegah), bukan karena belum ada akun admin.
+- Tangkapan layar pengguna memperlihatkan frontend live `0.6.8`; backend login masih belum terverifikasi beres.
+- Jangan menyatakan backend login berfungsi sebelum uji login nyata berhasil.
 
 ## Format Laporan Phase
 Lihat bagian 14 master prompt: PHASE, STATUS, PERUBAHAN, VALIDASI, KEAMANAN,

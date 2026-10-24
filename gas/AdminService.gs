@@ -7,18 +7,14 @@
  * Ruang lingkup (sesuai prioritas PHASE 4):
  * - Pengelolaan pegawai: daftar, detail, tambah, edit, aktif/nonaktif —
  *   kolom mengikuti docs/DATA_DICTIONARY.md §1 (disetujui DEC-P15).
- * - Daftar & detail absensi — TANPA URL/ID akses foto (metadata bukti saja;
- *   akses foto menunggu keputusan AMB-20).
- * - Daftar & detail pengajuan absensi susulan; persetujuan/penolakan oleh
- *   admin. Keputusan hanya mengubah status pengajuan + metadata keputusan
- *   + log; TIDAK menulis baris Absensi (keputusan aturan belum ditetapkan).
+ * - Daftar & detail absensi tanpa URL/ID Drive; endpoint foto terpisah
+ *   mengembalikan blob hanya untuk admin terautentikasi (DEC-P25).
+ * - Handler susulan tersimpan untuk kompatibilitas, tetapi route aktif
+ *   dinonaktifkan oleh DEC-P31.
  * - Log audit (LogAktivitas, append-only).
  *
  * Sengaja TIDAK diimplementasikan (menunggu keputusan):
- * - Batas tanggal & bukti wajib susulan (AMB-11/AMB-12).
- * - Akses/pengambilan foto oleh admin (AMB-20) — tidak ada endpoint foto.
- * - Impor CSV/Excel (AMB-14); retensi/penghapusan (AMB-18); notifikasi (AMB-25).
- * - Reset/penerbitan PIN tetap NOT_AVAILABLE (keputusan D5).
+ * - Impor CSV/Excel (AMB-14) dan notifikasi (AMB-25) dikesampingkan.
  * - Konversi persetujuan susulan menjadi baris Absensi (belum ada aturan).
  */
 
