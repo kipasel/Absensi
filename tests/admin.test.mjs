@@ -812,6 +812,29 @@ check('initializeSheets membuat sheet PengajuanSusulan dengan header §8', () =>
   }
   return true;
 });
+check('initializeSheets mengisi header sheet kosong dari kolom pertama', () => {
+  const env = createEnv({ props: { SPREADSHEET_ID: 'TEST_SS_ID' } });
+  env.spreadsheet.insertSheet('Akun').appendRow(['']);
+  env.sandbox.initializeSheets();
+  const headers = env.sandbox.getSheet_('Akun').getDataRange().getValues()[0];
+  if (headers[0] !== 'id_akun' || headers.length !== env.sandbox.SHEET_HEADERS.Akun.length) {
+    throw new Error('header tidak ditulis mulai kolom pertama: ' + JSON.stringify(headers));
+  }
+  return true;
+});
+check('migrasi menolak sheet tanpa header yang sudah berisi data', () => {
+  const env = createEnv({ props: { SPREADSHEET_ID: 'TEST_SS_ID' } });
+  const sh = env.spreadsheet.insertSheet('Akun');
+  sh.appendRow(['']);
+  sh.appendRow(['data lama']);
+  let code = null;
+  try { env.sandbox.ensureSheetHeaders_('Akun', sh); }
+  catch (err) { code = err && err.code; }
+  if (code !== 'SCHEMA_INVALID') throw new Error('kode: ' + code);
+  const rows = sh.getDataRange().getValues();
+  if (rows[1][0] !== 'data lama') throw new Error('baris lama berubah');
+  return true;
+});
 
 console.log('\n== Ringkasan: ' + passed + ' lulus, ' + failed + ' gagal ==');
 process.exit(failed === 0 ? 0 : 1);

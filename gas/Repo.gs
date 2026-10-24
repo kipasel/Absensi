@@ -62,11 +62,18 @@ function ensureAllSheets_() {
 
 function ensureSheetHeaders_(name, sh) {
   var data = sh.getDataRange().getValues();
-  if (!data.length || !data[0].length) {
-    sh.appendRow(SHEET_HEADERS[name]);
-    return SHEET_HEADERS[name].slice();
+  var firstRow = data.length ? data[0] : [];
+  var hasHeader = firstRow.some(function (h) { return String(h).trim() !== ''; });
+  if (!hasHeader) {
+    if (data.length > 1) {
+      throw AppError_('SCHEMA_INVALID',
+        'Header sheet "' + name + '" kosong tetapi ada data. Data tidak diubah; periksa sheet secara manual.', true);
+    }
+    var initialHeaders = SHEET_HEADERS[name].slice();
+    sh.getRange(1, 1, 1, initialHeaders.length).setValues([initialHeaders]);
+    return initialHeaders;
   }
-  var headers = data[0].map(function (h) { return String(h); });
+  var headers = firstRow.map(function (h) { return String(h); });
   var missing = SHEET_HEADERS[name].filter(function (h) { return headers.indexOf(h) === -1; });
   if (missing.length) {
     sh.getRange(1, headers.length + 1, 1, missing.length).setValues([missing]);

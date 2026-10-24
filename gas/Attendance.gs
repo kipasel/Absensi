@@ -8,8 +8,9 @@
  *   lihat implementasi fungsi untuk rentang terbaru.
  * - Identitas pegawai diambil dari SESI TERVERIFIKASI server; id_pegawai,
  *   peran, tanggal, dan timestamp dari klien TIDAK PERNAH dipercaya.
- * - Waktu server Asia/Jakarta (DEC-002/003); jendela masuk 07:00.00–08:29.59,
- *   pulang 16:00.00–23.59.59; berlaku setiap hari (DEC-P18).
+ * - Waktu server Asia/Jakarta (DEC-002/003); masuk mulai 07:00:00 dan diterima
+ *   sampai akhir hari (status tepat waktu sampai 08:30:00, setelahnya terlambat);
+ *   pulang 16:00:00–23:59:59; berlaku setiap hari (DEC-P18/DEC-P31).
  * - Mode kerja: WFO | WFH_WFA, dipilih pegawai, divalidasi enum (DEC-006).
  * - GPS wajib hanya masuk WFO; radius inklusif <= 50 m (DEC-004); koordinat
  *   kantor wajib dikonfigurasi, jika tidak masuk WFO ditolak (AMB-07).

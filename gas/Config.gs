@@ -14,8 +14,8 @@
 var PROPERTY_KEYS = Object.freeze({
   SPREADSHEET_ID: 'SPREADSHEET_ID',       // AMB-23
   DRIVE_FOLDER_ID: 'DRIVE_FOLDER_ID',     // AMB-23
-  OFFICE_LATITUDE: 'OFFICE_LATITUDE',     // AMB-07 (belum ditetapkan)
-  OFFICE_LONGITUDE: 'OFFICE_LONGITUDE',   // AMB-07 (belum ditetapkan)
+  OFFICE_LATITUDE: 'OFFICE_LATITUDE',     // AMB-07; nilai operasional hanya di Script Properties
+  OFFICE_LONGITUDE: 'OFFICE_LONGITUDE',   // AMB-07; nilai operasional hanya di Script Properties
   OFFICE_RADIUS_METERS: 'OFFICE_RADIUS_METERS', // 50 (DEC-004), dapat dikonfigurasi
   PHASE3_PHOTO_MAX_BYTES: 'PHASE3_PHOTO_MAX_BYTES', // 1000000 (DEC-P17), dapat dikonfigurasi
   PIN_KDF_ITERATIONS: 'PIN_KDF_ITERATIONS', // D2 (opsional; benchmark sebelum produksi)

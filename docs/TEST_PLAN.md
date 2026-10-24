@@ -215,7 +215,7 @@ pohon folder stub. Data uji sintetis.
 | DF-08 | Klik ganda & retry idempoten → tanpa file/bukti kedua | LULUS (otomatis) |
 | DF-09 | Kegagalan Drive → tanpa file/baris, `ATTENDANCE_NOT_STORED`, log orphan | LULUS (otomatis) |
 | DF-10 | Kegagalan Sheets → `ATTENDANCE_STORAGE_PARTIAL`, file orphan dicatat | LULUS (otomatis) |
-| DF-11 | Foto privat (`setSharing`), byte utuh lewat endpoint ber-token | LULUS (otomatis) |
+| DF-11 | Tidak ada mutasi ACL foto; byte utuh lewat endpoint ber-token | LULUS (otomatis; ACL Drive nyata perlu verifikasi runtime) |
 | DF-12 | Aturan lama (jam/GPS/sesi) tetap berlaku | LULUS (otomatis) |
 | DF-13 | Struktur folder pada Drive nyata (runtime Apps Script) | BELUM DIJALANKAN |
 

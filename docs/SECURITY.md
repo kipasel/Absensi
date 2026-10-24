@@ -100,8 +100,8 @@ Kontrol di `gas/AdminService.gs` (semua aksi `admin.*`):
   pegawai; log admin diuji tanpa token/PIN mentah.
 - **Foto:** respons absensi/susulan hanya metadata bukti (ada/mime/ukuran/path);
   `drive_file_id`/URL TIDAK dikirim; akses foto lewat endpoint blob ber-token
-  admin (`admin.absensi.photo`, `admin.susulan.photo`; DEC-P25) — tanpa tautan
-  publik, file dibuat privat (`setSharing` defensif).
+  admin (`admin.absensi.photo`; DEC-P25) — tanpa tautan publik. ACL foto mengikuti
+  folder induk yang wajib privat; backend tidak mengubah ACL file.
 - **Keputusan susulan:** hanya admin sesi; status awal wajib `menunggu`
   (keputusan ganda → `CONFLICT`); `waktu_keputusan` dari server; `id_admin`
   = id_akun pemutus; seluruh keputusan tercatat di `LogAktivitas`.
@@ -195,9 +195,9 @@ baru: `SPREADSHEET_ID` (DEC-P08), koordinat kantor (AMB-07), benchmark PBKDF2 (D
 ## Struktur Penyimpanan Foto (DEC-P29) — tinjauan keamanan
 - Struktur: `ABSENSI_KPU/{TAHUN}/{MM_NamaBulan}/{DD}/{NamaPegawai_IDPegawai}/`
   dengan nama file tetap `Absen_Masuk.jpg`/`Absen_Pulang.jpg`.
-- **Privasi:** file tetap dibuat privat; `setSharing(ANYONE_WITH_LINK, NONE)`
-  dipanggil defensif; tidak ada URL foto di respons manapun; admin mengakses
-  lewat endpoint blob ber-token (DEC-P25).
+- **Privasi:** file mengikuti ACL folder induk yang wajib privat; backend tidak
+  mengubah ACL file atau memberi tautan publik. Admin mengakses lewat endpoint
+  blob ber-token (DEC-P25).
 - **Sanitasi nama:** `sanitizePathSegment_` mengganti `\ / : * ? " < > |` &
   karakter kontrol → mencegah injeksi path/karakter aneh dari nama pegawai.
   ID internal disertakan sehingga nama pegawai yang sama tidak tertukar.
