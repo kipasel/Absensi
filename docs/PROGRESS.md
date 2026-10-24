@@ -623,6 +623,22 @@ Pembaruan terbaru setelah URL Web App baru diberikan:
 - Login runtime tetap belum terverifikasi; probe login kosong menghasilkan
   `UNKNOWN_ACTION`.
 
+## PHASE 7 — Penyegaran desain antarmuka (2026-10-24)
+
+Diminta pengguna: desain profesional untuk aplikasi absensi perusahaan, dengan
+gaya visual yang sederhana dan tidak memakai dekorasi generik berlebihan.
+
+- `assets/css/styles.css` — latar kisi/pendar dan gradien dekoratif dihapus;
+  palet KPU dipertahankan sebagai warna aksen. Header marun solid, permukaan
+  netral, sudut dan bayangan lebih sederhana, serta konten desktop lebih lega.
+  Dashboard memakai empat kolom status pada layar lebar dan tetap responsif.
+- `index.html` — teks ringkasan diperpendek dan keterangan koneksi disesuaikan
+  agar tidak menyebut URL belum diisi ketika API sudah terkonfigurasi. ID,
+  kelas, dan hook logika yang dipakai JavaScript tetap dipertahankan.
+- Versi lokal dinaikkan ke `0.7.0`; cache service worker diselaraskan.
+- Belum diterbitkan. Validasi lokal dilakukan sebelum rilis; tidak ada perubahan
+  aturan bisnis atau endpoint.
+
 Pengguna memberikan URL Web App baru (DEC-P21 diperbarui):
 `https://script.google.com/macros/s/AKfycbzPrzom2yQUH2G0STiVb1o0P5axU03yadiUnwmmyUIy-tjR3TAr4Q_0irNRcvbr271c/exec`.
 - `assets/js/config.js` — `API_BASE_URL` diperbarui.

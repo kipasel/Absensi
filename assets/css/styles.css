@@ -6,8 +6,7 @@
      merah  #D82731 / #CA0027   → aksen utama (tombol, status aktif)
      marun  #771414             → permukaan gelap (app bar, hero)
      emas   #F8A73E             → aksen halus (garis/pendar)
-   Netral dijaga lembut untuk kenyamanan mata (latar non-putih, teks #1C2430).
-   Latar bergaya "teknologi": gradien radial + kisi halus, tanpa gambar.
+   Netral, ruang, dan hirarki informasi menjadi fokus; aksen KPU dipakai seperlunya.
    ========================================================================== */
 
 :root {
@@ -24,7 +23,7 @@
   --accent-soft: rgba(248, 167, 62, 0.22);
 
   /* --- Permukaan & netral --- */
-  --bg: #f4f6f8;
+  --bg: #f3f4f6;
   --surface: #ffffff;
   --surface-2: #f7f8fa;
   --surface-3: #eef1f5;
@@ -48,14 +47,14 @@
   --grid-line: rgba(119, 20, 20, 0.045);
 
   /* --- Bentuk & bayangan --- */
-  --radius-sm: 10px;
-  --radius: 16px;
-  --radius-lg: 22px;
-  --shadow-sm: 0 1px 2px rgba(28, 36, 48, 0.05), 0 4px 12px -8px rgba(28, 36, 48, 0.18);
-  --shadow: 0 14px 30px -18px rgba(77, 13, 13, 0.45);
-  --shadow-card: 0 1px 2px rgba(28, 36, 48, 0.04), 0 10px 26px -20px rgba(28, 36, 48, 0.35);
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 2px rgba(28, 36, 48, 0.06);
+  --shadow: 0 8px 24px rgba(28, 36, 48, 0.08);
+  --shadow-card: 0 1px 2px rgba(28, 36, 48, 0.04), 0 4px 14px rgba(28, 36, 48, 0.035);
 
-  --maxw: 720px;
+  --maxw: 1120px;
   --nav-h: 66px;
   --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
@@ -82,14 +81,6 @@ body {
   line-height: 1.5;
   color: var(--text);
   background-color: var(--bg);
-  /* Latar "teknologi": pendar merah/marun/emas + kisi halus (tanpa aset gambar) */
-  background-image:
-    radial-gradient(44rem 26rem at calc(100% - 4rem) -8rem, var(--glow-red), transparent 70%),
-    radial-gradient(36rem 24rem at -8rem 32%, var(--glow-maroon), transparent 70%),
-    radial-gradient(50rem 30rem at 50% calc(100% + 10rem), var(--glow-gold), transparent 70%),
-    repeating-linear-gradient(0deg, var(--grid-line) 0 1px, transparent 1px 34px),
-    repeating-linear-gradient(90deg, var(--grid-line) 0 1px, transparent 1px 34px);
-  background-repeat: no-repeat, no-repeat, no-repeat, repeat, repeat;
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -143,27 +134,14 @@ code {
   z-index: 50;
   color: #fff;
   padding-top: env(safe-area-inset-top);
-  background-color: var(--brand-ink);
-  background-image:
-    radial-gradient(26rem 14rem at 92% -30%, rgba(248, 167, 62, 0.34), transparent 70%),
-    linear-gradient(115deg, var(--brand-deep) 0%, var(--brand-ink) 46%, var(--brand) 135%);
-  box-shadow:
-    0 12px 26px -18px rgba(77, 13, 13, 0.95),
-    inset 0 -1px 0 rgba(248, 167, 62, 0.55);
-}
-
-@supports (backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px)) {
-  .app-bar {
-    background-color: rgba(77, 13, 13, 0.92);
-    -webkit-backdrop-filter: blur(10px) saturate(140%);
-    backdrop-filter: blur(10px) saturate(140%);
-  }
+  background: var(--brand-ink);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
 }
 
 .app-bar__inner {
   max-width: var(--maxw);
   margin: 0 auto;
-  padding: 0.7rem 1rem;
+  padding: 0.85rem 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -253,6 +231,19 @@ code {
   gap: 1rem;
 }
 
+#login-view {
+  width: 100%;
+  max-width: 520px;
+  align-self: center;
+}
+
+#attendance-view,
+#session-view {
+  width: 100%;
+  max-width: 760px;
+  align-self: center;
+}
+
 /* ---------------- Tampilan / view ---------------- */
 
 .view {
@@ -301,15 +292,11 @@ code {
   position: relative;
   color: #fff;
   border-radius: var(--radius-lg);
-  padding: 1.35rem 1.25rem;
+  padding: 1.5rem 1.6rem;
   overflow: hidden;
-  box-shadow: var(--shadow);
-  background-color: var(--brand-ink);
-  background-image:
-    radial-gradient(22rem 14rem at 88% -20%, rgba(248, 167, 62, 0.4), transparent 70%),
-    radial-gradient(20rem 16rem at -10% 120%, rgba(77, 13, 13, 0.75), transparent 70%),
-    linear-gradient(135deg, var(--brand-ink) 0%, var(--brand-strong) 54%, var(--brand) 120%);
-  border: 1px solid rgba(248, 167, 62, 0.28);
+  box-shadow: none;
+  background: var(--brand-ink);
+  border: 1px solid rgba(119, 20, 20, 0.12);
 }
 
 .hero__eyebrow {
@@ -323,8 +310,8 @@ code {
 
 .hero__title {
   margin: 0 0 0.35rem;
-  font-size: 1.35rem;
-  font-weight: 800;
+  font-size: 1.5rem;
+  font-weight: 700;
   line-height: 1.25;
 }
 
@@ -337,23 +324,23 @@ code {
 /* ---------------- Pemberitahuan ---------------- */
 
 .notice {
-  background: var(--warn-bg);
-  border: 1px solid var(--warn-border);
-  border-left: 4px solid var(--accent);
-  border-radius: var(--radius);
-  padding: 0.9rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--brand);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
 }
 
 .notice__title {
   margin: 0 0 0.3rem;
   font-size: 0.9rem;
   font-weight: 700;
-  color: var(--warn-text);
+  color: var(--text);
 }
 
 .notice__text {
   margin: 0;
-  color: var(--warn-text);
+  color: var(--text-muted);
   font-size: 0.86rem;
 }
 
@@ -362,28 +349,20 @@ code {
 .status-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.85rem;
+  gap: 1rem;
 }
 
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.95rem 1.05rem;
+  border-radius: var(--radius-sm);
+  padding: 1.1rem 1.15rem;
   box-shadow: var(--shadow-card);
-  background-image: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  transition: border-color 0.15s ease;
 }
 
 .card:hover {
   border-color: var(--border-strong);
-}
-
-@media (hover: hover) and (min-width: 640px) {
-  .card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
-  }
 }
 
 .card__title {
@@ -438,7 +417,7 @@ code {
   font-size: 0.95rem;
   padding: 0.72rem 1.1rem;
   border: 1px solid var(--border-strong);
-  border-radius: 13px;
+  border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--text);
   cursor: pointer;
@@ -461,15 +440,13 @@ code {
 }
 
 .btn--primary {
-  background-image: linear-gradient(135deg, var(--brand) 0%, var(--brand-strong) 100%);
   background-color: var(--brand);
   border-color: transparent;
   color: #fff;
-  box-shadow: 0 12px 22px -14px rgba(216, 39, 49, 0.95);
+  box-shadow: none;
 }
 
 .btn--primary:hover {
-  background-image: linear-gradient(135deg, var(--brand-strong) 0%, var(--brand-ink) 100%);
   background-color: var(--brand-strong);
   border-color: transparent;
 }
@@ -885,17 +862,10 @@ textarea.form-input {
   right: 0;
   bottom: 0;
   z-index: 60;
-  background: rgba(255, 255, 255, 0.88);
+  background: var(--surface);
   border-top: 1px solid var(--border);
   padding-bottom: env(safe-area-inset-bottom);
-  box-shadow: 0 -10px 26px -22px rgba(28, 36, 48, 0.9);
-}
-
-@supports (backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px)) {
-  .app-nav {
-    -webkit-backdrop-filter: blur(14px) saturate(150%);
-    backdrop-filter: blur(14px) saturate(150%);
-  }
+  box-shadow: 0 -2px 8px rgba(28, 36, 48, 0.04);
 }
 
 .app-nav::before {
@@ -905,8 +875,7 @@ textarea.form-input {
   right: 0;
   top: 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--brand) 0%, var(--brand-ink) 55%, var(--accent) 100%);
-  opacity: 0.9;
+  background: var(--brand);
 }
 
 .app-nav__inner {
@@ -978,9 +947,24 @@ textarea.form-input {
 /* ---------------- Penyesuaian layar ---------------- */
 
 @media (min-width: 640px) {
-  .status-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .status-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .app-main { padding-top: 1.5rem; }
+  .panel { padding: 1.5rem; }
+}
+
+@media (max-width: 520px) {
+  .app-bar__inner { padding-inline: 0.75rem; }
+  .app-bar__mark { width: 32px; height: 32px; }
+  .app-bar__title { font-size: 0.9rem; }
+  .app-bar__actions { gap: 0.25rem; }
+  .chip { padding-inline: 0.45rem; }
+  .app-main { padding: 0.75rem 0.75rem 1rem; }
+  .hero { padding: 1.15rem 1rem; }
+  .panel { padding: 1rem; }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -990,12 +974,12 @@ textarea.form-input {
     --brand-soft: rgba(216, 39, 49, 0.22);
     --brand-text: #ff7079;
 
-    --bg: #10141a;
-    --surface: #171c24;
-    --surface-2: #1e242e;
-    --surface-3: #262d39;
-    --border: #2a313c;
-    --border-strong: #38414f;
+    --bg: #171a1f;
+    --surface: #20242a;
+    --surface-2: #262b32;
+    --surface-3: #303640;
+    --border: #343b45;
+    --border-strong: #46505d;
 
     --text: #e8ecf2;
     --text-muted: #9aa6b6;
@@ -1014,18 +998,11 @@ textarea.form-input {
     --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 28px -22px rgba(0, 0, 0, 0.9);
   }
 
-  .app-nav {
-    background: rgba(23, 28, 36, 0.9);
-    box-shadow: 0 -10px 26px -22px rgba(0, 0, 0, 1);
-  }
+  .app-nav { background: var(--surface); }
 
   .chip--user {
     background: rgba(255, 255, 255, 0.94);
     color: var(--brand-ink);
-  }
-
-  .card {
-    background-image: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
   }
 
   .att-video,

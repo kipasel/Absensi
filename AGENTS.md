@@ -107,6 +107,12 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   uji browser nyata belum dijalankan.
 
 ## Catatan Runtime Terbaru (2026-10-24)
+- PHASE 7 dimulai atas instruksi pengguna: penyegaran visual dashboard dan
+  komponen agar lebih korporat, tanpa mengubah aturan bisnis.
+- Desain lokal `0.7.0` belum diterbitkan; CSS kisi/gradien dekoratif dihapus,
+  lebar desktop diperluas, dan aksen merah KPU dipertahankan.
+- Menjaga hook/ID HTML untuk alur JS; catatan dan validasi desain di
+  `docs/PROGRESS.md`.
 - URL Web App terbaru dari pengguna:
   `https://script.google.com/macros/s/AKfycbykCQVMRUNLR8SQAdHDX-J0HCPyKeb-WOkZa9fiLWDoxMtKh7szvQRb8o-dEwFHF4ez/exec`.
 - Disetel di `assets/js/config.js`; versi frontend/cache lokal menjadi `0.6.9`.
