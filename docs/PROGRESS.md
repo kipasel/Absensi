@@ -9,13 +9,17 @@
 - Ditambahkan status hari ini di Beranda dan tab Riwayat untuk pegawai dengan
   pemilih bulan, jumlah catatan masuk/pulang, serta daftar catatan. Data dirender
   sebagai teks; respons API tidak di-cache service worker.
-- Status: frontend v0.9.0 sudah dipush ke `main`/`master` dan terlayani GitHub
-  Pages (HTTP 200). Deployment Apps Script belum dilakukan; GitHub Pages hanya
-  memperbarui frontend dan tidak menerbitkan `gas/*.gs`.
+- Status: frontend v0.9.1 sudah dipush ke `main`/`master` dan terlayani GitHub
+  Pages (HTTP 200). GitHub Pages tidak menerbitkan `gas/*.gs`; backend dirilis
+  terpisah melalui deployment Apps Script.
 - Pengujian lokal: foundation **78/0**, auth **57/0**, attendance **200/0**,
   admin **168/0**, report **178/0**, susulan **67/0**; `git diff --check` bersih.
-- Probe aman tanpa token ke Web App saat ini menghasilkan `UNKNOWN_ACTION` untuk
-  `attendance.mine`; endpoint baru belum aktif di deployment Apps Script.
+- Pada 2026-10-24 pengguna memberikan URL Web App baru. Health merespons
+  `ok:true`, backend dan lokasi kantor terkonfigurasi; probe `attendance.mine`
+  tanpa token merespons `UNAUTHORIZED` (route aktif dan validasi sesi berjalan).
+  Integrasi data dengan sesi pegawai nyata belum diuji.
+- `assets/js/config.js` memakai URL Web App baru dan versi/cache dinaikkan ke
+  `0.9.1` agar klien menarik konfigurasi terbaru.
 
 ## Ringkasan Phase
 | Phase | Nama | Status |
