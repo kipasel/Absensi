@@ -9,8 +9,9 @@
 - Ditambahkan status hari ini di Beranda dan tab Riwayat untuk pegawai dengan
   pemilih bulan, jumlah catatan masuk/pulang, serta daftar catatan. Data dirender
   sebagai teks; respons API tidak di-cache service worker.
-- Status: implementasi lokal. Deployment Apps Script belum dilakukan; GitHub
-  Pages hanya memperbarui frontend dan tidak menerbitkan `gas/*.gs`.
+- Status: frontend v0.9.0 sudah dipush ke `main`/`master` dan terlayani GitHub
+  Pages (HTTP 200). Deployment Apps Script belum dilakukan; GitHub Pages hanya
+  memperbarui frontend dan tidak menerbitkan `gas/*.gs`.
 - Pengujian lokal: foundation **78/0**, auth **57/0**, attendance **200/0**,
   admin **168/0**, report **178/0**, susulan **67/0**; `git diff --check` bersih.
 - Probe aman tanpa token ke Web App saat ini menghasilkan `UNKNOWN_ACTION` untuk
