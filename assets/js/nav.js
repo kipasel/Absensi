@@ -125,6 +125,15 @@
     for (var i = 0; i < items.length; i++) {
       (function (item) {
         item.addEventListener('click', function () {
+          var attendanceKind = item.getAttribute('data-attendance-kind');
+          if (attendanceKind) {
+            var choice = document.querySelector(
+              'input[name="att-jenis"][value="' + attendanceKind + '"]'
+            );
+            if (choice) {
+              choice.checked = true;
+            }
+          }
           selectTab(item.getAttribute('data-nav'));
         });
       })(items[i]);

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#771414" />
+  <meta name="theme-color" content="#123d67" />
   <meta name="color-scheme" content="light dark" />
   <meta name="description" content="Aplikasi absensi pegawai KPU Kabupaten Aceh Selatan." />
   <title>Sistem Absensi KPU Kabupaten Aceh Selatan</title>
@@ -69,10 +69,42 @@
 
       <section id="home-view" class="view" aria-label="Beranda" hidden>
         <div class="hero">
-          <p class="hero__eyebrow">Beranda</p>
+          <p class="hero__eyebrow">Sistem Absensi</p>
           <h2 class="hero__title" id="home-greeting">Sistem Absensi Pegawai</h2>
-          <p class="hero__text">Ringkasan layanan absensi dan koneksi sistem Anda.</p>
+          <p class="hero__text">Kelola pencatatan kehadiran Anda dengan mudah.</p>
         </div>
+
+        <section class="home-attendance" aria-labelledby="home-attendance-title">
+          <div class="section-heading">
+            <div>
+              <p class="section-heading__eyebrow">Pencatatan</p>
+              <h3 class="section-heading__title" id="home-attendance-title">Absensi hari ini</h3>
+            </div>
+            <p class="section-heading__hint">Pilih jenis absensi untuk melanjutkan.</p>
+          </div>
+          <div class="home-actions">
+            <button class="home-action home-action--in" type="button"
+                    data-nav="attendance" data-attendance-kind="masuk">
+              <span class="home-action__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3v12m-5-5 5 5 5-5" /><path d="M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
+                </svg>
+              </span>
+              <span class="home-action__copy"><strong>Absen Masuk</strong><small>Catat waktu mulai kerja</small></span>
+              <span class="home-action__arrow" aria-hidden="true">›</span>
+            </button>
+            <button class="home-action home-action--out" type="button"
+                    data-nav="attendance" data-attendance-kind="pulang">
+              <span class="home-action__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 21V9m-5 5 5-5 5 5" /><path d="M5 9V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4" />
+                </svg>
+              </span>
+              <span class="home-action__copy"><strong>Absen Pulang</strong><small>Catat penyelesaian kerja</small></span>
+              <span class="home-action__arrow" aria-hidden="true">›</span>
+            </button>
+          </div>
+        </section>
 
         <section class="notice" role="status" aria-live="polite">
           <h3 class="notice__title">Informasi</h3>

@@ -13,17 +13,17 @@
   color-scheme: light;
 
   /* --- Aksen KPU --- */
-  --brand: #d82731;            /* merah KPU — latar tombol/aktif (putih: 4.9:1) */
-  --brand-strong: #b71c24;     /* merah lebih pekat (hover) */
-  --brand-ink: #771414;        /* marun KPU */
-  --brand-deep: #4d0d0d;
-  --brand-text: #c31e27;       /* merah untuk teks/ikon di atas permukaan terang */
-  --brand-soft: #fdecec;       /* cincin/latar lembut merah */
+  --brand: #2476b9;
+  --brand-strong: #1c5f98;
+  --brand-ink: #123d67;
+  --brand-deep: #0c2d4d;
+  --brand-text: #1c67a7;
+  --brand-soft: #e8f2fb;
   --accent: #f8a73e;           /* emas KPU — aksen dekoratif */
   --accent-soft: rgba(248, 167, 62, 0.22);
 
   /* --- Permukaan & netral --- */
-  --bg: #f3f4f6;
+  --bg: #f2f6fa;
   --surface: #ffffff;
   --surface-2: #f7f8fa;
   --surface-3: #eef1f5;
@@ -283,7 +283,7 @@ code {
   bottom: 0.2em;
   width: 4px;
   border-radius: 999px;
-  background: linear-gradient(180deg, var(--brand), var(--brand-ink));
+  background: var(--brand);
 }
 
 /* ---------------- Hero ---------------- */
@@ -320,6 +320,142 @@ code {
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.9);
 }
+
+/* Aksen motion abstrak yang hanya tampil pada layar login. */
+#login-view .hero::before {
+  content: "";
+  position: absolute;
+  top: -3.4rem;
+  right: 1.4rem;
+  width: 8.5rem;
+  height: 8.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0.85rem rgba(255, 255, 255, 0.035),
+    0 0 0 1.7rem rgba(255, 255, 255, 0.025);
+  pointer-events: none;
+  animation: login-orbit 18s ease-in-out infinite alternate;
+}
+
+#login-view .hero::after {
+  content: "";
+  position: absolute;
+  top: 1.45rem;
+  right: 5.1rem;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0.35rem rgba(248, 167, 62, 0.14);
+  pointer-events: none;
+  animation: login-glint 4.5s ease-in-out infinite;
+}
+
+#login-view .hero > * { position: relative; z-index: 1; }
+
+@keyframes login-orbit {
+  from { transform: translate3d(0, 0, 0) rotate(-8deg); }
+  to { transform: translate3d(-0.35rem, 0.25rem, 0) rotate(8deg); }
+}
+
+@keyframes login-glint {
+  0%, 100% { opacity: 0.55; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+/* ---------------- Aksi cepat dashboard ---------------- */
+
+.home-attendance {
+  padding: 1.15rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.section-heading__eyebrow {
+  margin: 0 0 0.15rem;
+  color: var(--brand-text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.section-heading__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.section-heading__hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.home-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.home-action {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.home-action:hover {
+  border-color: var(--brand);
+  background: var(--surface-2);
+}
+
+.home-action__icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 10px;
+  background: #e9f5ef;
+  color: #21845a;
+}
+
+.home-action__icon svg { width: 23px; height: 23px; }
+
+.home-action--out .home-action__icon {
+  background: #fff2e5;
+  color: #b96a16;
+}
+
+.home-action__copy {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.home-action__copy strong { font-size: 0.92rem; }
+.home-action__copy small { color: var(--text-muted); font-size: 0.76rem; }
+.home-action__arrow { margin-left: auto; color: var(--text-muted); font-size: 1.4rem; line-height: 1; }
 
 /* ---------------- Pemberitahuan ---------------- */
 
@@ -694,11 +830,10 @@ textarea.form-input {
 }
 
 .admin-tab--active {
-  background-image: linear-gradient(135deg, var(--brand) 0%, var(--brand-strong) 100%);
   background-color: var(--brand);
   border-color: transparent;
   color: #fff;
-  box-shadow: 0 10px 18px -14px rgba(216, 39, 49, 0.95);
+  box-shadow: none;
 }
 
 .admin-tab-panel {
@@ -920,7 +1055,7 @@ textarea.form-input {
   width: 28px;
   height: 3px;
   border-radius: 0 0 4px 4px;
-  background: linear-gradient(90deg, var(--brand), var(--brand-ink));
+  background: var(--brand);
 }
 
 .app-nav__item.is-active svg {
@@ -965,14 +1100,17 @@ textarea.form-input {
   .app-main { padding: 0.75rem 0.75rem 1rem; }
   .hero { padding: 1.15rem 1rem; }
   .panel { padding: 1rem; }
+  .home-attendance { padding: 0.9rem; }
+  .home-actions { grid-template-columns: 1fr; }
+  .section-heading { align-items: flex-start; flex-direction: column; gap: 0.3rem; }
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
 
-    --brand-soft: rgba(216, 39, 49, 0.22);
-    --brand-text: #ff7079;
+    --brand-soft: rgba(36, 118, 185, 0.22);
+    --brand-text: #83c2f3;
 
     --bg: #171a1f;
     --surface: #20242a;

@@ -639,6 +639,22 @@ gaya visual yang sederhana dan tidak memakai dekorasi generik berlebihan.
 - Belum diterbitkan. Validasi lokal dilakukan sebelum rilis; tidak ada perubahan
   aturan bisnis atau endpoint.
 
+Iterasi desain berdasarkan referensi visual pengguna:
+- Dashboard dipusatkan pada dua aksi utama Masuk/Pulang; tombol membuka tab
+  absensi yang ada dan memilih jenisnya, lalu pengguna tetap melalui kamera,
+  GPS, dan pemeriksaan backend yang sudah diterapkan.
+- Arah warna biru-putih diambil dari referensi; hijau dan jingga hanya menjadi
+  pembeda ikon masuk/pulang. ID alur absensi tidak berubah.
+- Tidak ada daftar riwayat pegawai karena endpoint riwayat mandiri belum tersedia;
+  daftar absensi saat ini hanya untuk panel admin.
+- Teks status menegaskan bahwa pengajuan susulan pegawai dinonaktifkan.
+- Versi lokal dan cache service worker dinaikkan ke `0.8.0`; belum diterbitkan.
+
+Motion login atas permintaan pengguna:
+- `assets/css/styles.css` menambahkan ring bergerak pelan dan aksen titik cahaya
+  pada hero login saja; dekorasi tidak menerima pointer dan tidak menutupi form.
+- Animasi mengikuti aturan aksesibilitas global `prefers-reduced-motion`.
+
 Pengguna memberikan URL Web App baru (DEC-P21 diperbarui):
 `https://script.google.com/macros/s/AKfycbzPrzom2yQUH2G0STiVb1o0P5axU03yadiUnwmmyUIy-tjR3TAr4Q_0irNRcvbr271c/exec`.
 - `assets/js/config.js` — `API_BASE_URL` diperbarui.

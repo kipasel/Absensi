@@ -109,8 +109,12 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 ## Catatan Runtime Terbaru (2026-10-24)
 - PHASE 7 dimulai atas instruksi pengguna: penyegaran visual dashboard dan
   komponen agar lebih korporat, tanpa mengubah aturan bisnis.
-- Desain lokal `0.7.0` belum diterbitkan; CSS kisi/gradien dekoratif dihapus,
-  lebar desktop diperluas, dan aksen merah KPU dipertahankan.
+- Iterasi referensi pengguna menambahkan kartu aksi Masuk/Pulang dan memilih
+  jenis pada alur absensi yang sudah ada; warna lokal `0.8.0` biru-putih.
+- Tidak ada riwayat pegawai mandiri di backend; jangan isi kartu riwayat dengan
+  data contoh. Desain ini belum diterbitkan.
+- Form login memiliki ornamen motion CSS yang halus; aturan
+  `prefers-reduced-motion` tetap berlaku.
 - Menjaga hook/ID HTML untuk alur JS; catatan dan validasi desain di
   `docs/PROGRESS.md`.
 - URL Web App terbaru dari pengguna:
