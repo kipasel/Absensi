@@ -7,7 +7,7 @@ Aplikasi absensi pegawai berbasis Progressive Web App (PWA).
 - **Database:** Google Sheets.
 - **Penyimpanan foto:** Google Drive privat.
 - **Zona waktu:** `Asia/Jakarta`.
-- **Versi kode lokal:** `0.6.7` (belum dideploy; sumber: `assets/js/config.js`).
+- **Versi kode lokal:** `0.6.8` (belum dideploy; sumber: `assets/js/config.js`).
 
 ## Status Proyek
 **PHASE 6 — QA rilis: selesai (lokal); BELUM SIAP RILIS.** Audit kode & keamanan

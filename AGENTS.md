@@ -34,7 +34,7 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 ## Status Saat Ini
 - Perubahan DEC-P31 (2026-10-24) mengizinkan absen pulang tanpa catatan masuk,
   menambahkan status `TANPA_ABSEN_MASUK`, dan memisahkan status terlambat masuk.
-  Perubahan lokal versi aset `0.6.7` belum dideploy.
+  Perubahan lokal versi aset `0.6.8` belum dideploy.
 - PHASE 0–6 dikerjakan. PHASE 3 (mesin absensi), PHASE 4 (panel admin),
   PHASE 5 (laporan & ekspor) **selesai (lokal)**. PHASE 6 (QA rilis) **selesai
   (lokal)**: audit kode & keamanan, 3 perbaikan frontend, verifikasi runtime.
@@ -107,8 +107,8 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 
 ## Catatan Runtime Terbaru (2026-10-24)
 - Pengguna memberi URL Web App baru (DEC-P21 diperbarui):
-  `https://script.google.com/macros/s/AKfycbzPrzom2yQUH2G0STiVb1o0P5axU03yadiUnwmmyUIy-tjR3TAr4Q_0irNRcvbr271c/exec`.
-- URL disetel di `assets/js/config.js`; versi frontend/cache lokal menjadi `0.6.7`.
+  `https://script.google.com/macros/s/AKfycbwSt9-bh1pwbVK7lOupLWfQi4Np3RQT0LqRLUPvXN7icLuN27PbnKH21A2LCSt3Lj9M/exec`.
+- URL disetel di `assets/js/config.js`; versi frontend/cache lokal menjadi `0.6.8`.
 - Jangan menyatakan endpoint sudah berfungsi atau frontend telah terbit sebelum verifikasi nyata.
 
 ## Format Laporan Phase

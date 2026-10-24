@@ -607,4 +607,7 @@ Pengguna memberikan URL Web App baru (DEC-P21 diperbarui):
 `https://script.google.com/macros/s/AKfycbzPrzom2yQUH2G0STiVb1o0P5axU03yadiUnwmmyUIy-tjR3TAr4Q_0irNRcvbr271c/exec`.
 - `assets/js/config.js` — `API_BASE_URL` diperbarui.
 - Versi frontend/cache dinaikkan menjadi `0.6.7` agar service worker mengambil konfigurasi baru.
-- Status endpoint dan deployment belum diverifikasi.
+- URL berikutnya yang diberikan pengguna menggantikan URL di atas:
+  `https://script.google.com/macros/s/AKfycbwSt9-bh1pwbVK7lOupLWfQi4Np3RQT0LqRLUPvXN7icLuN27PbnKH21A2LCSt3Lj9M/exec`.
+- `assets/js/config.js` dan cache service worker diperbarui ke versi `0.6.8`.
+- Status endpoint dan deployment frontend belum diverifikasi.
