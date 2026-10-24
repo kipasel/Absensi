@@ -355,7 +355,7 @@ check('route_ terhubung (bukan UNKNOWN_ACTION)', () => {
   if (code !== 'UNAUTHORIZED') throw new Error('kode: ' + code);
   return true;
 });
-check('doPost susulan.submit tanpa token → JSON UNAUTHORIZED (bukan crash)', () => {
+check('doPost susulan.submit tanpa token → JSON NOT_AVAILABLE (bukan crash)', () => {
   const { env } = envSusulan();
   const out = env.sandbox.doPost({
     postData: { contents: JSON.stringify({ action: 'susulan.submit', data: {} }) }
@@ -365,7 +365,7 @@ check('doPost susulan.submit tanpa token → JSON UNAUTHORIZED (bukan crash)', (
   eq('status', parsed.status, 'error');
   return true;
 });
-check('doPost susulan.submit valid → JSON ok', () => {
+check('doPost susulan.submit valid → JSON NOT_AVAILABLE', () => {
   const { env, token } = envSusulan();
   const out = env.sandbox.doPost({
     postData: {
@@ -380,7 +380,7 @@ check('doPost susulan.submit valid → JSON ok', () => {
     }
   });
   const parsed = JSON.parse(out.getContent());
-  if (!parsed.ok) throw new Error('bukan ok: ' + out.getContent());
+  if (parsed.ok !== false || parsed.error !== 'NOT_AVAILABLE') throw new Error('bukan ok: ' + out.getContent());
   return true;
 });
 

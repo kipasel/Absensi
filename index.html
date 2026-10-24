@@ -196,6 +196,16 @@
               <dd id="sum-gps">-</dd>
             </div>
           </dl>
+          <div id="att-pulang-fields" hidden>
+            <div class="form-field">
+              <label for="att-uraian">Uraian Pekerjaan <span aria-label="wajib">*</span></label>
+              <textarea class="form-input" id="att-uraian" rows="3" maxlength="1000" required></textarea>
+            </div>
+            <div class="form-field">
+              <label for="att-output">Output Pekerjaan <span aria-label="wajib">*</span></label>
+              <textarea class="form-input" id="att-output" rows="3" maxlength="1000" required></textarea>
+            </div>
+          </div>
           <div class="att-actions">
             <button class="btn btn--primary" id="att-submit" type="button">Kirim absensi</button>
             <button class="btn" id="att-restart" type="button">Ulangi dari awal</button>
@@ -210,53 +220,9 @@
 
         <p id="att-status" class="att-status" role="status" aria-live="polite" hidden></p>
 
-        <section class="card susulan-card" aria-labelledby="susulan-title">
+        <section class="card susulan-card" aria-labelledby="susulan-title" hidden>
           <h3 class="att-step__subtitle" id="susulan-title">Ajukan absensi susulan</h3>
-          <p class="card__hint">
-            Untuk absensi yang terlewat: maksimal 3 hari sebelum hari berjalan,
-            lengkapi alasan dan foto bukti (JPEG). Pengajuan menunggu
-            persetujuan admin — belum tercatat sebagai absensi.
-          </p>
-          <form id="susulan-form" class="admin-form" novalidate>
-            <div class="form-field">
-              <label for="susulan-tanggal">Tanggal absensi</label>
-              <input class="form-input" id="susulan-tanggal" name="tanggal"
-                type="date" required />
-            </div>
-            <div class="form-field">
-              <label for="susulan-jenis">Jenis</label>
-              <select class="form-input" id="susulan-jenis" name="jenis">
-                <option value="masuk">Masuk</option>
-                <option value="pulang">Pulang</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label for="susulan-mode">Mode kerja</label>
-              <select class="form-input" id="susulan-mode" name="mode_kerja">
-                <option value="WFO">WFO (di kantor)</option>
-                <option value="WFH_WFA">WFH/WFA</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label for="susulan-waktu">Waktu yang diklaim</label>
-              <input class="form-input" id="susulan-waktu" name="waktu"
-                type="time" required />
-            </div>
-            <div class="form-field">
-              <label for="susulan-alasan">Alasan</label>
-              <textarea class="form-input" id="susulan-alasan" name="alasan"
-                rows="3" maxlength="500" required></textarea>
-            </div>
-            <div class="form-field">
-              <label for="susulan-foto">Foto bukti (JPEG)</label>
-              <input class="form-input" id="susulan-foto" name="foto"
-                type="file" accept="image/jpeg,image/*" capture="environment" required />
-            </div>
-            <div class="att-actions">
-              <button class="btn btn--primary" id="susulan-submit" type="submit">Kirim pengajuan</button>
-            </div>
-            <p class="form-message" id="susulan-message" role="status" aria-live="polite" hidden></p>
-          </form>
+          <p class="card__hint">Fitur absensi susulan telah dinonaktifkan.</p>
         </section>
       </section>
 
@@ -266,7 +232,6 @@
         <nav class="admin-tabs" aria-label="Menu admin">
           <button class="btn admin-tab" type="button" data-admin-tab="pegawai">Pegawai</button>
           <button class="btn admin-tab" type="button" data-admin-tab="absensi">Absensi</button>
-          <button class="btn admin-tab" type="button" data-admin-tab="susulan">Susulan</button>
           <button class="btn admin-tab" type="button" data-admin-tab="laporan">Laporan</button>
           <button class="btn admin-tab" type="button" data-admin-tab="log">Log audit</button>
         </nav>
@@ -354,30 +319,7 @@
           <div id="absensi-detail" class="admin-detail" hidden></div>
         </div>
 
-        <div id="admin-tab-susulan" class="admin-tab-panel" hidden>
-          <div class="admin-filters">
-            <div class="form-field">
-              <label class="form-label" for="susulan-status-filter">Status</label>
-              <select class="form-input" id="susulan-status-filter">
-                <option value="">Semua</option>
-                <option value="menunggu">Menunggu</option>
-                <option value="diterima">Diterima</option>
-                <option value="ditolak">Ditolak</option>
-              </select>
-            </div>
-            <button class="btn" id="susulan-reload" type="button">Muat</button>
-          </div>
-
-          <div class="admin-table-wrap">
-            <table class="admin-table" id="susulan-table">
-              <thead>
-                <tr><th>Tanggal</th><th>Nama</th><th>Jenis</th><th>Status</th><th>Pengajuan (server)</th><th>Aksi</th></tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-          <div id="susulan-detail" class="admin-detail" hidden></div>
-        </div>
+        <div id="admin-tab-susulan" class="admin-tab-panel" hidden></div>
 
         <div id="report-panel" class="admin-tab-panel" hidden>
           <div class="admin-filters report-filters">
@@ -416,7 +358,7 @@
               <select class="form-input" id="report-sumber">
                 <option value="">Semua</option>
                 <option value="reguler">Reguler</option>
-                <option value="susulan_disetujui">Susulan disetujui</option>
+                <option value="susulan_disetujui" disabled>Susulan disetujui (nonaktif)</option>
               </select>
             </div>
             <div class="form-field">
@@ -444,11 +386,7 @@
               <article class="card report-card"><p class="card__title">Pegawai unik tercatat</p><p class="card__value" id="rekap-pegawai-unik">-</p></article>
               <article class="card report-card"><p class="card__title">Mode WFO</p><p class="card__value" id="rekap-wfo">-</p></article>
               <article class="card report-card"><p class="card__title">Mode WFH/WFA</p><p class="card__value" id="rekap-wfh">-</p></article>
-              <article class="card report-card"><p class="card__title">Sumber reguler</p><p class="card__value" id="rekap-reguler">-</p></article>
-              <article class="card report-card"><p class="card__title">Sumber susulan disetujui</p><p class="card__value" id="rekap-susulan-record">-</p></article>
-              <article class="card report-card"><p class="card__title">Susulan menunggu</p><p class="card__value" id="rekap-susulan-menunggu">-</p></article>
-              <article class="card report-card"><p class="card__title">Susulan diterima</p><p class="card__value" id="rekap-susulan-diterima">-</p></article>
-              <article class="card report-card"><p class="card__title">Susulan ditolak</p><p class="card__value" id="rekap-susulan-ditolak">-</p></article>
+            <article class="card report-card"><p class="card__title">Sumber reguler</p><p class="card__value" id="rekap-reguler">-</p></article>
             </div>
             <p class="card__hint">
               Angka adalah jumlah catatan/pengajuan pada rentang terpilih — bukan
@@ -568,7 +506,7 @@
   <script src="./assets/js/app.js"></script>
   <script src="./assets/js/camera.js"></script>
   <script src="./assets/js/attendance.js"></script>
-  <script src="./assets/js/susulan.js"></script>
+  <!-- susulan.js dinonaktifkan -->
   <script src="./assets/js/auth.js"></script>
   <script src="./assets/js/admin.js"></script>
   <script src="./assets/js/report.js"></script>

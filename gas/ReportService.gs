@@ -235,7 +235,10 @@ function reportAbsensiFields_(row, statusMap) {
     sumber: String(row.sumber || ''),
     jarak_meter: (row.jarak_meter === '' || row.jarak_meter === null || row.jarak_meter === undefined)
       ? null : row.jarak_meter,
-    ada_bukti: Boolean(row.id_bukti)
+    ada_bukti: Boolean(row.id_bukti),
+    status: String(row.status || ''),
+    uraian_pekerjaan: row.uraian_pekerjaan === undefined || row.uraian_pekerjaan === null ? '' : String(row.uraian_pekerjaan),
+    output_pekerjaan: row.output_pekerjaan === undefined || row.output_pekerjaan === null ? '' : String(row.output_pekerjaan)
   };
 }
 
@@ -292,20 +295,15 @@ function handleReportRekap_(payload, method) {
     if (jenis === 'masuk') harianMap[t].catatan_masuk++;
     else if (jenis === 'pulang') harianMap[t].catatan_pulang++;
   }
+  susulanSetuju = 0;
   var harian = [];
   for (var key in harianMap) {
     if (Object.prototype.hasOwnProperty.call(harianMap, key)) harian.push(harianMap[key]);
   }
   harian.sort(function (a, b) { return a.tanggal < b.tanggal ? -1 : 1; });
 
-  var susulan = filterSusulanRows_(readObjects_('PengajuanSusulan'), range, filters, statusMap);
+  var susulan = [];
   var sMenunggu = 0, sDiterima = 0, sDitolak = 0;
-  for (var j = 0; j < susulan.length; j++) {
-    var st = String(susulan[j].status);
-    if (st === 'menunggu') sMenunggu++;
-    else if (st === 'diterima') sDiterima++;
-    else if (st === 'ditolak') sDitolak++;
-  }
 
   var pegawaiUnik = 0;
   for (var id in unik) {
@@ -326,7 +324,7 @@ function handleReportRekap_(payload, method) {
     catatan: { total: absensi.length, masuk: masuk, pulang: pulang },
     pegawai_unik: pegawaiUnik,
     mode_kerja: { WFO: wfo, WFH_WFA: wfh },
-    sumber: { reguler: reguler, susulan_disetujui: susulanSetuju },
+    sumber: { reguler: reguler, susulan_disetujui: 0 },
     susulan: { total: susulan.length, menunggu: sMenunggu, diterima: sDiterima, ditolak: sDitolak },
     harian: harian,
     definisi: REKAP_DEFINITIONS
@@ -359,7 +357,8 @@ function csvEscapeField_(value) {
 
 var CSV_REPORT_HEADERS = Object.freeze([
   'id_absensi', 'tanggal', 'id_pegawai', 'nama', 'nip_nipk', 'jenis',
-  'mode_kerja', 'waktu_server', 'sumber', 'jarak_meter', 'ada_bukti'
+  'mode_kerja', 'waktu_server', 'sumber', 'jarak_meter', 'ada_bukti', 'status',
+  'uraian_pekerjaan', 'output_pekerjaan'
 ]);
 
 /**
@@ -382,7 +381,10 @@ function buildAbsensiCsv_(matched, statusMap) {
       csvEscapeField_(f.waktu_server),
       csvEscapeField_(f.sumber),
       csvEscapeField_(f.jarak_meter === null ? '' : f.jarak_meter),
-      csvEscapeField_(f.ada_bukti ? 'ya' : 'tidak')
+      csvEscapeField_(f.ada_bukti ? 'ya' : 'tidak'),
+      csvEscapeField_(f.status),
+      csvEscapeField_(f.uraian_pekerjaan),
+      csvEscapeField_(f.output_pekerjaan)
     ].join(','));
   }
   return '\uFEFF' + lines.join('\r\n') + '\r\n';

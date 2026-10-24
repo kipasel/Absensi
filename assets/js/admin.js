@@ -89,7 +89,7 @@
 
   /* ---------------- Navigasi tab ---------------- */
 
-  var TAB_IDS = ['pegawai', 'absensi', 'susulan', 'log'];
+  var TAB_IDS = ['pegawai', 'absensi', 'log'];
 
   function switchTab(tab) {
     if (TAB_IDS.indexOf(tab) === -1) return;
@@ -105,7 +105,7 @@
     }
     if (tab === 'pegawai') loadPegawai();
     else if (tab === 'absensi') loadAbsensi();
-    else if (tab === 'susulan') loadSusulan();
+    else if (tab === 'susulan') return;
     else if (tab === 'log') loadLog();
   }
 
@@ -689,8 +689,6 @@
 
     var absensiReload = el('absensi-reload');
     if (absensiReload) absensiReload.addEventListener('click', loadAbsensi);
-    var susulanReload = el('susulan-reload');
-    if (susulanReload) susulanReload.addEventListener('click', loadSusulan);
     var logReload = el('log-reload');
     if (logReload) logReload.addEventListener('click', loadLog);
   }

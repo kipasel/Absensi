@@ -151,6 +151,27 @@ function handleAttendanceSubmit_(payload, method) {
         dibuat_pada: waktuServerIso
       });
 
+      var statusAbsensi = jenis === 'masuk' ? getMasukStatus_(timeEval.detikHari) : '';
+      var uraianPekerjaan = '';
+      var outputPekerjaan = '';
+      if (jenis === 'pulang') {
+        uraianPekerjaan = payload.uraian_pekerjaan === null || payload.uraian_pekerjaan === undefined
+          ? '' : String(payload.uraian_pekerjaan).trim();
+        outputPekerjaan = payload.output_pekerjaan === null || payload.output_pekerjaan === undefined
+          ? '' : String(payload.output_pekerjaan).trim();
+        if (!uraianPekerjaan) {
+          throw AppError_('INVALID_INPUT', 'Uraian Pekerjaan wajib diisi.', true);
+        }
+        if (!outputPekerjaan) {
+          throw AppError_('INVALID_INPUT', 'Output Pekerjaan wajib diisi.', true);
+        }
+        if (uraianPekerjaan.length > 1000) {
+          throw AppError_('INVALID_INPUT', 'Uraian Pekerjaan maksimal 1000 karakter.', true);
+        }
+        if (outputPekerjaan.length > 1000) {
+          throw AppError_('INVALID_INPUT', 'Output Pekerjaan maksimal 1000 karakter.', true);
+        }
+      }
       appendObject_('Absensi', {
         id_absensi: idAbsensi,
         id_pegawai: idPegawai,
@@ -164,6 +185,9 @@ function handleAttendanceSubmit_(payload, method) {
         jarak_meter: jarakMeter,
         sumber: 'reguler',
         id_bukti: idBukti,
+        status: statusAbsensi,
+        uraian_pekerjaan: uraianPekerjaan,
+        output_pekerjaan: outputPekerjaan,
         dibuat_pada: waktuServerIso,
         diubah_pada: waktuServerIso,
         diubah_oleh: idPegawai

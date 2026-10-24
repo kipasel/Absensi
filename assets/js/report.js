@@ -136,10 +136,10 @@
       setRekapText('rekap-wfo', res.mode_kerja.WFO);
       setRekapText('rekap-wfh', res.mode_kerja.WFH_WFA);
       setRekapText('rekap-reguler', res.sumber.reguler);
-      setRekapText('rekap-susulan-record', res.sumber.susulan_disetujui);
-      setRekapText('rekap-susulan-menunggu', res.susulan.menunggu);
-      setRekapText('rekap-susulan-diterima', res.susulan.diterima);
-      setRekapText('rekap-susulan-ditolak', res.susulan.ditolak);
+      setRekapText('rekap-susulan-record', 0);
+      setRekapText('rekap-susulan-menunggu', 0);
+      setRekapText('rekap-susulan-diterima', 0);
+      setRekapText('rekap-susulan-ditolak', 0);
       renderHarian(res.harian);
       show(el('report-rekap'));
       return res;

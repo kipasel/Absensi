@@ -111,6 +111,10 @@ function submit(env, token, overrides = {}) {
   if (Object.prototype.hasOwnProperty.call(overrides, 'gps') && overrides.gps === null) {
     delete payload.gps;
   }
+  if (payload.jenis === 'pulang') {
+    if (!payload.uraian_pekerjaan) payload.uraian_pekerjaan = 'Pekerjaan hari ini';
+    if (!payload.output_pekerjaan) payload.output_pekerjaan = 'Output pekerjaan';
+  }
   return env.sandbox.handleAttendanceSubmit_(payload, 'POST');
 }
 
@@ -130,7 +134,7 @@ function submitPulang(env, token) {
   atTime(env, T.midMasuk);
   const masuk = submit(env, token);
   atTime(env, T.openPulang);
-  const pulang = submit(env, token, { id_absensi: nextId(), jenis: 'pulang', gps: null });
+  const pulang = submit(env, token, { id_absensi: nextId(), jenis: 'pulang', gps: null, uraian_pekerjaan: 'Pekerjaan hari ini', output_pekerjaan: 'Output pekerjaan' });
   return { masuk, pulang };
 }
 
@@ -156,8 +160,8 @@ const windowCases = [
   ['WT-01 masuk 07:00:00 diterima', 'masuk', 7 * 3600, true],
   ['masuk 07:30:00 diterima', 'masuk', 7 * 3600 + 30 * 60, true],
   ['WT-02 masuk 08:29:59 diterima', 'masuk', 8 * 3600 + 29 * 60 + 59, true],
-  ['WT-03 masuk 08:30:00 ditolak', 'masuk', 8 * 3600 + 30 * 60, false],
-  ['WT-04b masuk 12:00:00 ditolak', 'masuk', 12 * 3600, false],
+  ['WT-03 masuk 08:30:00 diterima', 'masuk', 8 * 3600 + 30 * 60, true],
+  ['WT-04b masuk 12:00:00 diterima', 'masuk', 12 * 3600, true],
   ['WT-04c pulang 06:59:59 ditolak', 'pulang', 6 * 3600 + 59 * 60 + 59, false],
   ['WT-04d pulang 08:30:00 ditolak', 'pulang', 8 * 3600 + 30 * 60, false],
   ['WT-04e pulang 15:59:59 ditolak', 'pulang', 15 * 3600 + 59 * 60 + 59, false],
@@ -498,10 +502,14 @@ check('masuk 06:59:59 → TIME_WINDOW, tanpa tulisan apa pun', () => {
   }
   return true;
 });
-check('masuk 08:30:00 → TIME_WINDOW', () => {
+check('masuk 08:30:00 → diterima TERLAMBAT', () => {
   const { env, token } = envAttendance();
   atTime(env, T.afterMasuk);
-  throwsCode('TIME_WINDOW', () => submit(env, token), 'TIME_WINDOW');
+  const r = submit(env, token);
+  assert.strictEqual(r.status, 'tercatat');
+  const rec = findAbsensi(env, r.id_absensi);
+  assert.strictEqual(rec.status, 'TERLAMBAT');
+  assert.strictEqual(env.driveRegistry.files.length, 1);
   return true;
 });
 check('pulang 15:59:59 → TIME_WINDOW', () => {

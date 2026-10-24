@@ -1,27 +1,30 @@
 /**
- * TimeRule.gs — aturan waktu absensi (PHASE 3).
+ * TimeRule.gs — aturan waktu absensi.
  *
  * Keputusan:
  * - Zona bisnis: Asia/Jakarta (DEC-002).
- * - Masuk reguler: 07:00:00–08:29:59; >= 08:30:00 ditolak (DEC-003).
+ * - Masuk reguler: mulai 07:00:00. Sebelum 07:00:00 ditolak.
+ *   - 07:00:00–08:30:00 → TEPAT_WAKTU
+ *   - > 08:30:00 (08:30:01 dst) → TERLAMBAT (tetap diterima)
  * - Pulang reguler: 16:00:00–23:59:59; lintas tanggal ditolak sebagai reguler
  *   (DEC-003). Karena tanggal bisnis dihitung dari waktu server Asia/Jakarta,
  *   percobaan pulang setelah tengah malam otomatis menolak (di luar jendela).
  * - Jendela jam berlaku setiap hari, termasuk akhir pekan/hari libur (DEC-P18;
  *   AMB-10). Tidak ada filter hari pada mesin absensi.
  *
- * Prinsip: keputusan memakai WAKTU SERVER. Fungsi murni (evaluateTimeWindow_)
- * bekerja pada detik-hari yang sudah diekstrak agar dapat diuji tanpa runtime;
- * pembungkus GAS mengekstrak komponen via Utilities.formatDate dengan zona
- * eksplisit (bukan zona default runtime).
+ * Prinsip: keputusan memakai WAKTU SERVER. Fungsi murni bekerja pada detik-hari
+ * yang sudah diekstrak agar dapat diuji tanpa runtime.
  */
 
 var BIZ_TIMEZONE = 'Asia/Jakarta';
 
 var TIME_WINDOWS = Object.freeze({
-  masuk: { startSec: 7 * 3600, endSec: 8 * 3600 + 29 * 60 + 59 },       // 25200..30599
+  masuk: { startSec: 7 * 3600, endSec: 23 * 3600 + 59 * 60 + 59 },      // 25200..86399
   pulang: { startSec: 16 * 3600, endSec: 23 * 3600 + 59 * 60 + 59 }     // 57600..86399
 });
+
+var MASUK_TEPAT_WAKTU_END_SEC = 8 * 3600 + 30 * 60; // 08:30:00 termasuk tepat waktu
+
 
 var ATTENDANCE_JENIS = Object.freeze(['masuk', 'pulang']);
 var ATTENDANCE_MODE = Object.freeze(['WFO', 'WFH_WFA']);
@@ -61,16 +64,30 @@ function evaluateTimeWindow_(jenis, secondsOfDay) {
       return {
         ok: false,
         code: 'TIME_WINDOW',
-        message: 'Absensi masuk reguler hanya 07:00.00–08.29.59 WIB.'
+        message: 'Absensi masuk reguler hanya mulai pukul 07:00:00 WIB.'
       };
     }
     return {
       ok: false,
       code: 'TIME_WINDOW',
-      message: 'Absensi pulang reguler hanya 16:00.00–23.59.59 WIB.'
+      message: 'Absensi pulang reguler hanya 16:00:00–23:59:59 WIB.'
     };
   }
   return { ok: true, code: null, message: null };
+}
+
+/**
+ * Menentukan status keterlambatan untuk absensi masuk berdasarkan waktu server.
+ * @param {number} secondsOfDay
+ * @return {'TEPAT_WAKTU'|'TERLAMBAT'}
+ */
+function getMasukStatus_(secondsOfDay) {
+  var sec = Number(secondsOfDay);
+  if (!isFinite(sec)) return 'TERLAMBAT';
+  if (sec <= MASUK_TEPAT_WAKTU_END_SEC) {
+    return 'TEPAT_WAKTU';
+  }
+  return 'TERLAMBAT';
 }
 
 /**

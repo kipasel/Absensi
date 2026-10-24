@@ -237,6 +237,18 @@
     } else {
       hide(el('sum-gps-row'));
     }
+    var pulangFields = el('att-pulang-fields');
+    if (pulangFields) {
+      if (jenis === 'pulang') {
+        pulangFields.hidden = false;
+      } else {
+        pulangFields.hidden = true;
+        var uraian = el('att-uraian');
+        var output = el('att-output');
+        if (uraian) uraian.value = '';
+        if (output) output.value = '';
+      }
+    }
     if (!flow.idAbsensi) {
       flow.idAbsensi = newIdAbsensi();
     }
@@ -280,6 +292,24 @@
       foto_base64: flow.foto.base64,
       foto_mime: camera.PHOTO_MIME
     };
+    if (jenis === 'pulang') {
+      var uraian = el('att-uraian');
+      var output = el('att-output');
+      var uraianVal = uraian && typeof uraian.value === 'string' ? uraian.value.trim() : '';
+      var outputVal = output && typeof output.value === 'string' ? output.value.trim() : '';
+      if (!uraianVal) {
+        setStatus('Uraian Pekerjaan wajib diisi.', 'error');
+        if (uraian) uraian.focus();
+        return;
+      }
+      if (!outputVal) {
+        setStatus('Output Pekerjaan wajib diisi.', 'error');
+        if (output) output.focus();
+        return;
+      }
+      data.uraian_pekerjaan = uraianVal;
+      data.output_pekerjaan = outputVal;
+    }
     if (jenis === 'masuk' && mode === 'WFO' && flow.gps) {
       data.gps = { lat: flow.gps.lat, lng: flow.gps.lng, accuracy: flow.gps.accuracy };
     }

@@ -95,7 +95,7 @@ function route_(action, payload, method) {
     case 'attendance.submit':
       return handleAttendanceSubmit_(payload, method);
     case 'susulan.submit':
-      return handleSusulanSubmit_(payload, method);
+      throw AppError_('NOT_AVAILABLE', 'Fitur absensi susulan telah dinonaktifkan.', true);
     case 'admin.pegawai.list':
       return handleAdminPegawaiList_(payload, method);
     case 'admin.pegawai.detail':
@@ -113,13 +113,13 @@ function route_(action, payload, method) {
     case 'admin.absensi.photo':
       return handleAdminAbsensiPhoto_(payload, method);
     case 'admin.susulan.list':
-      return handleAdminSusulanList_(payload, method);
+      throw AppError_('NOT_AVAILABLE', 'Fitur absensi susulan telah dinonaktifkan.', true);
     case 'admin.susulan.detail':
-      return handleAdminSusulanDetail_(payload, method);
+      throw AppError_('NOT_AVAILABLE', 'Fitur absensi susulan telah dinonaktifkan.', true);
     case 'admin.susulan.photo':
-      return handleAdminSusulanPhoto_(payload, method);
+      throw AppError_('NOT_AVAILABLE', 'Fitur absensi susulan telah dinonaktifkan.', true);
     case 'admin.susulan.decide':
-      return handleAdminSusulanDecide_(payload, method);
+      throw AppError_('NOT_AVAILABLE', 'Fitur absensi susulan telah dinonaktifkan.', true);
     case 'admin.log.list':
       return handleAdminLogList_(payload, method);
     case 'report.absensi.list':
