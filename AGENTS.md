@@ -110,11 +110,13 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 - PHASE 7 dimulai atas instruksi pengguna: penyegaran visual dashboard dan
   komponen agar lebih korporat, tanpa mengubah aturan bisnis.
 - Iterasi referensi pengguna menambahkan kartu aksi Masuk/Pulang dan memilih
-  jenis pada alur absensi yang sudah ada; warna lokal `0.8.0` biru-putih.
+  jenis pada alur absensi yang sudah ada; versi `0.8.0` biru-putih diterbitkan.
 - Tidak ada riwayat pegawai mandiri di backend; jangan isi kartu riwayat dengan
-  data contoh. Desain ini belum diterbitkan.
+  data contoh.
 - Form login memiliki ornamen motion CSS yang halus; aturan
   `prefers-reduced-motion` tetap berlaku.
+- Commit `69f63df` terbit di `master`/`main`; Pages run `40097305219` sukses,
+  dan aset live memuat versi `0.8.0` serta motion login.
 - Menjaga hook/ID HTML untuk alur JS; catatan dan validasi desain di
   `docs/PROGRESS.md`.
 - URL Web App terbaru dari pengguna:

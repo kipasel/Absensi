@@ -648,12 +648,15 @@ Iterasi desain berdasarkan referensi visual pengguna:
 - Tidak ada daftar riwayat pegawai karena endpoint riwayat mandiri belum tersedia;
   daftar absensi saat ini hanya untuk panel admin.
 - Teks status menegaskan bahwa pengajuan susulan pegawai dinonaktifkan.
-- Versi lokal dan cache service worker dinaikkan ke `0.8.0`; belum diterbitkan.
+- Versi frontend dan cache service worker dinaikkan ke `0.8.0`.
 
 Motion login atas permintaan pengguna:
 - `assets/css/styles.css` menambahkan ring bergerak pelan dan aksen titik cahaya
   pada hero login saja; dekorasi tidak menerima pointer dan tidak menutupi form.
 - Animasi mengikuti aturan aksesibilitas global `prefers-reduced-motion`.
+- Commit `69f63df` dipush ke `master` dan `main`; Pages run `40097305219`
+  berhasil. Pemeriksaan aset live mengonfirmasi versi/cache `0.8.0` serta animasi
+  login sudah tersedia.
 
 Pengguna memberikan URL Web App baru (DEC-P21 diperbarui):
 `https://script.google.com/macros/s/AKfycbzPrzom2yQUH2G0STiVb1o0P5axU03yadiUnwmmyUIy-tjR3TAr4Q_0irNRcvbr271c/exec`.
