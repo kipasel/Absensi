@@ -20,6 +20,11 @@
   Integrasi data dengan sesi pegawai nyata belum diuji.
 - `assets/js/config.js` memakai URL Web App baru dan versi/cache dinaikkan ke
   `0.9.1` agar klien menarik konfigurasi terbaru.
+- Pada 2026-10-25 URL Web App diganti lagi menjadi deployment
+  `AKfycbzaFXrEGs-Y9cybJdFXgNYvlmoPiSQ1EakfFvKlfdbjb2Vn33Iya7h0DV2ykjFqAMI_OQ`.
+  Health merespons `ok:true`, `backendConfigured:true`, dan
+  `officeLocationConfigured:true`. Versi frontend/cache dinaikkan ke `0.9.2`.
+  Integrasi login/absensi dengan sesi pegawai nyata belum diuji.
 
 ## Ringkasan Phase
 | Phase | Nama | Status |
