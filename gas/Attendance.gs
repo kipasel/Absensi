@@ -157,6 +157,13 @@ function handleAttendanceSubmit_(payload, method) {
     } catch (driveErr) {
       if (driveErr && driveErr.name === 'AppError') throw driveErr;
       // Gagal unggah → tidak ada tulisan apa pun; absensi TIDAK dicatat.
+      // Detail error hanya ke log server (tidak pernah ke klien) agar penyebab
+      // (scope, folder, kuota) dapat ditelusuri lewat Apps Script Executions.
+      if (typeof Logger !== 'undefined') {
+        Logger.log('attendance_drive_failed id_absensi=' + idAbsensi + ' error=' +
+          (driveErr && driveErr.name ? driveErr.name + ': ' : '') +
+          (driveErr && driveErr.message ? driveErr.message : String(driveErr)));
+      }
       logActivity_('attendance_drive_failed', idPegawai, ctx.account.peran, 'absensi', idAbsensi);
       throw AppError_('ATTENDANCE_NOT_STORED',
         'Foto gagal disimpan. Absensi TIDAK dicatat — silakan coba lagi.', true);

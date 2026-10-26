@@ -1,5 +1,25 @@
 # PROGRESS
 
+## Perbaikan — Gagal simpan foto absensi (2026-10-26)
+
+- Gejala: saat kirim absensi muncul "Foto gagal disimpan. Absensi TIDAK dicatat"
+  (`ATTENDANCE_NOT_STORED`). Tidak ada baris `Absensi`/`BuktiAbsensi` yang ditulis.
+- Dugaan penyebab: manifest hanya meminta scope `auth/drive.file`, sedangkan
+  `DRIVE_FOLDER_ID` adalah folder root yang dibuat manual oleh operator.
+  `drive.file` hanya menjangkau berkas yang dibuat/dibuka aplikasi, sehingga
+  `DriveApp.getFolderById`/`createFile` dapat ditolak.
+- Perubahan: `gas/appsscript.json` memakai `https://www.googleapis.com/auth/drive`;
+  kegagalan Drive kini mencatat detail `name`/`message` ke log server
+  (`attendance_drive_failed`) tanpa membocorkannya ke klien; pemeriksaan scope
+  ditambahkan di `tests/check-foundation.mjs`.
+- Status: perubahan lokal. **Belum terverifikasi** sampai backend dideploy ulang
+  sebagai versi baru, otorisasi Drive diberikan ulang, dan absensi nyata berhasil.
+- 2026-10-26: URL Web App di `assets/js/config.js` diperbarui ke deployment
+  `AKfycbwHo5KfGazslBwNvsrrw7ZkV0J-O_VbidkfmqzvK0LE1utW3aZbmTjokZ7fyrhtW1gWng`;
+  health via GET merespons `ok:true`, `backendConfigured:true`,
+  `officeLocationConfigured:true`. Versi frontend/cache dinaikkan ke `0.9.3`.
+  Uji absensi nyata dengan foto **belum dijalankan**.
+
 ## PHASE 7 — Riwayat pribadi pegawai (2026-10-24)
 
 - `attendance.mine` ditambahkan untuk pegawai terautentikasi; identitas berasal

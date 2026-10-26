@@ -38,6 +38,12 @@ tetap wajib memverifikasi identitas & peran di backend.
 2. Salin isi `gas/` (`Code.gs`, `Config.gs`, `Auth.gs`, `Repo.gs`,
    `AuthService.gs`, `Bootstrap.gs`, `appsscript.json`).
    - Aktifkan manifest lewat **Project Settings → Show "appsscript.json"**.
+   - Manifest wajib memakai scope `https://www.googleapis.com/auth/drive`
+     (bukan `drive.file`): folder root `DRIVE_FOLDER_ID` dibuat manual oleh
+     operator, sedangkan `drive.file` hanya menjangkau berkas yang dibuat atau
+     dibuka aplikasi. Tanpa scope ini unggah foto gagal
+     (`ATTENDANCE_NOT_STORED`). Setelah mengubah scope, deploy versi baru dan
+     setujui ulang izin Drive.
 3. Set **Project Settings → Time zone** = `Asia/Jakarta`.
 4. Isi **Script Properties** (kolom Name/Value):
    | Kunci | Nilai |

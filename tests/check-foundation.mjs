@@ -97,6 +97,15 @@ console.log('== Validitas JSON ==');
 ['manifest.webmanifest', 'gas/appsscript.json'].forEach((f) => {
   check('JSON valid: ' + f, () => JSON.parse(readFileSync(abs(f), 'utf8')));
 });
+check('appsscript.json: scope Spreadsheet & Drive penuh (akses folder operator)', () => {
+  const scopes = JSON.parse(readFileSync(abs('gas/appsscript.json'), 'utf8')).oauthScopes || [];
+  if (!scopes.includes('https://www.googleapis.com/auth/spreadsheets')) {
+    throw new Error('scope spreadsheets tidak ada');
+  }
+  if (!scopes.includes('https://www.googleapis.com/auth/drive')) {
+    throw new Error('scope drive penuh tidak ada (drive.file tidak cukup untuk folder manual)');
+  }
+});
 
 console.log('== Ikon PNG ==');
 [192, 512].forEach((size) => {
