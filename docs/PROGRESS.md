@@ -28,6 +28,10 @@
   `AKfycbwXgc3ibSrnbS9U6Ysycg778fzEjW5e7lMGPxd9WU8ysY4DmsoEGhnca-HOuF8cdy8kPg`;
   health via GET merespons `ok:true`, `backendConfigured:true`,
   `officeLocationConfigured:true`. Versi frontend/cache dinaikkan ke `0.9.4`.
+- 2026-10-26 (lanjutan 2): URL Web App diperbarui ke deployment
+  `AKfycbyL2R_JcPT_XhKF__DOi6zsFpgMgHankbiwCiC4DRZp36kGolHtkEkeXw4B2Yo7fo8wrg`;
+  health via GET merespons `ok:true`, `backendConfigured:true`,
+  `officeLocationConfigured:true`. Versi frontend/cache dinaikkan ke `0.9.5`.
 
 ## PHASE 7 — Riwayat pribadi pegawai (2026-10-24)
 
