@@ -19,6 +19,15 @@
   health via GET merespons `ok:true`, `backendConfigured:true`,
   `officeLocationConfigured:true`. Versi frontend/cache dinaikkan ke `0.9.3`.
   Uji absensi nyata dengan foto **belum dijalankan**.
+- Laporan pengguna 2026-10-26: setelah perubahan scope, unggah foto masih gagal
+  (`ATTENDANCE_NOT_STORED`). Ditambahkan `diagnoseDrive()` (jalankan manual dari
+  editor Apps Script) dan stack trace pada log `attendance_drive_failed` untuk
+  memisahkan penyebab: scope belum disetujui, folder root tidak dapat diakses,
+  izin folder, atau kuota Drive. Status penyebab **belum terverifikasi**.
+- 2026-10-26 (lanjutan): URL Web App diperbarui lagi ke deployment
+  `AKfycbwXgc3ibSrnbS9U6Ysycg778fzEjW5e7lMGPxd9WU8ysY4DmsoEGhnca-HOuF8cdy8kPg`;
+  health via GET merespons `ok:true`, `backendConfigured:true`,
+  `officeLocationConfigured:true`. Versi frontend/cache dinaikkan ke `0.9.4`.
 
 ## PHASE 7 — Riwayat pribadi pegawai (2026-10-24)
 

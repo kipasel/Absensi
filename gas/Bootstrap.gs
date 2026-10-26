@@ -16,6 +16,61 @@ function initializeSheets() {
 }
 
 /**
+ * Diagnostik akses Drive untuk foto absensi. Jalankan MANUAL dari editor Apps
+ * Script (bukan action Web App). Ikuti hasil di panel Execution log.
+ *
+ * Fungsi ini hanya membaca konfigurasi, mengakses folder root, menulis satu
+ * berkas uji kecil, lalu menghapusnya. Tidak membuat/mengubah data absensi.
+ * Menjalankannya juga memicu permintaan izin scope Drive bila belum diberikan.
+ */
+function diagnoseDrive() {
+  var cfg = getServerConfig_();
+  Logger.log('diagnoseDrive: DRIVE_FOLDER_ID ' +
+    (cfg.DRIVE_FOLDER_ID ? 'terisi' : 'KOSONG'));
+
+  if (!cfg.DRIVE_FOLDER_ID) {
+    Logger.log('diagnoseDrive: GAGAL — isi DRIVE_FOLDER_ID di Script Properties.');
+    return;
+  }
+
+  var root;
+  try {
+    root = DriveApp.getFolderById(String(cfg.DRIVE_FOLDER_ID));
+  } catch (e) {
+    Logger.log('diagnoseDrive: GAGAL akses folder root — ' + e.name + ': ' + e.message);
+    return;
+  }
+  Logger.log('diagnoseDrive: akses folder root OK (nama="' + root.getName() + '")');
+
+  try {
+    Logger.log('diagnoseDrive: kuota Drive terpakai=' + DriveApp.getStorageUsed() +
+      ' batas=' + DriveApp.getStorageLimit());
+  } catch (e) {
+    Logger.log('diagnoseDrive: info kuota tidak tersedia — ' + e.name + ': ' + e.message);
+  }
+
+  try {
+    var sub = getOrCreateSubfolder_(root, DRIVE_ROOT_FOLDER_NAME);
+    Logger.log('diagnoseDrive: subfolder ' + DRIVE_ROOT_FOLDER_NAME + ' OK (nama="' +
+      sub.getName() + '")');
+  } catch (e) {
+    Logger.log('diagnoseDrive: GAGAL membuat subfolder — ' + e.name + ': ' + e.message);
+  }
+
+  try {
+    var uji = root.createFile(Utilities.newBlob('diagnostik', 'text/plain',
+      'diagnostik_absensi.txt'));
+    Logger.log('diagnoseDrive: tulis berkas uji OK');
+    uji.setTrashed(true);
+    Logger.log('diagnoseDrive: hapus berkas uji OK');
+  } catch (e) {
+    Logger.log('diagnoseDrive: GAGAL menulis berkas uji — ' + e.name + ': ' + e.message);
+  }
+
+  Logger.log('diagnoseDrive: SELESAI');
+}
+
+/**
  * Membuat 1 akun admin awal dari Script Properties ADMIN_SETUP_*.
  * Jalankan sekali manual. PIN tidak pernah dicetak ke log.
  */

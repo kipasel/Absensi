@@ -162,7 +162,8 @@ function handleAttendanceSubmit_(payload, method) {
       if (typeof Logger !== 'undefined') {
         Logger.log('attendance_drive_failed id_absensi=' + idAbsensi + ' error=' +
           (driveErr && driveErr.name ? driveErr.name + ': ' : '') +
-          (driveErr && driveErr.message ? driveErr.message : String(driveErr)));
+          (driveErr && driveErr.message ? driveErr.message : String(driveErr)) +
+          (driveErr && driveErr.stack ? ' stack=' + driveErr.stack : ''));
       }
       logActivity_('attendance_drive_failed', idPegawai, ctx.account.peran, 'absensi', idAbsensi);
       throw AppError_('ATTENDANCE_NOT_STORED',
