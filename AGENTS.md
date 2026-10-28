@@ -97,6 +97,8 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 - Tombol gulir kiri/kanan tabel dan ekspor Excel `.xlsx` terbit di frontend
   `0.10.5` (commit `11711e2`); Pages run `40686168966` sukses dan aset live
   memuat `0.10.5`. Uji browser nyata belum dijalankan.
+- Scrollbar vertikal sisi kanan dan header sticky tabel laporan ada lokal di
+  frontend/cache `0.10.6`; belum diuji browser atau diterbitkan.
 - Jalankan lokal: `py -m http.server 8765` lalu buka `http://127.0.0.1:8765/`.
 
 ## Blocker Aktif (jangan diimplementasikan sebelum dijawab)

@@ -1054,6 +1054,24 @@ textarea.form-input {
   cursor: default;
 }
 
+#report-table-wrap {
+  max-height: 420px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+#report-table-wrap th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+@media (max-width: 640px) {
+  #report-table-wrap {
+    max-height: 55vh;
+  }
+}
+
 .admin-table th.report-th--sortable {
   cursor: pointer;
   user-select: none;

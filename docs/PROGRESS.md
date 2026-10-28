@@ -957,3 +957,11 @@ nyata.
   `ARCHITECTURE.md`, dan `AGENTS.md` diperbarui. Versi frontend/cache `0.10.5`.
 - Status: terbit dari commit `11711e2`; halaman live memuat tombol ekspor
   Excel. Uji unduhan `.xlsx` di browser nyata belum dijalankan.
+
+## Gulir vertikal di sisi kanan tabel laporan — 2026-10-28
+
+- `assets/css/styles.css` membatasi tinggi tabel agar isi menggulir di dalam
+  area tabel; scrollbar vertikal muncul di sisi kanan saat data melampaui tinggi.
+- Header tabel dibuat sticky agar tetap terlihat saat menggulir.
+- Versi frontend/cache dinaikkan ke `0.10.6`.
+- Status: implementasi lokal; belum diuji browser atau diterbitkan.
