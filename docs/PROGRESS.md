@@ -978,3 +978,19 @@ nyata.
 - `assets/js/attendance.js` menampilkan pesan backend langsung. Tes regresi
   menambahkan duplikat tanpa foto dan memastikan jumlah catatan/foto tetap satu.
 - Versi frontend/cache `0.10.7`. Status: belum diuji/dideploy ke Apps Script.
+
+## Rekap absensi bulanan per pegawai — 2026-10-28
+
+- DEC-P35: hitung catatan masuk tepat waktu/terlambat serta pulang valid,
+  dipisah berdasarkan mode WFO dan WFH/WFA. Nol berarti tidak ada catatan valid,
+  bukan kesimpulan tidak hadir; “tidak absen pulang” tidak ditambahkan.
+- Tombol memakai rentang tanggal laporan yang harus tepat satu bulan kalender
+  penuh. Filter pegawai/status pegawai tetap berlaku; filter jenis/mode/sumber
+  diabaikan agar kategori mode/jenis tetap terhitung.
+- `gas/Code.gs`, `gas/ReportService.gs` — endpoint admin
+  `report.rekap.monthly` memvalidasi bulan dan menghitung status dari timestamp
+  valid di server. Semua pegawai yang cocok filter tetap tampil termasuk nilai 0.
+- `index.html`, `assets/js/report.js`, `assets/css/styles.css` — tombol dan
+  tabel rekap dengan kelompok WFO / WFH-WFA.
+- Versi frontend/cache `0.10.8`. Status: belum diuji browser atau deployment
+  Apps Script; belum diverifikasi pada data produksi.

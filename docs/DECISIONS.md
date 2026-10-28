@@ -394,3 +394,17 @@ Sumber: jawaban pengguna atas pertanyaan D0–D8 (lihat `docs/PHASE2_AUDIT.md`).
   server. Ekspor tidak menambah formula, tautan/foto, token, atau PIN.
 - Sumber: jawaban pengguna memilih "Berkas Excel .xlsx" untuk permintaan tombol
   ekspor Excel pada 2026-10-28.
+
+### DEC-P35 - Rekap status absensi bulanan per pegawai
+- Tanggal: 2026-10-28; Status: DISETUJUI (instruksi pengguna).
+- Tambahkan tombol rekap untuk satu bulan kalender penuh, dikelompokkan per
+  pegawai dan mode kerja (WFO / WFH-WFA), dengan jumlah catatan masuk
+  `TEPAT_WAKTU`, masuk `TERLAMBAT`, dan pulang valid yang tercatat.
+- Mode pulang mengikuti nilai `mode_kerja` pada catatan pulang itu sendiri.
+  Rekap berlaku pada rentang tanggal 1 sampai hari terakhir bulan yang dipilih;
+  filter pegawai/status pegawai berlaku, sedangkan filter jenis/mode/sumber
+  tidak membatasi kolom-kolom rekap.
+- Pegawai tanpa catatan tetap tampil bernilai 0. Nilai 0 hanya menyatakan tidak
+  ada catatan valid yang dihitung; tidak menyatakan pegawai tidak hadir. Rekap
+  tidak menghitung “tidak absen pulang” atau tanggal tanpa catatan.
+- Sumber: instruksi pengguna “munculkan tombol rekap” 2026-10-28.

@@ -102,6 +102,8 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   nyata belum dijalankan.
 - Penolakan absensi duplikat dini dan pesan “Sudah absen” ada lokal di backend
   dan frontend `0.10.7`; belum diuji atau dideploy ke Apps Script.
+- Rekap bulanan per pegawai (DEC-P35) ditambahkan lokal di frontend/backend
+  `0.10.8`; belum diuji browser atau dideploy ke Apps Script.
 - Jalankan lokal: `py -m http.server 8765` lalu buka `http://127.0.0.1:8765/`.
 
 ## Blocker Aktif (jangan diimplementasikan sebelum dijawab)
@@ -123,8 +125,9 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 - Impor CSV (AMB-14) & notifikasi (AMB-25) → dikesampingkan (DEC-P27).
 - Konversi persetujuan susulan menjadi baris absensi → masih butuh keputusan
   aturan; jangan diimplementasikan sendiri.
-- Indikator kebijakan laporan (terlambat, tidak hadir, persentase kehadiran,
-  hari kerja efektif) → **BELUM DITETAPKAN** (DEC-P28); jangan ditambahkan sendiri.
+- Kesimpulan tidak hadir, persentase kehadiran, dan hari kerja efektif →
+  **BELUM DITETAPKAN** (DEC-P28); jangan ditambahkan sendiri. Hitungan catatan
+  masuk tepat waktu/terlambat dan pulang valid per mode diizinkan DEC-P35.
 - Jangan mulai PHASE 7 (atau fitur baru) tanpa instruksi.
 
 ## Catatan Runtime (2026-10-19)

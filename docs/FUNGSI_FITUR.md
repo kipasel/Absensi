@@ -76,6 +76,9 @@ Alur data: `Browser/PWA → HTTPS → Apps Script → Sheets + Drive`.
 
 ### 3.5 Laporan & Ekspor (admin)
 - Filter: periode (wajib, maks. 92 hari), pegawai, jenis, mode, sumber, status.
+- Tombol **Rekap absensi bulanan** menampilkan tiap pegawai dengan hitungan
+  masuk tepat waktu/terlambat dan pulang valid, dipisah WFO dan WFH/WFA. Pilih
+  rentang satu bulan penuh; nol berarti tidak ada catatan valid, bukan tidak hadir.
 - **Rekapitulasi fakta terhitung** + tabel harian + rincian berupa **data
   table**: pencarian, urut kolom, pilihan **10/20/30/50 data per halaman**, dan
   navigasi halaman. Detail dan CSV menampilkan kondisi serta pasangan waktu

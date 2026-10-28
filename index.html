@@ -426,11 +426,34 @@
           </div>
           <div class="att-actions">
             <button class="btn btn--primary" id="report-run" type="button">Tampilkan laporan</button>
+            <button class="btn" id="report-monthly-recap-run" type="button">Tampilkan rekap bulanan</button>
             <button class="btn" id="report-export" type="button">Ekspor CSV</button>
             <button class="btn" id="report-export-xlsx" type="button">Ekspor Excel (.xlsx)</button>
           </div>
 
           <p id="report-status" class="att-status" role="status" aria-live="polite" hidden></p>
+
+          <section id="report-monthly-recap" class="report-rekap report-monthly-recap" hidden>
+            <h3 class="att-step__subtitle">REKAP ABSENSI BULANAN</h3>
+            <p id="report-monthly-recap-period" class="report-page-info"></p>
+            <div class="admin-table-wrap">
+              <table class="admin-table" id="report-monthly-recap-table">
+                <thead>
+                  <tr>
+                    <th rowspan="2">Nama pegawai</th>
+                    <th colspan="3">WFO</th>
+                    <th colspan="3">WFH/WFA</th>
+                  </tr>
+                  <tr>
+                    <th>Masuk tepat waktu</th><th>Masuk terlambat</th><th>Pulang tercatat</th>
+                    <th>Masuk tepat waktu</th><th>Masuk terlambat</th><th>Pulang tercatat</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <p class="report-recap-note">Hitungan mencakup semua jenis dan mode kerja. Filter pegawai/status tetap berlaku. Nilai 0 berarti tidak ada catatan valid yang dihitung; bukan kesimpulan tidak hadir.</p>
+          </section>
 
           <div id="report-rekap" class="report-rekap" hidden>
             <h3 class="att-step__subtitle">Rekapitulasi (hitungan catatan &amp; pengajuan)</h3>

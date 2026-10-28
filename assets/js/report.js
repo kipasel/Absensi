@@ -167,6 +167,47 @@
     });
   }
 
+  function renderMonthlyRecap(res) {
+    var panel = el('report-monthly-recap');
+    var table = el('report-monthly-recap-table');
+    if (!panel || !table) return;
+    var period = el('report-monthly-recap-period');
+    var parts = String(res.bulan || '').split('-');
+    var monthText = parts.length === 2
+      ? new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+        .format(new Date(Date.UTC(Number(parts[0]), Number(parts[1]) - 1, 1)))
+      : String(res.bulan || '');
+    setText(period, monthText);
+    var tbody = table.querySelector('tbody');
+    clearNode(tbody);
+    (res.pegawai || []).forEach(function (pegawai) {
+      var tr = document.createElement('tr');
+      cell(tr, pegawai.nama || pegawai.nip_nipk || pegawai.id_pegawai);
+      cell(tr, pegawai.WFO.masuk_tepat_waktu);
+      cell(tr, pegawai.WFO.masuk_terlambat);
+      cell(tr, pegawai.WFO.pulang);
+      cell(tr, pegawai.WFH_WFA.masuk_tepat_waktu);
+      cell(tr, pegawai.WFH_WFA.masuk_terlambat);
+      cell(tr, pegawai.WFH_WFA.pulang);
+      tbody.appendChild(tr);
+    });
+    show(panel);
+  }
+
+  function loadMonthlyRecap() {
+    var filters = readFilters();
+    if (!filters) return;
+    setStatus('Menghitung rekap bulanan…', 'info');
+    api.call('report.rekap.monthly', filters).then(function (res) {
+      if (!res || !res.ok) throw new Error((res && res.message) || 'Gagal memuat rekap bulanan.');
+      renderMonthlyRecap(res);
+      setStatus('Rekap absensi bulanan dimuat.', 'success');
+    }).catch(function (err) {
+      hide(el('report-monthly-recap'));
+      setStatus((err && err.message) || 'Tidak dapat menghubungi server.', 'error');
+    });
+  }
+
   /* ---------------- Tabel detail ---------------- */
 
   function renderDetail(items) {
@@ -582,6 +623,8 @@
 
     var run = el('report-run');
     if (run) run.addEventListener('click', runReport);
+    var monthlyRun = el('report-monthly-recap-run');
+    if (monthlyRun) monthlyRun.addEventListener('click', loadMonthlyRecap);
     var exp = el('report-export');
     if (exp) exp.addEventListener('click', exportCsv);
     var expXlsx = el('report-export-xlsx');

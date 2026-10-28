@@ -13,8 +13,10 @@
  *                              dengan daftar — filter identik, tanpa paginasi).
  *
  * Sengaja TIDAK diimplementasikan (belum ada keputusan):
- * - Metrik "terlambat"/"tidak hadir"/"tingkat kehadiran"/"persentase disiplin"/
+ * - Kesimpulan "tidak hadir"/"tingkat kehadiran"/"persentase disiplin"/
  *   "hari kerja efektif" — definisi & kebijakan BELUM DITETAPKAN.
+ * - Rekap bulanan (DEC-P35) hanya menghitung status masuk/pulang valid yang
+ *   tercatat; tidak menyimpulkan absensi yang tidak tercatat.
  * - Ekspor Excel/PDF/drv. — hanya CSV yang disetujui (DEC-P19).
  * - Tautan/ID file foto dalam ekspor (tetap privat; AMB-20).
  * - Konversi persetujuan susulan menjadi baris Absensi (belum ada aturan).
@@ -498,6 +500,70 @@ function handleReportRekap_(payload, method) {
     susulan: { total: susulan.length, menunggu: sMenunggu, diterima: sDiterima, ditolak: sDitolak },
     harian: harian,
     definisi: REKAP_DEFINITIONS
+  };
+}
+
+/** Rekap bulanan per pegawai dari catatan masuk/pulang valid yang tersimpan. */
+function handleReportMonthlyRecap_(payload, method) {
+  reportRequire_(payload, method);
+  var range = parseReportRange_(payload);
+  var monthKey = range.dari.slice(0, 7);
+  var firstDay = monthKey + '-01';
+  var parts = monthKey.split('-');
+  var nextMonth = new Date(Date.UTC(Number(parts[0]), Number(parts[1]), 1));
+  var lastDay = Utilities.formatDate(new Date(nextMonth.getTime() - 86400000), 'UTC', 'yyyy-MM-dd');
+  if (range.dari !== firstDay || range.sampai !== lastDay || range.sampai.slice(0, 7) !== monthKey) {
+    throw AppError_('INVALID_INPUT', 'Rekap bulanan memerlukan rentang dari tanggal 1 sampai hari terakhir pada bulan yang sama.', true);
+  }
+
+  var filters = parseReportFilters_(payload);
+  var statusMap = pegawaiStatusMap_();
+  var records = {};
+  Object.keys(statusMap).forEach(function (id) {
+    var info = statusMap[id];
+    if (filters.id_pegawai && id !== filters.id_pegawai) return;
+    if (filters.status_pegawai === 'aktif' && !info.aktif) return;
+    if (filters.status_pegawai === 'nonaktif' && info.aktif) return;
+    records[id] = {
+      id_pegawai: id,
+      nama: info.nama,
+      nip_nipk: info.nip_nipk,
+      WFO: { masuk_tepat_waktu: 0, masuk_terlambat: 0, pulang: 0 },
+      WFH_WFA: { masuk_tepat_waktu: 0, masuk_terlambat: 0, pulang: 0 }
+    };
+  });
+
+  var rows = readObjects_('Absensi');
+  var metricFilters = {
+    id_pegawai: filters.id_pegawai,
+    jenis: '', mode_kerja: '', sumber: '', status_pegawai: filters.status_pegawai
+  };
+  var matched = filterAbsensiRows_(rows, range, metricFilters, statusMap);
+  matched.forEach(function (row) {
+    var item = records[String(row.id_pegawai)];
+    var mode = String(row.mode_kerja);
+    if (!item || (mode !== 'WFO' && mode !== 'WFH_WFA')) return;
+    if (String(row.jenis) === 'masuk') {
+      var statusMasuk = masukStatusFromServerIso_(row.waktu_server);
+      if (statusMasuk === 'TEPAT_WAKTU') item[mode].masuk_tepat_waktu++;
+      else if (statusMasuk === 'TERLAMBAT') item[mode].masuk_terlambat++;
+    } else if (String(row.jenis) === 'pulang' && pulangStatusFromServerIso_(row.waktu_server)) {
+      item[mode].pulang++;
+    }
+  });
+
+  var employees = Object.keys(records).map(function (id) { return records[id]; });
+  employees.sort(function (a, b) {
+    var byName = a.nama.localeCompare(b.nama, 'id');
+    return byName || a.id_pegawai.localeCompare(b.id_pegawai);
+  });
+  return {
+    ok: true,
+    bulan: monthKey,
+    tanggal_dari: range.dari,
+    tanggal_sampai: range.sampai,
+    pegawai: employees,
+    definisi: 'Hitungan berasal dari catatan masuk tepat waktu/terlambat dan pulang valid. Pegawai tanpa catatan tetap bernilai 0; angka 0 bukan kesimpulan tidak hadir.'
   };
 }
 

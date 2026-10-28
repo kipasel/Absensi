@@ -135,3 +135,6 @@ Fitur di luar absensi pegawai, pengelolaan pegawai, panel admin, laporan, audit,
 dan PWA tidak termasuk kecuali disetujui. Rekap/ekspor detail: format ekspor
 **CSV dan Excel `.xlsx`** & laporan = admin (DEC-P07, diperbarui DEC-P34);
 aturan indikator kebijakan (terlambat/persen kehadiran) tetap belum ditetapkan.
+Rekap bulanan per pegawai menghitung jumlah catatan masuk tepat waktu/terlambat
+dan pulang valid berdasarkan mode kerja (DEC-P35); angka nol bukan kesimpulan
+tidak hadir.

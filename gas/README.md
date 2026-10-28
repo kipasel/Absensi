@@ -52,6 +52,7 @@ Token sesi HANYA dikirim di body (bukan query string).
 | `admin.log.list` | POST | Ya (admin) | Log audit (filter aksi/limit). |
 | `report.absensi.list` | POST | Ya (admin) | Daftar absensi untuk laporan (rentang wajib, filter, `q`/`sort`/`order`, paginasi; join nama). |
 | `report.rekap` | POST | Ya (admin) | Rekapitulasi fakta terhitung per filter (tanpa indikator kebijakan). |
+| `report.rekap.monthly` | POST | Ya (admin) | Rekap bulanan per pegawai: status masuk/pulang valid, dipisah WFO dan WFH/WFA; rentang harus satu bulan kalender penuh. |
 | `report.absensi.exportCsv` | POST | Ya (admin) | Ekspor CSV (rentang wajib, filter); maks 5000 baris. |
 
 Catatan PHASE 5:

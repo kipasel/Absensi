@@ -128,6 +128,8 @@ function route_(action, payload, method) {
       return handleReportAbsensiList_(payload, method);
     case 'report.rekap':
       return handleReportRekap_(payload, method);
+    case 'report.rekap.monthly':
+      return handleReportMonthlyRecap_(payload, method);
     case 'report.absensi.exportCsv':
       return handleReportAbsensiExportCsv_(payload, method);
     default:

@@ -990,6 +990,24 @@ textarea.form-input {
   background: var(--surface);
 }
 
+.report-monthly-recap {
+  margin-bottom: 0.9rem;
+}
+
+.report-monthly-recap h3 {
+  margin-top: 0;
+}
+
+.report-monthly-recap th {
+  text-align: center;
+}
+
+.report-recap-note {
+  margin: 0.65rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
 .report-rekap__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
