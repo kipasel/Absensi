@@ -427,6 +427,7 @@
           <div class="att-actions">
             <button class="btn btn--primary" id="report-run" type="button">Tampilkan laporan</button>
             <button class="btn" id="report-export" type="button">Ekspor CSV</button>
+            <button class="btn" id="report-export-xlsx" type="button">Ekspor Excel (.xlsx)</button>
           </div>
 
           <p id="report-status" class="att-status" role="status" aria-live="polite" hidden></p>
@@ -477,7 +478,7 @@
                 </div>
               </div>
             </div>
-            <div class="admin-table-wrap">
+            <div class="admin-table-wrap" id="report-table-wrap">
               <table class="admin-table" id="report-table">
                 <thead>
                   <tr>
@@ -501,6 +502,10 @@
                 </thead>
                 <tbody></tbody>
               </table>
+            </div>
+            <div class="report-table-scroll-controls" aria-label="Navigasi tabel laporan">
+              <button class="btn" id="report-scroll-left" type="button" aria-label="Gulir tabel ke kiri">← Geser kiri</button>
+              <button class="btn" id="report-scroll-right" type="button" aria-label="Gulir tabel ke kanan">Geser kanan →</button>
             </div>
             <div id="report-pagination" class="report-pagination" hidden>
               <button class="btn" id="report-prev" type="button">Sebelumnya</button>

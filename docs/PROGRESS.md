@@ -931,3 +931,27 @@ nyata.
 - Probe health: `ok:true`, `backendConfigured:true`,
   `officeLocationConfigured:true`.
 - Belum diverifikasi: login, absensi, dan status pulang pada deployment baru.
+
+## Tombol gulir tabel laporan — 2026-10-28
+
+- `index.html` / `assets/css/styles.css` — menambahkan tombol Geser kiri/kanan
+  di bawah tabel rincian laporan.
+- `assets/js/report.js` — tombol menggeser tabel sebesar sebagian lebar viewport;
+  tombol disembunyikan bila tabel tidak overflow dan dinonaktifkan di ujung
+  gulir. Posisi kontrol disinkronkan saat tabel digulir, selesai dimuat, dan
+  ukuran jendela berubah.
+- Versi frontend/cache dinaikkan dari `0.10.3` ke `0.10.4`.
+- Status: implementasi lokal; belum diuji browser dan belum diterbitkan.
+
+## Ekspor laporan Excel `.xlsx` — 2026-10-28
+
+- DEC-P34 memperbarui keputusan ekspor dari CSV saja menjadi CSV dan Excel
+  `.xlsx`, sesuai instruksi pengguna; batas 5000 baris dan filter yang sama
+  tetap berlaku.
+- `index.html` menambahkan tombol Ekspor Excel. `assets/js/report.js` memakai
+  endpoint CSV laporan yang sudah ada lalu membentuk workbook Open XML di
+  browser; semua sel ditulis sebagai teks, dan guard injeksi formula dari CSV
+  tetap dipakai. Tidak ada dependensi eksternal atau perubahan backend.
+- `docs/REQUIREMENTS.md`, `DECISIONS.md`, `FUNGSI_FITUR.md`,
+  `ARCHITECTURE.md`, dan `AGENTS.md` diperbarui. Versi frontend/cache `0.10.5`.
+- Status: perubahan lokal; belum diuji browser dan belum diterbitkan.

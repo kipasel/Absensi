@@ -1038,6 +1038,22 @@ textarea.form-input {
   min-width: 220px;
 }
 
+.report-table-scroll-controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: 0.55rem;
+}
+
+.report-table-scroll-controls .btn {
+  min-height: 40px;
+}
+
+.report-table-scroll-controls .btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .admin-table th.report-th--sortable {
   cursor: pointer;
   user-select: none;

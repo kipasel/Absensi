@@ -81,8 +81,9 @@ Alur data: `Browser/PWA → HTTPS → Apps Script → Sheets + Drive`.
   navigasi halaman. Detail dan CSV menampilkan kondisi serta pasangan waktu
   masuk/pulang, status, uraian dan output pekerjaan. Waktu yang tidak tercatat
   tetap kosong. Rekap memisahkan pulang tanpa catatan masuk.
-- **Ekspor CSV** (BOM UTF-8, quote RFC 4180, guard formula-injection,
-  maks. 5000 baris) — **tanpa** PIN/token/referensi foto.
+- **Ekspor CSV** (BOM UTF-8, quote RFC 4180, guard formula-injection) dan
+  **Excel `.xlsx`**; keduanya memakai filter yang sama dan maks. 5000 baris,
+  tanpa PIN/token/referensi foto (DEC-P34).
 - Status `TERLAMBAT` dicatat per baris masuk sesuai DEC-P31; status masuk/pulang
   laporan diturunkan ulang dari catatan aktual. Catatan pulang valid →
   `SUDAH_ABSEN_PULANG`; belum ada pulang valid → `BELUM_ABSEN_PULANG`. Pulang

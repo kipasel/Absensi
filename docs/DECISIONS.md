@@ -384,3 +384,13 @@ Sumber: jawaban pengguna atas pertanyaan D0–D8 (lihat `docs/PHASE2_AUDIT.md`).
 - Tidak ada catatan pulang/masuk sintetis; aturan jam, foto, uraian/output, dan
   pencegahan duplikat tetap berlaku.
 - Sumber: instruksi pengguna "BUGFIX - STATUS ABSEN PULANG" 2026-10-28.
+
+### DEC-P34 - Format ekspor laporan Excel
+- Tanggal: 2026-10-28; Status: DISETUJUI (instruksi pengguna).
+- Memperbarui DEC-P07: ekspor laporan menyediakan CSV dan workbook Excel `.xlsx`.
+- Ekspor memakai filter laporan yang sama, memuat seluruh hasil (tidak hanya
+  halaman tabel), dan tetap menerapkan batas ekspor 5000 baris.
+- Spreadsheet berisi nilai teks dari endpoint ekspor yang sudah diotorisasi
+  server. Ekspor tidak menambah formula, tautan/foto, token, atau PIN.
+- Sumber: jawaban pengguna memilih "Berkas Excel .xlsx" untuk permintaan tombol
+  ekspor Excel pada 2026-10-28.

@@ -47,7 +47,7 @@ Google Apps Script Web App  (doGet/doPost; satu-satunya lapisan tepercaya)
   (event `auth:login`); render data via `textContent` (anti-XSS); tanpa URL foto.
 - `assets/js/report.js` — tab Laporan (PHASE 5): filter periode/pegawai/jenis/
   mode/sumber/status, kartu rekapitulasi + tabel harian, tabel rincian
-  berpaginasi, ekspor CSV via Blob (nama berkas divalidasi); tampil hanya bila
+  berpaginasi, ekspor CSV dan `.xlsx` via Blob (nama berkas divalidasi); tampil hanya bila
   peran `admin`; panel disembunyikan saat tab admin lain aktif.
 - `assets/js/nav.js` — controller navigasi UI (UI 0.6.0): perpindahan antar
   tampilan + visibilitas bilah bawah (item Admin hanya untuk peran `admin`);

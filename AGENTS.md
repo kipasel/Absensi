@@ -45,8 +45,8 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   ber-token, handler susulan, retensi permanen; keputusan DEC-P22..P28; suite uji
   jadi 6 berkas. Per 2026-10-24 route/UI pengajuan susulan nonaktif (DEC-P31).
 - Keputusan D0–D8 sudah dijawab pengguna (lihat `docs/DECISIONS.md` DEC-P09..P16);
-  aturan waktu & foto: DEC-P17/P18; ekspor **CSV saja** + laporan = admin:
-  DEC-P07 (AMB-19 ANSWERED).
+  aturan waktu & foto: DEC-P17/P18; ekspor CSV + Excel `.xlsx` (DEC-P34),
+  laporan = admin (DEC-P07).
 - Kode: autentikasi (`gas/Auth*.gs`, `assets/js/auth.js`), absensi
   (`gas/TimeRule.gs`, `Geo.gs`, `Drive.gs`, `Attendance.gs`, `Susulan.gs`;
   `assets/js/camera.js`,   `attendance.js`, `susulan.js`), panel admin (`gas/AdminService.gs`; `assets/js/admin.js`),
@@ -94,6 +94,8 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   sukses dan aset live memuat `0.10.0` + header sortable. `report.absensi.list`
   menerima `q`/`sort`/`order`. Backend **belum dideploy** sehingga pencarian/urut
   server belum aktif di live.
+- Tombol gulir kiri/kanan tabel dan ekspor Excel `.xlsx` ditambahkan lokal;
+  frontend/cache `0.10.5` belum diuji browser atau diterbitkan.
 - Jalankan lokal: `py -m http.server 8765` lalu buka `http://127.0.0.1:8765/`.
 
 ## Blocker Aktif (jangan diimplementasikan sebelum dijawab)
