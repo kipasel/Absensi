@@ -74,7 +74,8 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   `Attendance.gs`, `MyAttendanceService.gs` belum dideploy.
 - Perbaikan normalisasi tanggal 2026-10-28: `readObjects_()` mengubah sel
   tanggal bisnis bertipe Date menjadi `YYYY-MM-DD` (zona `Asia/Jakarta`) agar
-  filter laporan tidak menghasilkan 0. Backend belum dideploy.
+  filter laporan tidak menghasilkan 0. Frontend/cache `0.9.8` disiapkan agar
+  klien PWA mengambil konfigurasi API baru. Backend belum dideploy.
 - Jalankan lokal: `py -m http.server 8765` lalu buka `http://127.0.0.1:8765/`.
 
 ## Blocker Aktif (jangan diimplementasikan sebelum dijawab)

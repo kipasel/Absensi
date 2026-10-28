@@ -846,5 +846,7 @@ nyata.
   dengan tanggal bisnis `2026-10-28`.
 - Validasi lokal: `report.test.mjs` **248/0**, `check-foundation.mjs` **84/0**,
   `git diff --check` bersih.
+- Versi frontend/cache dinaikkan ke `0.9.8` agar klien PWA mengambil konfigurasi
+  API terbaru (bukan cache `0.9.7`).
 - Status: perubahan backend sudah disiapkan di repo dan **belum dideploy** ke
   Apps Script; perilaku laporan live belum dapat diklaim terverifikasi.
