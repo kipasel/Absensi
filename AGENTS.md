@@ -34,8 +34,9 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 ## Status Saat Ini
 - Perubahan DEC-P33 (2026-10-28) menetapkan status pulang dari catatan pulang
   valid: `SUDAH_ABSEN_PULANG`/`BELUM_ABSEN_PULANG`; `TANPA_ABSEN_MASUK` tetap
-  dipakai untuk status masuk yang tidak tersedia. Perubahan backend/frontend
-  `0.10.2` masih **lokal dan belum dideploy**; verifikasi nyata belum dijalankan.
+  dipakai untuk status masuk yang tidak tersedia. Frontend `0.10.3` terbit
+  (commit `2772aa5`), tetapi deployment backend dan verifikasi absensi nyata
+  belum dikonfirmasi.
 - PHASE 0–6 dikerjakan. PHASE 3 (mesin absensi), PHASE 4 (panel admin),
   PHASE 5 (laporan & ekspor) **selesai (lokal)**. PHASE 6 (QA rilis) **selesai
   (lokal)**: audit kode & keamanan, 3 perbaikan frontend, verifikasi runtime.

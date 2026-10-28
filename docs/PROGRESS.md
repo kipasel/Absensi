@@ -913,7 +913,9 @@ nyata.
   timestamp pulang; `sudah_pulang_hari_ini` hanya untuk pulang valid.
 - `assets/js/attendance.js` — pemberitahuan masuk tidak tersedia memakai
   `status_masuk`, bukan status pulang.
-- Frontend/cache `0.10.2` (lokal, belum dipush/dideploy).
+- Frontend/cache `0.10.3` terbit dari commit `2772aa5`; Pages run
+  `40683635747` sukses. Deployment backend dan verifikasi absensi nyata belum
+  dikonfirmasi.
 - Validasi lokal: foundation **84/0**, auth **57/0**, attendance **218/0**,
   admin **170/0**, report **282/0**, susulan **67/0**, datetime **14/0**.
 - Tindak lanjut produksi: deploy Apps Script, lalu jalankan
@@ -924,7 +926,8 @@ nyata.
 
 - `assets/js/config.js` — `API_BASE_URL` diganti ke Web App terbaru:
   `https://script.google.com/macros/s/AKfycbyrUXAu0hU99hBWzooq8MdeUv22mbrhlGeUqlxAWuryDYjvblxDIFUMKY02W1uaAe0Vsw/exec`.
-- Frontend/cache `0.10.3` (lokal).
+- Frontend/cache `0.10.3` terbit dari commit `2772aa5`; Pages run
+  `40683635747` sukses dan aset live memuat URL baru.
 - Probe health: `ok:true`, `backendConfigured:true`,
   `officeLocationConfigured:true`.
 - Belum diverifikasi: login, absensi, dan status pulang pada deployment baru.
