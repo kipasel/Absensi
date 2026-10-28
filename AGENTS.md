@@ -68,9 +68,10 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   masuk valid, kedua kolom status = `TANPA_ABSEN_MASUK`. Rekonsiliasi aman:
   `reconcileAbsensiStatusesPreview()` lalu `reconcileAbsensiStatusesApply()`
   (hanya kolom `status`). Belum dijalankan pada spreadsheet produksi.
-- Perbaikan status 2026-10-28: frontend lokal `0.9.7` (belum diterbitkan);
-  backend `gas/TimeRule.gs`, `ReportService.gs`, `Repo.gs`, `Attendance.gs`,
-  `MyAttendanceService.gs` belum dideploy.
+- Perbaikan status 2026-10-28: frontend `0.9.7` terbit dari commit `e5a6075`
+  (`master`/`main`); Pages build `1321281841` sukses dan aset live memuat
+  `0.9.7`. Backend `gas/TimeRule.gs`, `ReportService.gs`, `Repo.gs`,
+  `Attendance.gs`, `MyAttendanceService.gs` belum dideploy.
 - Jalankan lokal: `py -m http.server 8765` lalu buka `http://127.0.0.1:8765/`.
 
 ## Blocker Aktif (jangan diimplementasikan sebelum dijawab)

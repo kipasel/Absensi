@@ -827,5 +827,9 @@ Perubahan:
 
 Pengujian lokal (Node + stub): foundation **84/0**, auth **57/0**,
 attendance **214/0**, admin **170/0**, report **245/0**, susulan **67/0**,
-datetime **14/0**. Belum dijalankan: deployment Apps Script, rekonsiliasi pada
-spreadsheet produksi, dan uji browser nyata.
+datetime **14/0**.
+
+Frontend `0.9.7` (commit `e5a6075`) sudah dipush ke `master`/`main` dan terbit
+di Pages (build `1321281841`; aset live memuat `0.9.7`). Belum dijalankan:
+deployment Apps Script, rekonsiliasi pada spreadsheet produksi, dan uji browser
+nyata.
