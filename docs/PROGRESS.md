@@ -860,6 +860,7 @@ nyata.
   saat laporan dijalankan atau ukuran diubah, dan rincian dimuat ulang tanpa
   mengubah filter/rekap.
 - Tidak ada perubahan backend; endpoint laporan sudah menerima `limit`.
-- Versi frontend/cache `0.9.9`.
+- Frontend/cache `0.9.9` (commit `03d60e5`) sudah dipush ke `master`/`main`;
+  Pages build `1321339598` sukses dan aset live memuat `0.9.9`.
 - Validasi: sintaks `report.js` dan `check-foundation.mjs` **84/0**; suite lain
   tidak berubah.
