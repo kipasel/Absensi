@@ -882,3 +882,12 @@ nyata.
 - Backend **belum dideploy**; pencarian/urut server baru aktif setelah deploy
   Apps Script. Frontend live tanpa deploy backend tetap menampilkan tabel,
   tetapi `q`/`sort`/`order` akan diabaikan server lama.
+
+## Endpoint Web App baru — 2026-10-28
+
+- `assets/js/config.js` — `API_BASE_URL` diganti ke Web App terbaru:
+  `https://script.google.com/macros/s/AKfycbwiGW8Pvi6wc5XgZos7Cyma9J3uaX0J7QB1z2_-D2FAT1fbjB_GLpyFJcmjkGbHBQyLRA/exec`.
+- Frontend/cache `0.10.1`.
+- Probe health: `ok:true`, `backendConfigured:true`,
+  `officeLocationConfigured:true`.
+- Belum dijalankan: login/absensi/laporan dengan akun nyata dan uji browser.

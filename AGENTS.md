@@ -68,6 +68,10 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   masuk valid, kedua kolom status = `TANPA_ABSEN_MASUK`. Rekonsiliasi aman:
   `reconcileAbsensiStatusesPreview()` lalu `reconcileAbsensiStatusesApply()`
   (hanya kolom `status`). Belum dijalankan pada spreadsheet produksi.
+- Endpoint Web App terbaru (2026-10-28):
+  `https://script.google.com/macros/s/AKfycbwiGW8Pvi6wc5XgZos7Cyma9J3uaX0J7QB1z2_-D2FAT1fbjB_GLpyFJcmjkGbHBQyLRA/exec`;
+  health `ok:true`, `backendConfigured:true`, `officeLocationConfigured:true`.
+  Disetel di `assets/js/config.js`; frontend/cache `0.10.1`.
 - Perbaikan status 2026-10-28: frontend `0.9.7` terbit dari commit `e5a6075`
   (`master`/`main`); Pages build `1321281841` sukses dan aset live memuat
   `0.9.7`. Backend `gas/TimeRule.gs`, `ReportService.gs`, `Repo.gs`,
