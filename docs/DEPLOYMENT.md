@@ -70,7 +70,8 @@ tetap wajib memverifikasi identitas & peran di backend.
    menambahkan header absensi yang belum ada di kolom baru dan mempertahankan
    data/baris historis; kolom baru `status`, `uraian_pekerjaan`, dan
    `output_pekerjaan` tidak memerlukan pengisian ulang. Pastikan aturan
-   conditional formatting `TERLAMBAT` merah dan `TANPA_ABSEN_MASUK` kuning
+   conditional formatting `TERLAMBAT` merah, `TANPA_ABSEN_MASUK` kuning,
+   `SUDAH_ABSEN_PULANG` hijau
    muncul pada kolom `status`.
    Setelah header sinkron, jalankan `reconcileAbsensiStatusesPreview()` dari
    editor Apps Script. Periksa `contoh`/`perlu_diperbaiki`; bila sesuai,

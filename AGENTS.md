@@ -32,10 +32,10 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 - Perubahan sekecil mungkin; jangan refactor tak berkaitan.
 
 ## Status Saat Ini
-- Perubahan DEC-P31 (2026-10-24) mengizinkan absen pulang tanpa catatan masuk,
-  menambahkan status `TANPA_ABSEN_MASUK`, dan memisahkan status terlambat masuk.
-  Frontend `0.6.8` terlihat live menurut tangkapan layar pengguna. Perbaikan audit
-  backend terbaru masih lokal.
+- Perubahan DEC-P33 (2026-10-28) menetapkan status pulang dari catatan pulang
+  valid: `SUDAH_ABSEN_PULANG`/`BELUM_ABSEN_PULANG`; `TANPA_ABSEN_MASUK` tetap
+  dipakai untuk status masuk yang tidak tersedia. Perubahan backend/frontend
+  `0.10.2` masih **lokal dan belum dideploy**; verifikasi nyata belum dijalankan.
 - PHASE 0–6 dikerjakan. PHASE 3 (mesin absensi), PHASE 4 (panel admin),
   PHASE 5 (laporan & ekspor) **selesai (lokal)**. PHASE 6 (QA rilis) **selesai
   (lokal)**: audit kode & keamanan, 3 perbaikan frontend, verifikasi runtime.
@@ -61,17 +61,21 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   `node tests/attendance.test.mjs`, `node tests/admin.test.mjs`,
   `node tests/report.test.mjs`, `node tests/susulan.test.mjs`,
   `node tests/datetime.test.mjs`.
-  Hasil terakhir (2026-10-28): 84 / 57 / 214 / 170 / 261 / 67 / 14 — semua **0 gagal**.
+  Hasil terakhir (2026-10-28): 84 / 57 / 218 / 170 / 282 / 67 / 14 — semua **0 gagal**.
 - Tampilan tanggal/waktu memakai `assets/js/datetime.js` (Asia/Jakarta);
   timestamp server tetap ISO-8601 UTC dan CSV dikonversi sekali di backend.
-- Status masuk/pulang laporan **diturunkan ulang** dari catatan aktual; tanpa
-  masuk valid, kedua kolom status = `TANPA_ABSEN_MASUK`. Rekonsiliasi aman:
-  `reconcileAbsensiStatusesPreview()` lalu `reconcileAbsensiStatusesApply()`
-  (hanya kolom `status`). Belum dijalankan pada spreadsheet produksi.
+- Status masuk/pulang laporan **diturunkan ulang** dari catatan aktual (DEC-P33):
+  pulang valid = `SUDAH_ABSEN_PULANG`; tanpa pulang valid tetapi ada masuk =
+  `BELUM_ABSEN_PULANG`; tanpa masuk valid tetapi ada pulang =
+  `status_masuk: TANPA_ABSEN_MASUK` + `status_pulang: SUDAH_ABSEN_PULANG`.
+  Baris pulang valid di sheet berstatus `SUDAH_ABSEN_PULANG` (bukan TANPA).
+  Rekonsiliasi aman: `reconcileAbsensiStatusesPreview()` lalu
+  `reconcileAbsensiStatusesApply()` (hanya kolom `status`). Belum dijalankan
+  pada spreadsheet produksi.
 - Endpoint Web App terbaru (2026-10-28):
-  `https://script.google.com/macros/s/AKfycbwiGW8Pvi6wc5XgZos7Cyma9J3uaX0J7QB1z2_-D2FAT1fbjB_GLpyFJcmjkGbHBQyLRA/exec`;
+  `https://script.google.com/macros/s/AKfycbyrUXAu0hU99hBWzooq8MdeUv22mbrhlGeUqlxAWuryDYjvblxDIFUMKY02W1uaAe0Vsw/exec`;
   health `ok:true`, `backendConfigured:true`, `officeLocationConfigured:true`.
-  Disetel di `assets/js/config.js`; frontend/cache `0.10.1`.
+  Disetel di `assets/js/config.js`; frontend/cache `0.10.3`.
 - Perbaikan status 2026-10-28: frontend `0.9.7` terbit dari commit `e5a6075`
   (`master`/`main`); Pages build `1321281841` sukses dan aset live memuat
   `0.9.7`. Backend `gas/TimeRule.gs`, `ReportService.gs`, `Repo.gs`,

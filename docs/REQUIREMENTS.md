@@ -64,7 +64,7 @@ Arsitektur: `Browser/PWA → HTTPS → Google Apps Script → Google Sheets & Go
 ## 7. Aturan Transaksi Absensi
 - Satu absen masuk reguler per pegawai per tanggal.
 - Satu absen pulang reguler per pegawai per tanggal.
-- Absen pulang tidak mensyaratkan catatan masuk. Jika catatan masuk tanggal itu tidak tersedia, catatan pulang disimpan dengan status `TANPA_ABSEN_MASUK`; status ini hanya menandai ketiadaan data masuk dan bukan kesimpulan ketidakhadiran (DEC-P31).
+- Absen pulang tidak mensyaratkan catatan masuk. Catatan pulang yang valid (timestamp pada jendela 16:00:00–23:59:59 WIB) berstatus `SUDAH_ABSEN_PULANG`. Jika catatan masuk tidak tersedia, laporan menurunkan `Status Absen Masuk` = `TANPA_ABSEN_MASUK` tanpa membuat catatan masuk palsu (DEC-P31/DEC-P33).
 - Absen pulang wajib memuat Uraian Pekerjaan dan Output Pekerjaan; validasi wajib dilakukan di backend sebelum foto atau baris disimpan.
 - Laporan detail menampilkan kondisi masuk/pulang per pegawai-hari, waktu masuk/pulang yang benar-benar tersimpan, serta uraian/output pada catatan pulang. Waktu yang tidak memiliki catatan tetap kosong; ekspor CSV memuat pasangan waktu dan kondisi yang sama (DEC-P31).
 - Permintaan ganda ditangani aman (hindari duplikasi klik berulang / race condition).

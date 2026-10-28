@@ -140,6 +140,20 @@ function masukStatusFromServerIso_(value) {
 }
 
 /**
+ * Status catatan pulang dari timestamp server. Timestamp kosong/tidak valid
+ * atau di luar jendela pulang (16:00:00–23:59:59 WIB) bukan catatan pulang
+ * valid dan menghasilkan string kosong.
+ * @param {string} value timestamp ISO-8601
+ * @return {'SUDAH_ABSEN_PULANG'|''}
+ */
+function pulangStatusFromServerIso_(value) {
+  var civil = civilFromServerIso_(value);
+  if (!civil) return '';
+  var windowEval = evaluateTimeWindow_('pulang', civil.detikHari);
+  return windowEval.ok ? 'SUDAH_ABSEN_PULANG' : '';
+}
+
+/**
  * Evaluasi waktu absensi memakai waktu server sekarang.
  * @param {string} jenis
  * @param {number} nowMs

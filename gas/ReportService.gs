@@ -281,6 +281,7 @@ function reportAbsensiDayMap_(rows) {
         out[key].status_masuk = statusMasuk;
       }
     } else if (jenis === 'pulang') {
+      if (!pulangStatusFromServerIso_(row.waktu_server)) continue;
       if (!out[key].ada_pulang) out[key].waktu_pulang = String(row.waktu_server || '');
       out[key].ada_pulang = true;
       out[key].uraian_pekerjaan = String(row.uraian_pekerjaan || '');
@@ -291,7 +292,8 @@ function reportAbsensiDayMap_(rows) {
     var day = out[key];
     if (!day.ada_masuk) day.status_masuk = day.ada_pulang ? 'TANPA_ABSEN_MASUK' : '';
     day.status_pulang = day.ada_pulang
-      ? (day.ada_masuk ? '' : 'TANPA_ABSEN_MASUK') : '';
+      ? 'SUDAH_ABSEN_PULANG'
+      : (day.ada_masuk ? 'BELUM_ABSEN_PULANG' : '');
     day.kondisi_harian = day.ada_masuk
       ? (day.ada_pulang ? 'ADA_MASUK_DAN_PULANG' : 'ADA_MASUK_TANPA_PULANG')
       : (day.ada_pulang ? 'TANPA_MASUK_DENGAN_PULANG' : '');
@@ -460,7 +462,7 @@ function handleReportRekap_(payload, method) {
     else if (jenis === 'pulang') {
       harianMap[t].catatan_pulang++;
       var day = dayMap[String(r.id_pegawai) + '|' + t] || {};
-      if (String(day.status_pulang || '') === 'TANPA_ABSEN_MASUK') harianMap[t].pulang_tanpa_masuk++;
+      if (day.ada_pulang && !day.ada_masuk) harianMap[t].pulang_tanpa_masuk++;
     }
   }
   susulanSetuju = 0;

@@ -17,7 +17,9 @@
  * - Foto JPEG wajib; batas ukuran PHASE3_PHOTO_MAX_BYTES, default 1.000.000
  *   byte (DEC-P17); magic bytes diperiksa, tidak hanya MIME kiriman.
  * - Satu masuk + satu pulang per pegawai per tanggal bisnis; pulang
- *   boleh tanpa catatan masuk dan diberi status TANPA_ABSEN_MASUK (DEC-P31).
+ *   boleh tanpa catatan masuk dan tetap berstatus SUDAH_ABSEN_PULANG.
+ *   Status masuk yang tidak tersedia diturunkan sebagai TANPA_ABSEN_MASUK
+ *   pada laporan (DEC-P33).
  * - Idempotensi: klien mengirim id_absensi (UUID) sebagai kunci permintaan;
  *   retry dengan ID sama mengembalikan sukses yang sama tanpa duplikat.
  *
@@ -135,13 +137,12 @@ function handleAttendanceSubmit_(payload, method) {
       throw AppError_('DUPLICATE', 'Absensi ' + jenis + ' pada ' + tanggal + ' sudah tercatat.', true);
     }
 
-    // Pulang boleh tercatat tanpa masuk; status ini hanya menandai data masuk
-    // yang tidak tersedia dan bukan kesimpulan bahwa pegawai tidak hadir.
-    var masukHariIni = jenis === 'pulang'
-      ? findAbsensiByUniq_(idPegawai, tanggal, 'masuk') : null;
+    // Status pulang hanya bergantung pada catatan pulang valid (waktu server
+    // sudah lolos jendela pulang). Status masuk diturunkan terpisah dan tidak
+    // diubah oleh status pulang (DEC-P33).
     var statusAbsensi = jenis === 'masuk'
       ? getMasukStatus_(timeEval.detikHari)
-      : (masukHariIni ? '' : 'TANPA_ABSEN_MASUK');
+      : 'SUDAH_ABSEN_PULANG';
 
     // Unggah foto ke Drive (masih di dalam lock agar tidak ada baris ganda).
     var saved;
@@ -214,16 +215,15 @@ function handleAttendanceSubmit_(payload, method) {
         'silakan coba lagi — permintaan dengan ID sama tidak akan menghasilkan duplikat.', true);
     }
 
-    // Pulang yang tercatat lebih dahulu (tanpa masuk) tidak boleh tetap
-    // bertanda TANPA_ABSEN_MASUK setelah masuk valid tersimpan. Kegagalan
-    // pembersihan tidak membatalkan absensi yang sudah tersimpan; laporan
-    // tetap menurunkan status dari catatan masuk yang sebenarnya.
+    // Baris pulang historis yang masih bertanda lama disegarkan ke status
+    // pulang yang benar tanpa mengubah timestamp. Kegagalan penyegaran tidak
+    // membatalkan absensi; rekonsiliasi admin tetap tersedia.
     if (jenis === 'masuk') {
       try {
-        clearTanpaAbsenMasukMarker_(idPegawai, tanggal);
+        refreshPulangStatusForDay_(idPegawai, tanggal);
       } catch (markerErr) {
         if (typeof Logger !== 'undefined') {
-          Logger.log('clearTanpaAbsenMasukMarker_ gagal id_absensi=' + idAbsensi +
+          Logger.log('refreshPulangStatusForDay_ gagal id_absensi=' + idAbsensi +
             ' error=' + (markerErr && markerErr.message ? markerErr.message : String(markerErr)));
         }
       }
@@ -268,6 +268,13 @@ function compensatePartialWrite_(idBukti, driveFileId, idPegawai, idAbsensi) {
     idAbsensi + ' | orphan_drive_file=' + driveFileId);
 }
 
+function attendanceStatusMasuk_(record) {
+  if (String(record.jenis) === 'masuk') return String(record.status || '');
+  var masuk = findAbsensiByUniq_(record.id_pegawai, record.tanggal, 'masuk');
+  if (!masuk) return 'TANPA_ABSEN_MASUK';
+  return masukStatusFromServerIso_(masuk.waktu_server) || 'TANPA_ABSEN_MASUK';
+}
+
 function attendanceSuccessResponse_(record) {
   return {
     ok: true,
@@ -279,6 +286,7 @@ function attendanceSuccessResponse_(record) {
     jarak_meter: (record.jarak_meter === '' || record.jarak_meter === undefined || record.jarak_meter === null)
       ? null : record.jarak_meter,
     status: 'tercatat',
-    status_absensi: String(record.status || '')
+    status_absensi: String(record.status || ''),
+    status_masuk: attendanceStatusMasuk_(record)
   };
 }

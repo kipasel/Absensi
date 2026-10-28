@@ -52,9 +52,10 @@ Alur data: `Browser/PWA → HTTPS → Apps Script → Sheets + Drive`.
   Mode `WFH_WFA` tidak memerlukan GPS.
 - **Foto JPEG wajib** (dari kamera, dikonversi di canvas; batas default
   ±1.000.000 byte; magic-bytes diperiksa server).
-- Pulang tidak membutuhkan catatan masuk. Jika masuk belum tercatat, pulang
-  disimpan dengan `TANPA_ABSEN_MASUK`; ini hanya menandai catatan masuk yang
-  tidak tersedia, bukan bukti ketidakhadiran. Tidak dibuat catatan masuk palsu.
+- Pulang tidak membutuhkan catatan masuk. Catatan pulang valid selalu berstatus
+  `SUDAH_ABSEN_PULANG`; bila masuk belum tercatat, laporan menurunkan
+  `Status Absen Masuk` = `TANPA_ABSEN_MASUK`. Ini bukan bukti ketidakhadiran;
+  tidak dibuat catatan masuk palsu.
 - Pulang wajib Uraian Pekerjaan, Output Pekerjaan, dan foto dari kamera;
   GPS tidak diwajibkan. Tetap hanya satu catatan pulang per pegawai/tanggal.
 - **Idempoten**: kirim ulang dengan `id_absensi` sama tidak menghasilkan duplikat.
@@ -83,8 +84,10 @@ Alur data: `Browser/PWA → HTTPS → Apps Script → Sheets + Drive`.
 - **Ekspor CSV** (BOM UTF-8, quote RFC 4180, guard formula-injection,
   maks. 5000 baris) — **tanpa** PIN/token/referensi foto.
 - Status `TERLAMBAT` dicatat per baris masuk sesuai DEC-P31; status masuk/pulang
-  laporan diturunkan ulang dari catatan aktual. Pulang tanpa masuk menampilkan
-  `TANPA_ABSEN_MASUK` pada kedua kolom status. Rekap tidak menghitung
+  laporan diturunkan ulang dari catatan aktual. Catatan pulang valid →
+  `SUDAH_ABSEN_PULANG`; belum ada pulang valid → `BELUM_ABSEN_PULANG`. Pulang
+  tanpa masuk valid menampilkan `Status Absen Masuk` = `TANPA_ABSEN_MASUK`
+  dan `Status Absen Pulang` = `SUDAH_ABSEN_PULANG`. Rekap tidak menghitung
   persentase kehadiran atau indikator kebijakan lain.
 
 ### 3.6 Tampilan / PWA

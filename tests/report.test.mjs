@@ -414,9 +414,9 @@ check('laporan menampilkan pulang tanpa masuk tanpa membuat data masuk', () => {
   const list = env.sandbox.handleReportAbsensiList_({ token: tokenAdmin, ...RANGE }, 'POST');
   const item = list.items.find((r) => r.id_absensi === 'ABS-PULANG-TANPA-MASUK');
   eq('waktu pulang server', item.waktu_server, '2026-10-15T09:00:00.000Z');
-  eq('status catatan', item.status, 'TANPA_ABSEN_MASUK');
+  eq('status catatan', item.status, 'SUDAH_ABSEN_PULANG');
   eq('status absen masuk', item.status_masuk, 'TANPA_ABSEN_MASUK');
-  eq('status absen pulang', item.status_pulang, 'TANPA_ABSEN_MASUK');
+  eq('status absen pulang', item.status_pulang, 'SUDAH_ABSEN_PULANG');
   eq('kondisi hari', item.kondisi_harian, 'TANPA_MASUK_DENGAN_PULANG');
   eq('waktu masuk kosong', item.waktu_masuk, '');
   eq('waktu pulang aktual', item.waktu_pulang, '2026-10-15T09:00:00.000Z');
@@ -435,12 +435,68 @@ check('laporan membedakan masuk+pulang dan masuk tanpa pulang', () => {
   const complete = list.items.find((r) => r.id_absensi === 'ABS-R1');
   eq('hari lengkap', complete.kondisi_harian, 'ADA_MASUK_DAN_PULANG');
   eq('status masuk tepat waktu', complete.status_masuk, 'TEPAT_WAKTU');
-  eq('status pulang normal kosong', complete.status_pulang, '');
+  eq('status pulang normal', complete.status_pulang, 'SUDAH_ABSEN_PULANG');
   eq('waktu masuk pasangan', complete.waktu_masuk, '2026-10-05T00:30:00.000Z');
   eq('waktu pulang pasangan', complete.waktu_pulang, '2026-10-05T10:00:00.000Z');
   const entryOnly = list.items.find((r) => r.id_absensi === 'ABS-R3');
   eq('masuk tanpa pulang', entryOnly.kondisi_harian, 'ADA_MASUK_TANPA_PULANG');
   eq('waktu pulang kosong', entryOnly.waktu_pulang, '');
+  return true;
+});
+check('status pulang valid konsisten untuk TEPAT_WAKTU, TERLAMBAT, dan TANPA_ABSEN_MASUK', () => {
+  const { env, tokenAdmin } = envAdmin();
+  seedAbsensi(env, { id_absensi: 'ABS-M1', id_pegawai: 'PEG-EMP-1', tanggal: '2026-10-24', jenis: 'masuk', waktu_server: '2026-10-24T00:30:00.000Z' });
+  seedAbsensi(env, { id_absensi: 'ABS-P1', id_pegawai: 'PEG-EMP-1', tanggal: '2026-10-24', jenis: 'pulang', waktu_server: '2026-10-24T10:00:00.000Z' });
+  seedAbsensi(env, { id_absensi: 'ABS-M2', id_pegawai: 'PEG-EMP-1', tanggal: '2026-10-25', jenis: 'masuk', waktu_server: '2026-10-25T02:00:00.000Z' });
+  seedAbsensi(env, { id_absensi: 'ABS-P2', id_pegawai: 'PEG-EMP-1', tanggal: '2026-10-25', jenis: 'pulang', waktu_server: '2026-10-25T10:00:00.000Z' });
+  seedAbsensi(env, { id_absensi: 'ABS-P3', id_pegawai: 'PEG-EMP-1', tanggal: '2026-10-26', jenis: 'pulang', waktu_server: '2026-10-26T10:00:00.000Z' });
+  seedAbsensi(env, { id_absensi: 'ABS-M4', id_pegawai: 'PEG-EMP-1', tanggal: '2026-10-27', jenis: 'masuk', waktu_server: '2026-10-27T00:30:00.000Z' });
+  seedAbsensi(env, { id_absensi: 'ABS-M5', id_pegawai: 'PEG-EMP-1', tanggal: '2026-10-28', jenis: 'masuk', waktu_server: '2026-10-28T02:00:00.000Z' });
+  const list = env.sandbox.handleReportAbsensiList_({ token: tokenAdmin, ...RANGE }, 'POST');
+  const byId = (id) => list.items.find((r) => r.id_absensi === id);
+  eq('TEPAT + pulang: masuk', byId('ABS-M1').status_masuk, 'TEPAT_WAKTU');
+  eq('TEPAT + pulang: pulang', byId('ABS-M1').status_pulang, 'SUDAH_ABSEN_PULANG');
+  eq('TEPAT + pulang: kondisi', byId('ABS-M1').kondisi_harian, 'ADA_MASUK_DAN_PULANG');
+  eq('TERLAMBAT + pulang: masuk', byId('ABS-M2').status_masuk, 'TERLAMBAT');
+  eq('TERLAMBAT + pulang: pulang', byId('ABS-M2').status_pulang, 'SUDAH_ABSEN_PULANG');
+  eq('TANPA masuk + pulang: masuk', byId('ABS-P3').status_masuk, 'TANPA_ABSEN_MASUK');
+  eq('TANPA masuk + pulang: pulang', byId('ABS-P3').status_pulang, 'SUDAH_ABSEN_PULANG');
+  eq('TEPAT tanpa pulang: masuk', byId('ABS-M4').status_masuk, 'TEPAT_WAKTU');
+  eq('TEPAT tanpa pulang: pulang', byId('ABS-M4').status_pulang, 'BELUM_ABSEN_PULANG');
+  eq('TERLAMBAT tanpa pulang: masuk', byId('ABS-M5').status_masuk, 'TERLAMBAT');
+  eq('TERLAMBAT tanpa pulang: pulang', byId('ABS-M5').status_pulang, 'BELUM_ABSEN_PULANG');
+  return true;
+});
+check('pulang di luar jendela 16.00–23.59 WIB tidak dihitung SUDAH_ABSEN_PULANG', () => {
+  const { env, tokenAdmin } = envAdmin();
+  seedAbsensi(env, {
+    id_absensi: 'ABS-M-VALID', id_pegawai: 'PEG-EMP-1', tanggal: '2026-10-29',
+    jenis: 'masuk', waktu_server: '2026-10-29T00:30:00.000Z'
+  });
+  seedAbsensi(env, {
+    id_absensi: 'ABS-P-INVALID', id_pegawai: 'PEG-EMP-1', tanggal: '2026-10-29',
+    jenis: 'pulang', waktu_server: '2026-10-29T01:00:00.000Z'
+  });
+  const list = env.sandbox.handleReportAbsensiList_({ token: tokenAdmin, ...RANGE }, 'POST');
+  const masuk = list.items.find((r) => r.id_absensi === 'ABS-M-VALID');
+  const pulang = list.items.find((r) => r.id_absensi === 'ABS-P-INVALID');
+  eq('masuk tetap tepat waktu', masuk.status_masuk, 'TEPAT_WAKTU');
+  eq('pulang tidak valid tidak SUDAH', pulang.status_pulang, 'BELUM_ABSEN_PULANG');
+  eq('waktu pulang tidak dipakai', masuk.waktu_pulang, '');
+  eq('kondisi tanpa pulang valid', masuk.kondisi_harian, 'ADA_MASUK_TANPA_PULANG');
+  return true;
+});
+check('tanpa masuk valid dan tanpa pulang tidak mengarang status', () => {
+  const { env, tokenAdmin } = envAdmin();
+  seedAbsensi(env, {
+    id_absensi: 'ABS-INVALID-ONLY', id_pegawai: 'PEG-EMP-1', tanggal: '2026-10-30',
+    jenis: 'masuk', waktu_server: '2026-10-30T23:30:00.000Z'
+  });
+  const list = env.sandbox.handleReportAbsensiList_({ token: tokenAdmin, ...RANGE }, 'POST');
+  const item = list.items.find((r) => r.id_absensi === 'ABS-INVALID-ONLY');
+  eq('tanpa status masuk valid', item.status_masuk, '');
+  eq('tanpa status pulang valid', item.status_pulang, '');
+  eq('tanpa kondisi', item.kondisi_harian, '');
   return true;
 });
 check('status masuk tidak TEPAT_WAKTU saat hanya ada pulang (sel lama salah)', () => {
@@ -452,14 +508,14 @@ check('status masuk tidak TEPAT_WAKTU saat hanya ada pulang (sel lama salah)', (
   });
   const list = env.sandbox.handleReportAbsensiList_({ token: tokenAdmin, ...RANGE }, 'POST');
   const item = list.items.find((r) => r.id_absensi === 'ABS-ONLY-PULANG-BAD');
-  eq('status baris disanitasi', item.status, 'TANPA_ABSEN_MASUK');
+  eq('status baris disanitasi', item.status, 'SUDAH_ABSEN_PULANG');
   eq('status masuk', item.status_masuk, 'TANPA_ABSEN_MASUK');
-  eq('status pulang', item.status_pulang, 'TANPA_ABSEN_MASUK');
+  eq('status pulang', item.status_pulang, 'SUDAH_ABSEN_PULANG');
   eq('tidak ada waktu masuk buatan', item.waktu_masuk, '');
   eq('kondisi hari', item.kondisi_harian, 'TANPA_MASUK_DENGAN_PULANG');
   return true;
 });
-check('masuk 09.00 WIB → TERLAMBAT; pulang normal tetap kosong', () => {
+check('masuk 09.00 WIB → TERLAMBAT; pulang valid → SUDAH_ABSEN_PULANG', () => {
   const { env, tokenAdmin } = envAdmin();
   seedAbsensi(env, {
     id_absensi: 'ABS-LATE', id_pegawai: 'PEG-EMP-1', tanggal: '2026-10-16',
@@ -473,10 +529,10 @@ check('masuk 09.00 WIB → TERLAMBAT; pulang normal tetap kosong', () => {
   const item = list.items.find((r) => r.id_absensi === 'ABS-LATE');
   eq('status masuk dihitung ulang', item.status_masuk, 'TERLAMBAT');
   eq('status baris masuk', item.status, 'TERLAMBAT');
-  eq('status pulang kosong', item.status_pulang, '');
+  eq('status pulang', item.status_pulang, 'SUDAH_ABSEN_PULANG');
   return true;
 });
-check('masuk 07.30 WIB tanpa pulang → TEPAT_WAKTU, pulang tidak disimpulkan', () => {
+check('masuk 07.30 WIB tanpa pulang → TEPAT_WAKTU, pulang BELUM_ABSEN_PULANG', () => {
   const { env, tokenAdmin } = envAdmin();
   seedAbsensi(env, {
     id_absensi: 'ABS-ENTRY-ONLY', id_pegawai: 'PEG-EMP-1', tanggal: '2026-10-17',
@@ -485,7 +541,7 @@ check('masuk 07.30 WIB tanpa pulang → TEPAT_WAKTU, pulang tidak disimpulkan', 
   const list = env.sandbox.handleReportAbsensiList_({ token: tokenAdmin, ...RANGE }, 'POST');
   const item = list.items.find((r) => r.id_absensi === 'ABS-ENTRY-ONLY');
   eq('status masuk', item.status_masuk, 'TEPAT_WAKTU');
-  eq('status pulang tidak dibuat', item.status_pulang, '');
+  eq('status pulang belum', item.status_pulang, 'BELUM_ABSEN_PULANG');
   eq('tanpa pulang', item.kondisi_harian, 'ADA_MASUK_TANPA_PULANG');
   return true;
 });
@@ -503,7 +559,7 @@ check('masuk sebelum 07.00 WIB tidak dianggap valid (bukan TEPAT_WAKTU)', () => 
   const item = list.items.find((r) => r.id_absensi === 'ABS-EARLY');
   eq('status baris', item.status, 'TANPA_ABSEN_MASUK');
   eq('status masuk', item.status_masuk, 'TANPA_ABSEN_MASUK');
-  eq('status pulang', item.status_pulang, 'TANPA_ABSEN_MASUK');
+  eq('status pulang', item.status_pulang, 'SUDAH_ABSEN_PULANG');
   return true;
 });
 check('pegawai berbeda pada tanggal sama tidak tertukar statusnya', () => {
@@ -524,9 +580,9 @@ check('pegawai berbeda pada tanggal sama tidak tertukar statusnya', () => {
   const one = list.items.find((r) => r.id_absensi === 'ABS-SAME-DAY-1');
   const two = list.items.find((r) => r.id_absensi === 'ABS-SAME-DAY-2');
   eq('pegawai 1 tetap tepat waktu', one.status_masuk, 'TEPAT_WAKTU');
-  eq('pegawai 1 pulang normal', one.status_pulang, '');
+  eq('pegawai 1 pulang normal', one.status_pulang, 'SUDAH_ABSEN_PULANG');
   eq('pegawai 2 tanpa masuk', two.status_masuk, 'TANPA_ABSEN_MASUK');
-  eq('pegawai 2 pulang marker', two.status_pulang, 'TANPA_ABSEN_MASUK');
+  eq('pegawai 2 pulang valid', two.status_pulang, 'SUDAH_ABSEN_PULANG');
   return true;
 });
 check('rekonsiliasi: pratinjau tidak menulis, apply memperbaiki hanya status', () => {
@@ -551,9 +607,9 @@ check('rekonsiliasi: pratinjau tidak menulis, apply memperbaiki hanya status', (
   const applied = env.sandbox.reconcileAbsensiStatuses({ apply: true });
   eq('mode apply', applied.mode, 'apply');
   eq('jumlah diperbaiki', applied.diperbaiki, 3);
-  eq('pulang tanpa masuk', env.sandbox.findAbsensiById_('ABS-REC-PULANG').status, 'TANPA_ABSEN_MASUK');
+  eq('pulang tanpa masuk', env.sandbox.findAbsensiById_('ABS-REC-PULANG').status, 'SUDAH_ABSEN_PULANG');
   eq('masuk terlambat', env.sandbox.findAbsensiById_('ABS-REC-LATE').status, 'TERLAMBAT');
-  eq('marker pulang dibersihkan', env.sandbox.findAbsensiById_('ABS-REC-STALE').status, '');
+  eq('marker pulang disegarkan', env.sandbox.findAbsensiById_('ABS-REC-STALE').status, 'SUDAH_ABSEN_PULANG');
   eq('jumlah baris tidak bertambah', env.sandbox.readObjects_('Absensi').length, before.length);
   eq('timestamp tidak berubah', env.sandbox.findAbsensiById_('ABS-REC-LATE').waktu_server, '2026-10-23T02:00:00.000Z');
   return true;
@@ -828,7 +884,7 @@ check('CSV memuat status masuk/pulang yang konsisten untuk pulang tanpa masuk', 
     { token: tokenAdmin, ...RANGE }, 'POST');
   const rows = parseCsv(res.csv);
   eq('status masuk CSV', rows[1][17], 'TANPA_ABSEN_MASUK');
-  eq('status pulang CSV', rows[1][18], 'TANPA_ABSEN_MASUK');
+  eq('status pulang CSV', rows[1][18], 'SUDAH_ABSEN_PULANG');
   return true;
 });
 check('ekspor tanpa paginasi: seluruh baris terfilter ikut (kelengkapan lintas halaman)', () => {

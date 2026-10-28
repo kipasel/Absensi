@@ -64,7 +64,9 @@ Catatan PHASE 5:
   dihitung** — aturannya belum ditetapkan (DEC-P07).
 - Ekspor tercatat di log sebagai `report_exported`.
 - Status masuk/pulang laporan diturunkan ulang dari catatan aktual; CSV memuat
-  kolom `status_masuk` dan `status_pulang`.
+  kolom `status_masuk` dan `status_pulang`. Pulang valid = `SUDAH_ABSEN_PULANG`;
+  tanpa pulang valid tetapi ada masuk = `BELUM_ABSEN_PULANG`; pulang tanpa masuk
+  = `status_masuk: TANPA_ABSEN_MASUK` + `status_pulang: SUDAH_ABSEN_PULANG`.
 
 Catatan PHASE 4:
 - Respons **tidak pernah** memuat `pin_hash`, `pin_salt`, `drive_file_id`, atau

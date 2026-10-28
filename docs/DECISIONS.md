@@ -366,3 +366,21 @@ Sumber: jawaban pengguna atas pertanyaan D0–D8 (lihat `docs/PHASE2_AUDIT.md`).
   hari ini beserta waktu tersimpan. Server menentukan tanggal Asia/Jakarta dan
   identitas dari sesi tervalidasi. Klien tidak dapat memilih `id_pegawai`.
 - Sumber: permintaan pengguna 2026-10-24.
+
+### DEC-P33 - Status absen pulang berbasis catatan pulang valid
+- Tanggal: 2026-10-28; Status: DISETUJUI (instruksi pengguna).
+- Mengubah bagian status pulang pada DEC-P31. Catatan pulang valid ditentukan
+  dari `waktu_server` yang berada pada jendela pulang `16:00:00-23:59:59`
+  Asia/Jakarta, bukan dari ada/tidaknya catatan masuk.
+- Laporan/CSV: `status_pulang` = `SUDAH_ABSEN_PULANG` bila ada pulang valid;
+  `BELUM_ABSEN_PULANG` bila ada masuk valid tetapi belum ada pulang valid;
+  `status_masuk` tetap `TEPAT_WAKTU`/`TERLAMBAT`, atau `TANPA_ABSEN_MASUK` bila
+  hanya ada pulang valid. Status masuk tidak diubah karena status pulang.
+- Google Sheets: kolom `status` pada baris pulang valid diisi
+  `SUDAH_ABSEN_PULANG` (format hijau-netral), bukan `TANPA_ABSEN_MASUK`.
+  Rekonsiliasi hanya mengubah kolom `status`; timestamp dan baris historis tidak
+  dihapus. `BELUM_ABSEN_PULANG` adalah status turunan laporan karena sheet tidak
+  memiliki baris untuk pulang yang belum tercatat.
+- Tidak ada catatan pulang/masuk sintetis; aturan jam, foto, uraian/output, dan
+  pencegahan duplikat tetap berlaku.
+- Sumber: instruksi pengguna "BUGFIX - STATUS ABSEN PULANG" 2026-10-28.

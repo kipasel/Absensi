@@ -366,7 +366,7 @@
       (res.mode_kerja === 'WFO' ? 'WFO' : 'WFH/WFA') + ') pada ' +
       formatServerDate(res.tanggal) +
       ' pukul ' + formatServerTime(res.waktu_server) + '.' +
-      (res.status_absensi === 'TANPA_ABSEN_MASUK'
+      (res.status_masuk === 'TANPA_ABSEN_MASUK'
         ? ' Catatan absensi masuk pada tanggal ini tidak tersedia.' : ''));
     show(el('att-result'));
     hide(el('att-step-summary'));

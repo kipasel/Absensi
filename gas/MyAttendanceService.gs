@@ -21,14 +21,6 @@ function handleMyAttendance_(payload, method) {
   var waktuPulangHariIni = '';
   var masuk = 0;
   var pulang = 0;
-  var validMasukByDate = {};
-  for (var v = 0; v < rows.length; v++) {
-    var vr = rows[v];
-    if (String(vr.id_pegawai) !== idPegawai) continue;
-    if (String(vr.jenis) !== 'masuk') continue;
-    if (!masukStatusFromServerIso_(vr.waktu_server)) continue;
-    validMasukByDate[String(vr.tanggal || '')] = true;
-  }
   for (var i = 0; i < rows.length; i++) {
     var row = rows[i];
     if (String(row.id_pegawai) !== idPegawai) continue;
@@ -36,11 +28,11 @@ function handleMyAttendance_(payload, method) {
     var jenis = String(row.jenis || '');
     var status = jenis === 'masuk'
       ? (masukStatusFromServerIso_(row.waktu_server) || '')
-      : (jenis === 'pulang' && !validMasukByDate[tanggal] ? 'TANPA_ABSEN_MASUK' : '');
+      : (jenis === 'pulang' ? (pulangStatusFromServerIso_(row.waktu_server) || '') : '');
     if (tanggal === today && jenis === 'masuk' && status && !waktuMasukHariIni) {
       waktuMasukHariIni = String(row.waktu_server || '');
     }
-    if (tanggal === today && jenis === 'pulang' && !waktuPulangHariIni) {
+    if (tanggal === today && jenis === 'pulang' && status && !waktuPulangHariIni) {
       waktuPulangHariIni = String(row.waktu_server || '');
     }
     if (tanggal.substring(0, 7) !== month) continue;

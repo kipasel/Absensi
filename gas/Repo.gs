@@ -103,7 +103,7 @@ function ensureSheetHeaders_(name, sh) {
 
 /**
  * Format status pada kolom `status`: TERLAMBAT merah, TANPA_ABSEN_MASUK
- * kuning-netral. Aturan lain tidak diganti.
+ * kuning-netral, SUDAH_ABSEN_PULANG hijau-netral. Aturan lain tidak diganti.
  */
 function ensureLateStatusFormatting_(sh) {
   var headers = sh.getDataRange().getValues()[0].map(function (h) { return String(h); });
@@ -137,6 +137,15 @@ function ensureLateStatusFormatting_(sh) {
       .whenTextEqualTo('TANPA_ABSEN_MASUK')
       .setBackground('#fff4e5')
       .setFontColor('#8a4b00')
+      .setRanges([sh.getRange(2, statusColumn, Math.max(1, sh.getMaxRows() - 1), 1)])
+      .build());
+    changed = true;
+  }
+  if (!hasRule('SUDAH_ABSEN_PULANG')) {
+    rules.push(SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo('SUDAH_ABSEN_PULANG')
+      .setBackground('#e6f4ea')
+      .setFontColor('#137333')
       .setRanges([sh.getRange(2, statusColumn, Math.max(1, sh.getMaxRows() - 1), 1)])
       .build());
     changed = true;
@@ -212,12 +221,12 @@ function updateObjectRow_(name, rowNumber, obj) {
 }
 
 /**
- * Menghapus marker TANPA_ABSEN_MASUK pada baris pulang setelah catatan masuk
- * valid untuk pegawai/tanggal yang sama tersedia. Hanya kolom status diubah.
- * Dipanggil di dalam lock absensi.
+ * Menyegarkan status baris pulang pegawai/tanggal berdasarkan validitas
+ * timestamp (jendela pulang Asia/Jakarta). Hanya kolom status yang diubah;
+ * timestamp dan data historis lain tidak disentuh. Dipanggil di dalam lock.
  * @return {number} jumlah baris yang diperbarui
  */
-function clearTanpaAbsenMasukMarker_(idPegawai, tanggal) {
+function refreshPulangStatusForDay_(idPegawai, tanggal) {
   var sh = getSheet_('Absensi');
   var values = sh.getDataRange().getValues();
   if (values.length < 2) return 0;
@@ -226,16 +235,19 @@ function clearTanpaAbsenMasukMarker_(idPegawai, tanggal) {
     id_pegawai: headers.indexOf('id_pegawai'),
     tanggal: headers.indexOf('tanggal'),
     jenis: headers.indexOf('jenis'),
+    waktu_server: headers.indexOf('waktu_server'),
     status: headers.indexOf('status')
   };
-  if (col.id_pegawai < 0 || col.tanggal < 0 || col.jenis < 0 || col.status < 0) return 0;
+  if (col.id_pegawai < 0 || col.tanggal < 0 || col.jenis < 0 ||
+      col.waktu_server < 0 || col.status < 0) return 0;
   var changed = 0;
   for (var r = 1; r < values.length; r++) {
     if (String(values[r][col.id_pegawai]) !== String(idPegawai) ||
         String(values[r][col.tanggal]) !== String(tanggal) ||
-        String(values[r][col.jenis]) !== 'pulang' ||
-        String(values[r][col.status] || '') !== 'TANPA_ABSEN_MASUK') continue;
-    sh.getRange(r + 1, col.status + 1).setValue('');
+        String(values[r][col.jenis]) !== 'pulang') continue;
+    var expected = pulangStatusFromServerIso_(values[r][col.waktu_server]) || '';
+    if (String(values[r][col.status] || '') === expected) continue;
+    sh.getRange(r + 1, col.status + 1).setValue(expected);
     changed++;
   }
   return changed;
@@ -246,8 +258,8 @@ function clearTanpaAbsenMasukMarker_(idPegawai, tanggal) {
  * - Masuk: status dihitung ulang dari `waktu_server`; timestamp tidak valid
  *   atau di luar jendela masuk menghasilkan status kosong (tidak pernah
  *   TEPAT_WAKTU/TERLAMBAT tanpa catatan masuk valid).
- * - Pulang: TANPA_ABSEN_MASUK hanya bila tidak ada masuk valid pada
- *   pegawai+tanggal yang sama; selain itu kosong.
+ * - Pulang: SUDAH_ABSEN_PULANG bila timestamp valid pada jendela pulang;
+ *   selain itu kosong. Status masuk tidak ikut diubah.
  * Hanya kolom status yang diubah. Default mode pratinjau (apply:false).
  * @param {{apply?:boolean, limit?:number}} [options]
  * @return {Object} ringkasan
@@ -313,10 +325,8 @@ function reconcileAbsensiStatuses_(apply, limitRaw) {
     if (jenis === 'masuk') {
       expected = masukStatusFromServerIso_(values[i][col.waktu_server]) || '';
     } else if (jenis === 'pulang') {
-      if (!validMasuk[key]) {
-        expected = 'TANPA_ABSEN_MASUK';
-        pulangTanpaMasuk++;
-      }
+      expected = pulangStatusFromServerIso_(values[i][col.waktu_server]) || '';
+      if (expected && !validMasuk[key]) pulangTanpaMasuk++;
     }
     var lama = String(values[i][col.status] || '');
     if (lama === expected) continue;

@@ -891,3 +891,40 @@ nyata.
 - Probe health: `ok:true`, `backendConfigured:true`,
   `officeLocationConfigured:true`.
 - Belum dijalankan: login/absensi/laporan dengan akun nyata dan uji browser.
+
+## Bugfix status absen pulang — 2026-10-28
+
+- Aturan DEC-P33: status pulang ditentukan dari **catatan pulang valid**
+  (`waktu_server` pada jendela 16:00:00–23:59:59 Asia/Jakarta), bukan dari
+  status masuk. `status_masuk` tetap diturunkan terpisah.
+- `gas/TimeRule.gs` — `pulangStatusFromServerIso_()` memvalidasi timestamp
+  pulang; timestamp kosong/di luar jendela tidak dihitung valid.
+- `gas/ReportService.gs` — `reportAbsensiDayMap_()` hanya memakai pulang valid;
+  `status_pulang` = `SUDAH_ABSEN_PULANG` atau `BELUM_ABSEN_PULANG`; status
+  masuk tidak berubah. Rekap `pulang_tanpa_masuk` memakai flag hari, bukan
+  marker status lama. Daftar, rekap, dan CSV memakai sumber turunan yang sama.
+- `gas/Attendance.gs` — baris pulang valid ditulis `SUDAH_ABSEN_PULANG`; respons
+  menambahkan `status_masuk` terpisah agar pemberitahuan "masuk tidak tersedia"
+  tetap benar. Penyegaran status pulang historis tidak mengubah timestamp.
+- `gas/Repo.gs` — baris pulang disegarkan berdasarkan timestamp valid; rekonsiliasi
+  mengubah kolom `status` pulang menjadi `SUDAH_ABSEN_PULANG`/kosong. Format
+  hijau-netral ditambahkan; aturan lama tetap.
+- `gas/MyAttendanceService.gs` — status riwayat pulang memakai validitas
+  timestamp pulang; `sudah_pulang_hari_ini` hanya untuk pulang valid.
+- `assets/js/attendance.js` — pemberitahuan masuk tidak tersedia memakai
+  `status_masuk`, bukan status pulang.
+- Frontend/cache `0.10.2` (lokal, belum dipush/dideploy).
+- Validasi lokal: foundation **84/0**, auth **57/0**, attendance **218/0**,
+  admin **170/0**, report **282/0**, susulan **67/0**, datetime **14/0**.
+- Tindak lanjut produksi: deploy Apps Script, lalu jalankan
+  `reconcileAbsensiStatusesPreview()` dan periksa hasilnya sebelum
+  `reconcileAbsensiStatusesApply()` pada spreadsheet produksi.
+
+## Endpoint Web App baru — 2026-10-28 (2)
+
+- `assets/js/config.js` — `API_BASE_URL` diganti ke Web App terbaru:
+  `https://script.google.com/macros/s/AKfycbyrUXAu0hU99hBWzooq8MdeUv22mbrhlGeUqlxAWuryDYjvblxDIFUMKY02W1uaAe0Vsw/exec`.
+- Frontend/cache `0.10.3` (lokal).
+- Probe health: `ok:true`, `backendConfigured:true`,
+  `officeLocationConfigured:true`.
+- Belum diverifikasi: login, absensi, dan status pulang pada deployment baru.
