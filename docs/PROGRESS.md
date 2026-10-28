@@ -940,8 +940,9 @@ nyata.
   tombol disembunyikan bila tabel tidak overflow dan dinonaktifkan di ujung
   gulir. Posisi kontrol disinkronkan saat tabel digulir, selesai dimuat, dan
   ukuran jendela berubah.
-- Versi frontend/cache dinaikkan dari `0.10.3` ke `0.10.4`.
-- Status: implementasi lokal; belum diuji browser dan belum diterbitkan.
+- Versi frontend/cache dinaikkan ke `0.10.5`.
+- Status: terbit dari commit `11711e2`; Pages run `40686168966` sukses. Uji
+  browser nyata belum dijalankan.
 
 ## Ekspor laporan Excel `.xlsx` — 2026-10-28
 
@@ -954,4 +955,5 @@ nyata.
   tetap dipakai. Tidak ada dependensi eksternal atau perubahan backend.
 - `docs/REQUIREMENTS.md`, `DECISIONS.md`, `FUNGSI_FITUR.md`,
   `ARCHITECTURE.md`, dan `AGENTS.md` diperbarui. Versi frontend/cache `0.10.5`.
-- Status: perubahan lokal; belum diuji browser dan belum diterbitkan.
+- Status: terbit dari commit `11711e2`; halaman live memuat tombol ekspor
+  Excel. Uji unduhan `.xlsx` di browser nyata belum dijalankan.
