@@ -50,7 +50,7 @@ Token sesi HANYA dikirim di body (bukan query string).
 | `admin.absensi.photo` | POST | Ya (admin) | Isi foto absensi (base64+mime) via referensi `id_bukti` (DEC-P25). |
 | `admin.susulan.*` | POST | Ya (admin) | **NOT_AVAILABLE**; fitur susulan dinonaktifkan pada route aktif (DEC-P31). |
 | `admin.log.list` | POST | Ya (admin) | Log audit (filter aksi/limit). |
-| `report.absensi.list` | POST | Ya (admin) | Daftar absensi untuk laporan (rentang wajib, filter; join nama). |
+| `report.absensi.list` | POST | Ya (admin) | Daftar absensi untuk laporan (rentang wajib, filter, `q`/`sort`/`order`, paginasi; join nama). |
 | `report.rekap` | POST | Ya (admin) | Rekapitulasi fakta terhitung per filter (tanpa indikator kebijakan). |
 | `report.absensi.exportCsv` | POST | Ya (admin) | Ekspor CSV (rentang wajib, filter); maks 5000 baris. |
 

@@ -423,15 +423,6 @@
                 <option value="nonaktif">Nonaktif</option>
               </select>
             </div>
-            <div class="form-field">
-              <label class="form-label" for="report-page-size">Baris per halaman</label>
-              <select class="form-input" id="report-page-size">
-                <option value="10">10 data</option>
-                <option value="20">20 data</option>
-                <option value="30">30 data</option>
-                <option value="50" selected>50 data</option>
-              </select>
-            </div>
           </div>
           <div class="att-actions">
             <button class="btn btn--primary" id="report-run" type="button">Tampilkan laporan</button>
@@ -467,15 +458,45 @@
           </div>
 
           <div id="report-detail" class="report-detail" hidden>
-            <h3 class="att-step__subtitle">Rincian catatan absensi</h3>
+            <div class="report-detail__head">
+              <h3 class="att-step__subtitle">Rincian catatan absensi</h3>
+              <div class="report-table-controls">
+                <div class="form-field">
+                  <label class="form-label" for="report-search">Cari</label>
+                  <input class="form-input" id="report-search" type="search"
+                    placeholder="Nama, NIP, status, uraian…" autocomplete="off" maxlength="100" />
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="report-page-size">Baris per halaman</label>
+                  <select class="form-input" id="report-page-size">
+                    <option value="10">10 data</option>
+                    <option value="20">20 data</option>
+                    <option value="30">30 data</option>
+                    <option value="50" selected>50 data</option>
+                  </select>
+                </div>
+              </div>
+            </div>
             <div class="admin-table-wrap">
               <table class="admin-table" id="report-table">
                 <thead>
                   <tr>
-                    <th>Tanggal</th><th>Nama</th><th>NIP/NIPK</th><th>Jenis</th>
-                    <th>Mode</th><th>Waktu catatan (WIB)</th><th>Status Absen Masuk</th><th>Status Absen Pulang</th><th>Kondisi hari</th>
-                    <th>Waktu masuk (WIB)</th><th>Waktu pulang (WIB)</th><th>Sumber</th><th>Jarak (m)</th><th>Bukti</th>
-                    <th>Uraian Pekerjaan</th><th>Output Pekerjaan</th>
+                    <th data-sort="tanggal" aria-sort="none">Tanggal</th>
+                    <th data-sort="nama" aria-sort="none">Nama</th>
+                    <th data-sort="nip_nipk" aria-sort="none">NIP/NIPK</th>
+                    <th data-sort="jenis" aria-sort="none">Jenis</th>
+                    <th data-sort="mode_kerja" aria-sort="none">Mode</th>
+                    <th data-sort="waktu_server" aria-sort="none">Waktu catatan (WIB)</th>
+                    <th data-sort="status_masuk" aria-sort="none">Status Absen Masuk</th>
+                    <th data-sort="status_pulang" aria-sort="none">Status Absen Pulang</th>
+                    <th data-sort="kondisi_harian" aria-sort="none">Kondisi hari</th>
+                    <th data-sort="waktu_masuk" aria-sort="none">Waktu masuk (WIB)</th>
+                    <th data-sort="waktu_pulang" aria-sort="none">Waktu pulang (WIB)</th>
+                    <th data-sort="sumber" aria-sort="none">Sumber</th>
+                    <th data-sort="jarak_meter" aria-sort="none">Jarak (m)</th>
+                    <th data-sort="ada_bukti" aria-sort="none">Bukti</th>
+                    <th data-sort="uraian_pekerjaan" aria-sort="none">Uraian Pekerjaan</th>
+                    <th data-sort="output_pekerjaan" aria-sort="none">Output Pekerjaan</th>
                   </tr>
                 </thead>
                 <tbody></tbody>

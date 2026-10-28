@@ -61,7 +61,7 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   `node tests/attendance.test.mjs`, `node tests/admin.test.mjs`,
   `node tests/report.test.mjs`, `node tests/susulan.test.mjs`,
   `node tests/datetime.test.mjs`.
-  Hasil terakhir (2026-10-28): 84 / 57 / 214 / 170 / 248 / 67 / 14 — semua **0 gagal**.
+  Hasil terakhir (2026-10-28): 84 / 57 / 214 / 170 / 261 / 67 / 14 — semua **0 gagal**.
 - Tampilan tanggal/waktu memakai `assets/js/datetime.js` (Asia/Jakarta);
   timestamp server tetap ISO-8601 UTC dan CSV dikonversi sekali di backend.
 - Status masuk/pulang laporan **diturunkan ulang** dari catatan aktual; tanpa
@@ -80,6 +80,9 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 - Pilihan jumlah baris laporan 10/20/30/50 ditambahkan; frontend `0.9.9`
   terbit dari commit `03d60e5` (`master`/`main`), Pages build `1321339598`
   sukses, dan aset live memuat `0.9.9`.
+- Data table laporan (cari, urut kolom, 10/20/30/50, navigasi) disiapkan di
+  frontend `0.10.0`; `report.absensi.list` menerima `q`/`sort`/`order`.
+  Backend **belum dideploy** sehingga pencarian/urut server belum aktif di live.
 - Jalankan lokal: `py -m http.server 8765` lalu buka `http://127.0.0.1:8765/`.
 
 ## Blocker Aktif (jangan diimplementasikan sebelum dijawab)

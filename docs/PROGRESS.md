@@ -826,7 +826,7 @@ Perubahan:
 - Versi frontend/cache `0.9.7`.
 
 Pengujian lokal (Node + stub): foundation **84/0**, auth **57/0**,
-attendance **214/0**, admin **170/0**, report **248/0**, susulan **67/0**,
+attendance **214/0**, admin **170/0**, report **261/0**, susulan **67/0**,
 datetime **14/0**.
 
 Frontend `0.9.7` (commit `e5a6075`) sudah dipush ke `master`/`main` dan terbit
@@ -844,7 +844,7 @@ nyata.
   Tidak ada sel atau data produksi yang ditulis/diubah.
 - Tes regresi: nilai tanggal bertipe Date pada `2026-10-27T17:00:00Z` cocok
   dengan tanggal bisnis `2026-10-28`.
-- Validasi lokal: `report.test.mjs` **248/0**, `check-foundation.mjs` **84/0**,
+- Validasi lokal: `report.test.mjs` **261/0**, `check-foundation.mjs` **84/0**,
   `git diff --check` bersih.
 - Frontend/cache `0.9.8` (commit `1118341`) sudah dipush ke `master`/`main`;
   Pages build `1321313591` sukses dan aset live memuat `0.9.8` + API baru.
@@ -855,7 +855,7 @@ nyata.
 ## Pilihan jumlah baris laporan — 2026-10-28
 
 - `index.html` — menambahkan pilihan **10/20/30/50 data per halaman** pada
-  filter laporan; default `50`.
+  toolbar rincian laporan; default `50`.
 - `assets/js/report.js` — ukuran halaman dibaca dari pilihan, offset direset
   saat laporan dijalankan atau ukuran diubah, dan rincian dimuat ulang tanpa
   mengubah filter/rekap.
@@ -864,3 +864,20 @@ nyata.
   Pages build `1321339598` sukses dan aset live memuat `0.9.9`.
 - Validasi: sintaks `report.js` dan `check-foundation.mjs` **84/0**; suite lain
   tidak berubah.
+
+## Data table laporan — 2026-10-28
+
+- `index.html`/`assets/css/styles.css` — toolbar rincian dengan kolom cari dan
+  pilihan 10/20/30/50; header kolom dapat diklik/diaktifkan keyboard untuk
+  mengurutkan (indikator `aria-sort`).
+- `assets/js/report.js` — pencarian dengan jeda 300 ms, pengurutan naik/turun,
+  reset offset saat pencarian/ukuran/urutan berubah, serta navigasi halaman.
+- `gas/ReportService.gs` — `report.absensi.list` menerima `q` (maks. 100
+  karakter), `sort` (whitelist kolom tampilan), dan `order` (`asc`/`desc`);
+  pencarian/urut dilakukan sebelum paginasi sehingga `total` dan halaman
+  konsisten. Parameter tak dikenal diabaikan.
+- Frontend/cache `0.10.0`.
+- Tes laporan **261/0**; foundation **84/0**.
+- Backend **belum dideploy**; pencarian/urut server baru aktif setelah deploy
+  Apps Script. Frontend live tanpa deploy backend tetap menampilkan tabel,
+  tetapi `q`/`sort`/`order` akan diabaikan server lama.

@@ -30,6 +30,13 @@ var REPORT_MAX_RANGE_DAYS = 92;
 var REPORT_DEFAULT_PAGE_LIMIT = 50;
 var REPORT_MAX_PAGE_LIMIT = 200;
 var REPORT_EXPORT_MAX_ROWS = 5000;
+var REPORT_SEARCH_MAX_LENGTH = 100;
+var REPORT_SORT_KEYS = Object.freeze([
+  'tanggal', 'nama', 'nip_nipk', 'jenis', 'mode_kerja', 'waktu_server',
+  'status_masuk', 'status_pulang', 'kondisi_harian', 'waktu_masuk',
+  'waktu_pulang', 'sumber', 'jarak_meter', 'ada_bukti', 'uraian_pekerjaan',
+  'output_pekerjaan'
+]);
 
 /* ---------------- Format tampilan WIB (khusus keluaran ekspor) ---------------- */
 
@@ -333,24 +340,93 @@ function handleReportAbsensiList_(payload, method) {
   var limit = parseReportLimit_(payload.limit, REPORT_DEFAULT_PAGE_LIMIT);
   var offset = parseReportOffset_(payload.offset);
 
+  var search = payload.q ? String(payload.q).trim().toLowerCase() : '';
+  if (search.length > REPORT_SEARCH_MAX_LENGTH) search = search.slice(0, REPORT_SEARCH_MAX_LENGTH);
+  var sort = payload.sort ? String(payload.sort) : '';
+  var order = String(payload.order || '').toLowerCase() === 'desc' ? 'desc' : 'asc';
+
   var statusMap = pegawaiStatusMap_();
   var allRows = readObjects_('Absensi');
   var dayMap = reportAbsensiDayMap_(allRows);
   var matched = filterAbsensiRows_(allRows, range, filters, statusMap);
-  var items = [];
-  for (var i = offset; i < matched.length && items.length < limit; i++) {
-    items.push(reportAbsensiFields_(matched[i], statusMap, dayMap));
+  var allItems = [];
+  for (var i = 0; i < matched.length; i++) {
+    allItems.push(reportAbsensiFields_(matched[i], statusMap, dayMap));
   }
+  if (search) {
+    allItems = allItems.filter(function (item) {
+      return reportAbsensiSearchText_(item).indexOf(search) !== -1;
+    });
+  }
+  allItems = reportSortItems_(allItems, sort, order);
+  var total = allItems.length;
+  var items = allItems.slice(offset, offset + limit);
   return {
     ok: true,
     tanggal_dari: range.dari,
     tanggal_sampai: range.sampai,
-    total: matched.length,
+    total: total,
     offset: offset,
     limit: limit,
-    has_more: offset + items.length < matched.length,
+    has_more: offset + items.length < total,
     items: items
   };
+}
+
+/**
+ * Teks pencarian data table laporan. Menggabungkan kolom yang ditampilkan agar
+ * pencarian nama/NIP/status/uraian bekerja pada seluruh hasil, bukan per halaman.
+ * @param {Object} item hasil reportAbsensiFields_
+ * @return {string}
+ */
+function reportAbsensiSearchText_(item) {
+  return [
+    item.tanggal, item.nama, item.nip_nipk, item.jenis, item.mode_kerja,
+    item.waktu_server, item.status_masuk, item.status_pulang,
+    item.kondisi_harian, item.waktu_masuk, item.waktu_pulang, item.sumber,
+    item.jarak_meter, item.ada_bukti ? 'ada' : 'tidak ada',
+    item.uraian_pekerjaan, item.output_pekerjaan
+  ].join(' ').toLowerCase();
+}
+
+function reportSortValue_(item, key) {
+  if (key === 'jarak_meter') {
+    var n = Number(item.jarak_meter);
+    return isFinite(n) && item.jarak_meter !== null ? n : null;
+  }
+  if (key === 'ada_bukti') return item.ada_bukti ? 1 : 0;
+  var value = item[key];
+  return value === null || value === undefined ? '' : String(value).toLowerCase();
+}
+
+/**
+ * Mengurutkan hasil laporan setelah pencarian. Kunci di luar whitelist
+ * diabaikan (urutan default dipertahankan).
+ */
+function reportSortItems_(items, key, order) {
+  if (REPORT_SORT_KEYS.indexOf(key) === -1) return items;
+  var dir = order === 'desc' ? -1 : 1;
+  return items.slice().sort(function (a, b) {
+    var av = reportSortValue_(a, key);
+    var bv = reportSortValue_(b, key);
+    if (av === null && bv === null) return reportSortTie_(a, b, key, dir);
+    if (av === null || av === '') return 1;
+    if (bv === null || bv === '') return -1;
+    if (av < bv) return -1 * dir;
+    if (av > bv) return 1 * dir;
+    return reportSortTie_(a, b, key, dir);
+  });
+}
+
+function reportSortTie_(a, b, key, dir) {
+  if (key === 'tanggal') {
+    var at = String(a.waktu_server || '') + '|' + String(a.id_absensi || '');
+    var bt = String(b.waktu_server || '') + '|' + String(b.id_absensi || '');
+    return at < bt ? -1 * dir : (at > bt ? 1 * dir : 0);
+  }
+  var ai = String(a.id_absensi || '');
+  var bi = String(b.id_absensi || '');
+  return ai < bi ? -1 * dir : (ai > bi ? 1 * dir : 0);
 }
 
 /* ---------------- Rekapitulasi ---------------- */

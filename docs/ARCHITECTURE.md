@@ -75,7 +75,8 @@ Google Apps Script Web App  (doGet/doPost; satu-satunya lapisan tepercaya)
   untuk operasi tulis + `logActivity_`.
 - `gas/ReportService.gs` — **endpoint laporan & ekspor (PHASE 5)**; semua aksi:
   POST + `requirePost_` + `requireAdmin_`; pembacaan saja (tanpa lock);
-  filter wajib rentang tanggal ≤92 hari; ekspor CSV (BOM UTF-8, guard
+  filter wajib rentang tanggal ≤92 hari; daftar mendukung pencarian `q`,
+  urut `sort`/`order`, dan paginasi; ekspor CSV (BOM UTF-8, guard
   formula-injection, ≤5000 baris) + `logActivity_('report_exported')`.
   Status masuk/pulang per pegawai-hari **diturunkan ulang** dari catatan
   aktual (`waktu_server` + `tanggal`), tidak menyalin sel `status` lama;

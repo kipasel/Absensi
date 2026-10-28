@@ -12,7 +12,7 @@ Aplikasi absensi pegawai berbasis Progressive Web App (PWA).
 ## Status Proyek
 **PHASE 6 — QA rilis: selesai (lokal); BELUM SIAP RILIS.** Audit kode & keamanan
 dilakukan; 3 bug frontend diperbaiki (retry absensi, reset tombol kirim, penanganan
-sesi kedaluwarsa); suite uji lokal saat ini lulus (84/57/214/170/248/67) + datetime 14. Verifikasi
+sesi kedaluwarsa); suite uji lokal saat ini lulus (84/57/214/170/261/67) + datetime 14. Verifikasi
 nyata: backend Apps Script ter-deploy & health check `ok:true` dengan
 `backendConfigured:true` (`SPREADSHEET_ID`/`DRIVE_FOLDER_ID` terisi — DEC-P08/DEC-P20)
 dan **`officeLocationConfigured:true`** (koordinat kantor tersimpan — AMB-07/DEC-P20);
@@ -34,7 +34,7 @@ Rincian phase sebelumnya:
 **PHASE 5 — Laporan & Ekspor: selesai (lokal).** Halaman laporan admin (filter
 periode/pegawai/jenis/mode/sumber/status), rekapitulasi fakta terhitung, tabel
 rincian berpaginasi, dan ekspor **CSV** (DEC-P07) telah diimplementasikan &
-diuji lokal di Node (248 cek; seluruh endpoint `report.*` terotorisasi `admin`
+diuji lokal di Node (261 cek; seluruh endpoint `report.*` terotorisasi `admin`
 di server). Integrasi runtime Apps Script (butuh `SPREADSHEET_ID`) dan
 pengujian browser fitur DEC-P31 **belum** dijalankan. Pengajuan susulan tetap
 nonaktif pada UI/router aktif. Laporan menampilkan kondisi dan pasangan waktu
@@ -81,7 +81,7 @@ tests/harness.mjs           Stub runtime Apps Script untuk pengujian Node
 tests/auth.test.mjs         Pengujian autentikasi otomatis (56 cek)
 tests/attendance.test.mjs   Pengujian mesin absensi otomatis (214 cek)
 tests/admin.test.mjs         Pengujian panel admin otomatis (166 cek)
-tests/report.test.mjs        Pengujian laporan & ekspor CSV otomatis (248 cek)
+tests/report.test.mjs        Pengujian laporan & ekspor CSV otomatis (261 cek)
 tests/susulan.test.mjs       Pengujian endpoint susulan (route aktif dinonaktifkan)
 docs/                       Dokumentasi proyek
 ```
@@ -99,7 +99,7 @@ node tests/check-foundation.mjs   # struktur, sintaks, JSON, ikon, tanpa rahasia
 node tests/auth.test.mjs          # autentikasi & kripto (56 cek, termasuk RFC 7914 §11)
 node tests/attendance.test.mjs    # mesin absensi: waktu/GPS/foto/duplikat (214 cek)
 node tests/admin.test.mjs         # panel admin: otorisasi/pegawai/absensi/log (166 cek)
-node tests/report.test.mjs        # laporan/rekap/ekspor CSV: otorisasi/filter/keamanan (248 cek)
+node tests/report.test.mjs        # laporan/rekap/ekspor CSV: otorisasi/filter/keamanan (261 cek)
 node tests/susulan.test.mjs       # pengajuan susulan tetap nonaktif (67 cek)
 ```
 Pengujian berjalan di Node dengan stub runtime Apps Script; ini **bukan**

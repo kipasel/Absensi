@@ -1010,6 +1010,52 @@ textarea.form-input {
   margin-top: 0.9rem;
 }
 
+.report-detail__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+}
+
+.report-detail__head .att-step__subtitle {
+  margin: 0;
+}
+
+.report-table-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+.report-table-controls .form-field {
+  min-width: 150px;
+}
+
+#report-search {
+  min-width: 220px;
+}
+
+.admin-table th.report-th--sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.admin-table th.report-th--sortable:hover,
+.admin-table th.report-th--sortable:focus-visible {
+  color: var(--brand-text);
+}
+
+.admin-table th[aria-sort="ascending"]::after {
+  content: " B2";
+}
+
+.admin-table th[aria-sort="descending"]::after {
+  content: " BC";
+}
+
 .report-pagination {
   display: flex;
   flex-wrap: wrap;

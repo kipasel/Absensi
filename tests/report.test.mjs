@@ -362,6 +362,46 @@ check('filter rentang + join nama/NIP; urutan kronologis (tanggal lalu waktu nai
   eq('ada_bukti false pada R4', res.items[3].ada_bukti, false);
   return true;
 });
+check('data table: pencarian nama/NIP/uraian berlaku sebelum paginasi', () => {
+  const { env, tokenAdmin } = envAdmin();
+  seedLaporanDasar(env);
+  seedAbsensi(env, {
+    id_absensi: 'ABS-CARI-URAIAN', id_pegawai: 'PEG-EMP-1', tanggal: '2026-10-21',
+    jenis: 'pulang', waktu_server: '2026-10-21T10:00:00.000Z',
+    uraian_pekerjaan: 'Arsip khusus TEST', output_pekerjaan: 'Dokumen TEST'
+  });
+  const byName = env.sandbox.handleReportAbsensiList_(
+    { token: tokenAdmin, ...RANGE, q: 'pegawai dua' }, 'POST');
+  eq('cari nama (tanpa peduli huruf besar/kecil)', byName.total, 2);
+  const byNip = env.sandbox.handleReportAbsensiList_(
+    { token: tokenAdmin, ...RANGE, q: EMP_NIP.slice(0, 8) }, 'POST');
+  eq('cari NIP', byNip.total, 3);
+  const byUraian = env.sandbox.handleReportAbsensiList_(
+    { token: tokenAdmin, ...RANGE, q: 'arsip khusus' }, 'POST');
+  eq('cari uraian pekerjaan', byUraian.total, 1);
+  eq('item hasil pencarian', byUraian.items[0].id_absensi, 'ABS-CARI-URAIAN');
+  const paged = env.sandbox.handleReportAbsensiList_(
+    { token: tokenAdmin, ...RANGE, q: 'pegawai', limit: 1, offset: 1 }, 'POST');
+  eq('total mengikuti hasil pencarian', paged.total, 5);
+  eq('satu baris per halaman', paged.items.length, 1);
+  eq('has_more di halaman pertama', paged.has_more, true);
+  return true;
+});
+check('data table: urut tanggal/nama naik-turun dan kunci tak dikenal diabaikan', () => {
+  const { env, tokenAdmin } = envAdmin();
+  seedLaporanDasar(env);
+  const desc = env.sandbox.handleReportAbsensiList_(
+    { token: tokenAdmin, ...RANGE, sort: 'tanggal', order: 'desc' }, 'POST');
+  eq('tanggal terbaru lebih dulu', desc.items[0].id_absensi, 'ABS-R4');
+  eq('tanggal terlama paling akhir', desc.items[desc.items.length - 1].id_absensi, 'ABS-R1');
+  const ascName = env.sandbox.handleReportAbsensiList_(
+    { token: tokenAdmin, ...RANGE, sort: 'nama', order: 'asc' }, 'POST');
+  eq('nama A-Z', ascName.items[0].id_absensi, 'ABS-R3');
+  const invalid = env.sandbox.handleReportAbsensiList_(
+    { token: tokenAdmin, ...RANGE, sort: 'drop_table', order: 'desc' }, 'POST');
+  eq('sort tak dikenal memakai urutan default', invalid.items[0].id_absensi, 'ABS-R1');
+  return true;
+});
 check('laporan menampilkan pulang tanpa masuk tanpa membuat data masuk', () => {
   const { env, tokenAdmin } = envAdmin();
   seedAbsensi(env, {

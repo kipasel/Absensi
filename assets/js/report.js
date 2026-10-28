@@ -19,6 +19,10 @@
   var pageSize = 50;
   var lastTotal = 0;
   var pegawaiOptionsLoaded = false;
+  var searchQuery = '';
+  var sortKey = '';
+  var sortOrder = 'asc';
+  var searchTimer = null;
 
   var CSV_FILENAME_RE = /^laporan-absensi_\d{4}-\d{2}-\d{2}_\d{4}-\d{2}-\d{2}\.csv$/;
 
@@ -210,6 +214,9 @@
     Object.keys(filters).forEach(function (key) { data[key] = filters[key]; });
     data.limit = pageSize;
     data.offset = pageOffset;
+    data.q = searchQuery;
+    data.sort = sortKey;
+    data.order = sortOrder;
     return api.call('report.absensi.list', data).then(function (res) {
       if (!res || !res.ok) {
         throw new Error((res && res.message) || 'Gagal memuat rincian absensi.');
@@ -221,11 +228,51 @@
     });
   }
 
+  function reloadDetail(message) {
+    var detail = el('report-detail');
+    if (!detail || detail.hidden) return;
+    var filters = readFilters();
+    if (!filters) return;
+    loadDetail(filters).then(function () {
+      if (message) setStatus(message, 'info');
+    }).catch(function (err) {
+      setStatus((err && err.message) || 'Tidak dapat menghubungi server.', 'error');
+    });
+  }
+
+  function updateSortIndicators() {
+    var headers = document.querySelectorAll('#report-table th[data-sort]');
+    for (var i = 0; i < headers.length; i++) {
+      var active = sortKey && headers[i].getAttribute('data-sort') === sortKey;
+      headers[i].setAttribute('aria-sort', active
+        ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none');
+    }
+  }
+
+  function toggleSort(header) {
+    var key = header.getAttribute('data-sort');
+    if (sortKey === key) {
+      sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortKey = key;
+      sortOrder = 'asc';
+    }
+    pageOffset = 0;
+    updateSortIndicators();
+    reloadDetail('Diurutkan berdasarkan ' + header.textContent.trim() + '.');
+  }
+
   function runReport() {
     var filters = readFilters();
     if (!filters) return;
     pageSize = readPageSize();
     pageOffset = 0;
+    searchQuery = '';
+    sortKey = '';
+    sortOrder = 'asc';
+    var searchInput = el('report-search');
+    if (searchInput) searchInput.value = '';
+    updateSortIndicators();
     Promise.all([loadRekap(filters), loadDetail(filters)])
       .then(function () {
         setStatus('Laporan dimuat.', 'success');
@@ -349,17 +396,35 @@
       size.addEventListener('change', function () {
         pageSize = readPageSize();
         pageOffset = 0;
-        var detail = el('report-detail');
-        if (!detail || detail.hidden) return;
-        var filters = readFilters();
-        if (!filters) return;
-        loadDetail(filters).then(function () {
-          setStatus('Menampilkan ' + pageSize + ' data per halaman.', 'info');
-        }).catch(function (err) {
-          setStatus((err && err.message) || 'Tidak dapat menghubungi server.', 'error');
-        });
+        reloadDetail('Menampilkan ' + pageSize + ' data per halaman.');
       });
     }
+    var search = el('report-search');
+    if (search) {
+      search.addEventListener('input', function () {
+        searchQuery = search.value.trim();
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function () {
+          pageOffset = 0;
+          reloadDetail('Pencarian diterapkan.');
+        }, 300);
+      });
+    }
+    var headers = document.querySelectorAll('#report-table th[data-sort]');
+    for (var h = 0; h < headers.length; h++) {
+      (function (header) {
+        header.tabIndex = 0;
+        header.classList.add('report-th--sortable');
+        header.addEventListener('click', function () { toggleSort(header); });
+        header.addEventListener('keydown', function (event) {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            toggleSort(header);
+          }
+        });
+      })(headers[h]);
+    }
+    updateSortIndicators();
   }
 
   if (document.readyState === 'loading') {

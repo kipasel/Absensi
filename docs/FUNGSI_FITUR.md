@@ -75,11 +75,11 @@ Alur data: `Browser/PWA → HTTPS → Apps Script → Sheets + Drive`.
 
 ### 3.5 Laporan & Ekspor (admin)
 - Filter: periode (wajib, maks. 92 hari), pegawai, jenis, mode, sumber, status.
-- **Rekapitulasi fakta terhitung** + tabel harian + rincian berpaginasi
-  dengan pilihan **10/20/30/50 data per halaman**; detail dan CSV menampilkan
-  kondisi serta pasangan waktu masuk/pulang, status, uraian dan output
-  pekerjaan. Waktu yang tidak tercatat tetap kosong. Rekap memisahkan pulang
-  tanpa catatan masuk.
+- **Rekapitulasi fakta terhitung** + tabel harian + rincian berupa **data
+  table**: pencarian, urut kolom, pilihan **10/20/30/50 data per halaman**, dan
+  navigasi halaman. Detail dan CSV menampilkan kondisi serta pasangan waktu
+  masuk/pulang, status, uraian dan output pekerjaan. Waktu yang tidak tercatat
+  tetap kosong. Rekap memisahkan pulang tanpa catatan masuk.
 - **Ekspor CSV** (BOM UTF-8, quote RFC 4180, guard formula-injection,
   maks. 5000 baris) — **tanpa** PIN/token/referensi foto.
 - Status `TERLAMBAT` dicatat per baris masuk sesuai DEC-P31; status masuk/pulang
