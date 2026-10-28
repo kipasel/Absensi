@@ -77,6 +77,8 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   filter laporan tidak menghasilkan 0. Frontend `0.9.8` terbit dari commit
   `1118341` (`master`/`main`); Pages build `1321313591` sukses dan aset live
   memuat `0.9.8` + API baru. Backend belum dideploy.
+- Pilihan jumlah baris laporan 10/20/30/50 ditambahkan (frontend `0.9.9`,
+  belum diterbitkan).
 - Jalankan lokal: `py -m http.server 8765` lalu buka `http://127.0.0.1:8765/`.
 
 ## Blocker Aktif (jangan diimplementasikan sebelum dijawab)

@@ -67,6 +67,12 @@
 
   /* ---------------- Filter ---------------- */
 
+  function readPageSize() {
+    var select = el('report-page-size');
+    var n = select ? parseInt(select.value, 10) : 0;
+    return (n === 10 || n === 20 || n === 30 || n === 50) ? n : 50;
+  }
+
   function readFilters() {
     var dari = (el('report-dari') && el('report-dari').value) || '';
     var sampai = (el('report-sampai') && el('report-sampai').value) || '';
@@ -218,6 +224,7 @@
   function runReport() {
     var filters = readFilters();
     if (!filters) return;
+    pageSize = readPageSize();
     pageOffset = 0;
     Promise.all([loadRekap(filters), loadDetail(filters)])
       .then(function () {
@@ -336,6 +343,23 @@
     if (prev) prev.addEventListener('click', function () { goPage(-1); });
     var next = el('report-next');
     if (next) next.addEventListener('click', function () { goPage(1); });
+    var size = el('report-page-size');
+    if (size) {
+      pageSize = readPageSize();
+      size.addEventListener('change', function () {
+        pageSize = readPageSize();
+        pageOffset = 0;
+        var detail = el('report-detail');
+        if (!detail || detail.hidden) return;
+        var filters = readFilters();
+        if (!filters) return;
+        loadDetail(filters).then(function () {
+          setStatus('Menampilkan ' + pageSize + ' data per halaman.', 'info');
+        }).catch(function (err) {
+          setStatus((err && err.message) || 'Tidak dapat menghubungi server.', 'error');
+        });
+      });
+    }
   }
 
   if (document.readyState === 'loading') {

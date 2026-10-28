@@ -851,3 +851,15 @@ nyata.
   Commit backend `77c397a` juga sudah dipush.
 - Status: perubahan backend sudah ada di repo dan **belum dideploy** ke Apps
   Script; perilaku laporan live belum dapat diklaim terverifikasi.
+
+## Pilihan jumlah baris laporan — 2026-10-28
+
+- `index.html` — menambahkan pilihan **10/20/30/50 data per halaman** pada
+  filter laporan; default `50`.
+- `assets/js/report.js` — ukuran halaman dibaca dari pilihan, offset direset
+  saat laporan dijalankan atau ukuran diubah, dan rincian dimuat ulang tanpa
+  mengubah filter/rekap.
+- Tidak ada perubahan backend; endpoint laporan sudah menerima `limit`.
+- Versi frontend/cache `0.9.9`.
+- Validasi: sintaks `report.js` dan `check-foundation.mjs` **84/0**; suite lain
+  tidak berubah.
