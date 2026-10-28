@@ -34,8 +34,8 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 ## Status Saat Ini
 - Perubahan DEC-P33 (2026-10-28) menetapkan status pulang dari catatan pulang
   valid: `SUDAH_ABSEN_PULANG`/`BELUM_ABSEN_PULANG`; `TANPA_ABSEN_MASUK` tetap
-  dipakai untuk status masuk yang tidak tersedia. Frontend `0.10.5` terbit
-  (commit `11711e2`), tetapi deployment backend dan verifikasi absensi nyata
+  dipakai untuk status masuk yang tidak tersedia. Frontend `0.10.6` terbit
+  (commit `32e215b`), tetapi deployment backend dan verifikasi absensi nyata
   belum dikonfirmasi.
 - PHASE 0–6 dikerjakan. PHASE 3 (mesin absensi), PHASE 4 (panel admin),
   PHASE 5 (laporan & ekspor) **selesai (lokal)**. PHASE 6 (QA rilis) **selesai
@@ -76,7 +76,7 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 - Endpoint Web App terbaru (2026-10-28):
   `https://script.google.com/macros/s/AKfycbyrUXAu0hU99hBWzooq8MdeUv22mbrhlGeUqlxAWuryDYjvblxDIFUMKY02W1uaAe0Vsw/exec`;
   health `ok:true`, `backendConfigured:true`, `officeLocationConfigured:true`.
-  Disetel di `assets/js/config.js`; frontend/cache `0.10.5`.
+  Disetel di `assets/js/config.js`; frontend/cache `0.10.6`.
 - Perbaikan status 2026-10-28: frontend `0.9.7` terbit dari commit `e5a6075`
   (`master`/`main`); Pages build `1321281841` sukses dan aset live memuat
   `0.9.7`. Backend `gas/TimeRule.gs`, `ReportService.gs`, `Repo.gs`,
@@ -97,8 +97,9 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 - Tombol gulir kiri/kanan tabel dan ekspor Excel `.xlsx` terbit di frontend
   `0.10.5` (commit `11711e2`); Pages run `40686168966` sukses dan aset live
   memuat `0.10.5`. Uji browser nyata belum dijalankan.
-- Scrollbar vertikal sisi kanan dan header sticky tabel laporan ada lokal di
-  frontend/cache `0.10.6`; belum diuji browser atau diterbitkan.
+- Gulir vertikal sisi kanan dan header sticky tabel laporan terbit di frontend
+  `0.10.6` (commit `32e215b`); Pages run `40687118909` sukses. Uji browser
+  nyata belum dijalankan.
 - Jalankan lokal: `py -m http.server 8765` lalu buka `http://127.0.0.1:8765/`.
 
 ## Blocker Aktif (jangan diimplementasikan sebelum dijawab)

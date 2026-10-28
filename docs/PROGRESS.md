@@ -964,4 +964,5 @@ nyata.
   area tabel; scrollbar vertikal muncul di sisi kanan saat data melampaui tinggi.
 - Header tabel dibuat sticky agar tetap terlihat saat menggulir.
 - Versi frontend/cache dinaikkan ke `0.10.6`.
-- Status: implementasi lokal; belum diuji browser atau diterbitkan.
+- Status: terbit dari commit `32e215b`; Pages run `40687118909` sukses dan aset
+  live memuat `0.10.6`. Uji browser nyata belum dijalankan.
