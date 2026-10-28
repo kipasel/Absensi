@@ -80,9 +80,11 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 - Pilihan jumlah baris laporan 10/20/30/50 ditambahkan; frontend `0.9.9`
   terbit dari commit `03d60e5` (`master`/`main`), Pages build `1321339598`
   sukses, dan aset live memuat `0.9.9`.
-- Data table laporan (cari, urut kolom, 10/20/30/50, navigasi) disiapkan di
-  frontend `0.10.0`; `report.absensi.list` menerima `q`/`sort`/`order`.
-  Backend **belum dideploy** sehingga pencarian/urut server belum aktif di live.
+- Data table laporan (cari, urut kolom, 10/20/30/50, navigasi) terbit di
+  frontend `0.10.0` (commit `b474ea8`, `master`/`main`); Pages run `40680476712`
+  sukses dan aset live memuat `0.10.0` + header sortable. `report.absensi.list`
+  menerima `q`/`sort`/`order`. Backend **belum dideploy** sehingga pencarian/urut
+  server belum aktif di live.
 - Jalankan lokal: `py -m http.server 8765` lalu buka `http://127.0.0.1:8765/`.
 
 ## Blocker Aktif (jangan diimplementasikan sebelum dijawab)

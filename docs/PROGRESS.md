@@ -876,7 +876,8 @@ nyata.
   karakter), `sort` (whitelist kolom tampilan), dan `order` (`asc`/`desc`);
   pencarian/urut dilakukan sebelum paginasi sehingga `total` dan halaman
   konsisten. Parameter tak dikenal diabaikan.
-- Frontend/cache `0.10.0`.
+- Frontend/cache `0.10.0` (commit `b474ea8`) sudah dipush ke `master`/`main`;
+  Pages run `40680476712` sukses dan aset live memuat `0.10.0` + header sortable.
 - Tes laporan **261/0**; foundation **84/0**.
 - Backend **belum dideploy**; pencarian/urut server baru aktif setelah deploy
   Apps Script. Frontend live tanpa deploy backend tetap menampilkan tabel,
