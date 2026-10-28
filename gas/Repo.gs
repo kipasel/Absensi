@@ -153,16 +153,43 @@ function readObjects_(name) {
   var values = sh.getDataRange().getValues();
   if (values.length < 2) return [];
   var headers = values[0].map(function (h) { return String(h); });
+  var businessDateColumns = name === 'Absensi' ? ['tanggal']
+    : (name === 'PengajuanSusulan' ? ['tanggal_absensi'] : []);
   var out = [];
   for (var r = 1; r < values.length; r++) {
     var obj = {};
     for (var c = 0; c < headers.length; c++) {
-      obj[headers[c]] = values[r][c];
+      var value = values[r][c];
+      if (businessDateColumns.indexOf(headers[c]) !== -1) {
+        value = normalizeBusinessDate_(value);
+      }
+      obj[headers[c]] = value;
     }
     obj.__row = r + 1;
     out.push(obj);
   }
   return out;
+}
+
+/**
+ * Normalisasi nilai sel tanggal bisnis dari Sheets menjadi YYYY-MM-DD.
+ * Timestamp dinormalisasi di zona bisnis aplikasi; tanggal tanpa waktu
+ * mempertahankan tanggal kalender yang direpresentasikan.
+ */
+function normalizeBusinessDate_(value) {
+  if (Object.prototype.toString.call(value) === '[object Date]') {
+    if (isNaN(value.getTime())) return '';
+    return Utilities.formatDate(value, BIZ_TIMEZONE, 'yyyy-MM-dd');
+  }
+  var text = String(value == null ? '' : value).trim();
+  var match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text);
+  if (match) {
+    var year = Number(match[1]), month = Number(match[2]), day = Number(match[3]);
+    var probe = new Date(Date.UTC(year, month - 1, day));
+    if (probe.getUTCFullYear() === year && probe.getUTCMonth() === month - 1 &&
+        probe.getUTCDate() === day) return text;
+  }
+  return text;
 }
 
 function appendObject_(name, obj) {

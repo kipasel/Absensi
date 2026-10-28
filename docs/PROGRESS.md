@@ -826,10 +826,25 @@ Perubahan:
 - Versi frontend/cache `0.9.7`.
 
 Pengujian lokal (Node + stub): foundation **84/0**, auth **57/0**,
-attendance **214/0**, admin **170/0**, report **245/0**, susulan **67/0**,
+attendance **214/0**, admin **170/0**, report **248/0**, susulan **67/0**,
 datetime **14/0**.
 
 Frontend `0.9.7` (commit `e5a6075`) sudah dipush ke `master`/`main` dan terbit
 di Pages (build `1321281841`; aset live memuat `0.9.7`). Belum dijalankan:
 deployment Apps Script, rekonsiliasi pada spreadsheet produksi, dan uji browser
 nyata.
+
+## Perbaikan normalisasi tanggal laporan — 2026-10-28
+
+- Gejala dari pengguna: sheet `Absensi` berisi catatan tanggal 27–28 Oktober,
+  tetapi laporan untuk rentang tersebut dengan semua pegawai tetap menampilkan 0.
+- Perubahan lokal: `readObjects_()` menormalkan nilai kolom tanggal bisnis
+  `Absensi.tanggal` dan `PengajuanSusulan.tanggal_absensi` menjadi teks
+  `YYYY-MM-DD`; nilai sel bertipe Date diformat dengan zona `Asia/Jakarta`.
+  Tidak ada sel atau data produksi yang ditulis/diubah.
+- Tes regresi: nilai tanggal bertipe Date pada `2026-10-27T17:00:00Z` cocok
+  dengan tanggal bisnis `2026-10-28`.
+- Validasi lokal: `report.test.mjs` **248/0**, `check-foundation.mjs` **84/0**,
+  `git diff --check` bersih.
+- Status: perubahan backend sudah disiapkan di repo dan **belum dideploy** ke
+  Apps Script; perilaku laporan live belum dapat diklaim terverifikasi.

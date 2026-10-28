@@ -61,7 +61,7 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   `node tests/attendance.test.mjs`, `node tests/admin.test.mjs`,
   `node tests/report.test.mjs`, `node tests/susulan.test.mjs`,
   `node tests/datetime.test.mjs`.
-  Hasil terakhir (2026-10-28): 84 / 57 / 214 / 170 / 245 / 67 / 14 — semua **0 gagal**.
+  Hasil terakhir (2026-10-28): 84 / 57 / 214 / 170 / 248 / 67 / 14 — semua **0 gagal**.
 - Tampilan tanggal/waktu memakai `assets/js/datetime.js` (Asia/Jakarta);
   timestamp server tetap ISO-8601 UTC dan CSV dikonversi sekali di backend.
 - Status masuk/pulang laporan **diturunkan ulang** dari catatan aktual; tanpa
@@ -72,6 +72,9 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   (`master`/`main`); Pages build `1321281841` sukses dan aset live memuat
   `0.9.7`. Backend `gas/TimeRule.gs`, `ReportService.gs`, `Repo.gs`,
   `Attendance.gs`, `MyAttendanceService.gs` belum dideploy.
+- Perbaikan normalisasi tanggal 2026-10-28: `readObjects_()` mengubah sel
+  tanggal bisnis bertipe Date menjadi `YYYY-MM-DD` (zona `Asia/Jakarta`) agar
+  filter laporan tidak menghasilkan 0. Backend belum dideploy.
 - Jalankan lokal: `py -m http.server 8765` lalu buka `http://127.0.0.1:8765/`.
 
 ## Blocker Aktif (jangan diimplementasikan sebelum dijawab)

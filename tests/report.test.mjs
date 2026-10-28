@@ -313,6 +313,19 @@ check('zona waktu: pemilihan tanggal bisnis memakai kolom tanggal (Asia/Jakarta)
   eq('tidak masuk tanggal UTC', skipRange.total, 0);
   return true;
 });
+check('kolom tanggal bertipe Date dari Google Sheets dinormalisasi ke tanggal bisnis', () => {
+  const { env, tokenAdmin } = envAdmin();
+  seedAbsensi(env, {
+    id_absensi: 'ABS-DATE-CELL', id_pegawai: 'PEG-EMP-1',
+    tanggal: new Date('2026-10-27T17:00:00.000Z')
+  });
+  const res = env.sandbox.handleReportAbsensiList_({
+    token: tokenAdmin, tanggal_dari: '2026-10-28', tanggal_sampai: '2026-10-28'
+  }, 'POST');
+  eq('tanggal Date dicocokkan setelah konversi Asia/Jakarta', res.total, 1);
+  eq('tanggal respons dinormalisasi', res.items[0].tanggal, '2026-10-28');
+  return true;
+});
 check('periode tanpa data → total 0 & items [] (bukan error, bukan "gagal")', () => {
   const { env, tokenAdmin } = envAdmin();
   const res = env.sandbox.handleReportAbsensiList_({

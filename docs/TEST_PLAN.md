@@ -5,7 +5,7 @@
 > Node dengan stub; integrasi runtime Apps Script & browser BELUM dijalankan.
 >
 > Catatan 2026-10-24 (DEC-P31): suite otomatis `check-foundation` 74, `auth` 56,
-> `attendance` 214, `admin` 170, `report` 245, `susulan` 67 — semua LULUS.
+> `attendance` 214, `admin` 170, `report` 248, `susulan` 67 — semua LULUS.
 
 ## Strategi
 - Unit test logika murni (perhitungan jarak, evaluasi jam, validasi input) bila memungkinkan di JS.
@@ -38,7 +38,7 @@ Dijalankan dengan `node tests/check-foundation.mjs`.
 | FD-18 | Benchmark iterasi PBKDF2 di runtime Apps Script nyata | BELUM DIJALANKAN |
 | FD-19 | Pengujian mesin absensi (`tests/attendance.test.mjs`, 214 cek) | LULUS |
 | FD-20 | Pengujian panel admin (`tests/admin.test.mjs`, 166 cek) | LULUS |
-| FD-21 | Pengujian laporan (`tests/report.test.mjs`, 245 cek) | LULUS |
+| FD-21 | Pengujian laporan (`tests/report.test.mjs`, 248 cek) | LULUS |
 | FD-22 | Pengujian pengajuan susulan (`tests/susulan.test.mjs`, 67 cek) | LULUS |
 
 ## 1. Aturan Waktu (zona `Asia/Jakarta`)
@@ -148,7 +148,7 @@ BUKAN runtime Apps Script. Data uji sintetis berlabel `TEST`.
 | AD-22 | Referensi foto mengikuti catatan absensi; struktur folder baru (DEC-P29) | LULUS (otomatis) |
 
 ## 8. Laporan & Ekspor (PHASE 5) — otomatis
-Dijalankan dengan `node tests/report.test.mjs` (245 cek) — Node + stub,
+Dijalankan dengan `node tests/report.test.mjs` (248 cek) — Node + stub,
 BUKAN runtime Apps Script. Data uji sintetis berlabel `TEST`.
 | ID | Kasus | Hasil |
 |----|-------|-------|

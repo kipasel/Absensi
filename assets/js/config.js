@@ -14,7 +14,7 @@ window.APP_CONFIG = Object.freeze({
   // URL Web App Apps Script (publik — URL /exec memang dirancang dapat diakses
   // publik; keamanan ada di backend: token sesi + otorisasi). Bukan rahasia.
   // Contoh format: 'https://script.google.com/macros/s/ID/exec'
-  API_BASE_URL: 'https://script.google.com/macros/s/AKfycbyC2uLtxYWuuAI1Yqajv0Z3MFY9jIJUX-gNUhQRSpqisIlVvVSgDOBQ5XUxe_UNX7d8Jw/exec',
+  API_BASE_URL: 'https://script.google.com/macros/s/AKfycbyqUAuGfiZt_hGlEKkbjAVb8XGMbWn5-c41-4PjKjuGSXPYejkG2PdAZwMHiNEgGUzTGg/exec',
 
   // Nama aksi health check yang sudah ada di kerangka backend (gas/Code.gs).
   HEALTH_ACTION: 'health'
