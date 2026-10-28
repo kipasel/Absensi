@@ -109,11 +109,9 @@
   function updateTimeHint() {
     var node = el('att-time-hint');
     if (!node) return;
-    var now = new Date();
-    var hh = ('0' + now.getHours()).slice(-2);
-    var mm = ('0' + now.getMinutes()).slice(-2);
-    var ss = ('0' + now.getSeconds()).slice(-2);
-    node.textContent = 'Jam perangkat saat ini ' + hh + '.' + mm + '.' + ss +
+    var dateTime = window.AppDateTime;
+    var now = dateTime ? dateTime.formatTime(new Date()) : '';
+    node.textContent = 'Jam perangkat saat ini ' + (now || '-') +
       ' (hanya indikasi; keputusan menggunakan waktu server).';
   }
 
@@ -365,8 +363,9 @@
     setText('att-result-title', 'Absensi tercatat');
     setText('att-result-detail',
       (res.jenis === 'masuk' ? 'Masuk' : 'Pulang') + ' (' +
-      (res.mode_kerja === 'WFO' ? 'WFO' : 'WFH/WFA') + ') pada ' + res.tanggal +
-      ' pukul ' + formatServerTime(res.waktu_server) + ' WIB.' +
+      (res.mode_kerja === 'WFO' ? 'WFO' : 'WFH/WFA') + ') pada ' +
+      formatServerDate(res.tanggal) +
+      ' pukul ' + formatServerTime(res.waktu_server) + '.' +
       (res.status_absensi === 'TANPA_ABSEN_MASUK'
         ? ' Catatan absensi masuk pada tanggal ini tidak tersedia.' : ''));
     show(el('att-result'));
@@ -376,14 +375,15 @@
   }
 
   function formatServerTime(iso) {
-    var d = new Date(iso);
-    if (isNaN(d.getTime())) return '-';
-    // Konversi UTC → WIB untuk tampilan (keputusan tetap dari server).
-    var wib = new Date(d.getTime() + 7 * 3600 * 1000);
-    var hh = ('0' + wib.getUTCHours()).slice(-2);
-    var mm = ('0' + wib.getUTCMinutes()).slice(-2);
-    var ss = ('0' + wib.getUTCSeconds()).slice(-2);
-    return hh + '.' + mm + '.' + ss;
+    var dateTime = window.AppDateTime;
+    if (!dateTime) return '-';
+    return dateTime.formatTime(iso) || '-';
+  }
+
+  function formatServerDate(tanggal) {
+    var dateTime = window.AppDateTime;
+    if (!dateTime) return tanggal || '-';
+    return dateTime.formatDate(tanggal) || '-';
   }
 
   function restartFlow() {

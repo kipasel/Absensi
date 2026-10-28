@@ -44,7 +44,10 @@ tetap wajib memverifikasi identitas & peran di backend.
      dibuka aplikasi. Tanpa scope ini unggah foto gagal
      (`ATTENDANCE_NOT_STORED`). Setelah mengubah scope, deploy versi baru dan
      setujui ulang izin Drive.
-3. Set **Project Settings → Time zone** = `Asia/Jakarta`.
+3. Set **Project Settings → Time zone** = `Asia/Jakarta`. `appsscript.json`
+   sudah memakai `"timeZone": "Asia/Jakarta"`; `initializeSheets()` juga
+   menyelaraskan zona waktu spreadsheet ke `Asia/Jakarta` tanpa mengubah nilai
+   sel. Setelah mengubah manifest/backend, deploy versi Web App baru.
 4. Isi **Script Properties** (kolom Name/Value):
    | Kunci | Nilai |
    |-------|-------|

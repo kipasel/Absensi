@@ -45,9 +45,28 @@ function getSheet_(name) {
   return sh;
 }
 
+/**
+ * Menyelaraskan zona waktu spreadsheet dengan zona bisnis aplikasi.
+ * Nilai sel tidak diubah; hanya konfigurasi tampilan spreadsheet.
+ */
+function ensureSpreadsheetTimezone_(ss) {
+  try {
+    if (typeof BIZ_TIMEZONE === 'undefined') return;
+    if (!ss.getSpreadsheetTimeZone || !ss.setSpreadsheetTimeZone) return;
+    if (ss.getSpreadsheetTimeZone() !== BIZ_TIMEZONE) {
+      ss.setSpreadsheetTimeZone(BIZ_TIMEZONE);
+    }
+  } catch (e) {
+    if (typeof Logger !== 'undefined') {
+      Logger.log('ensureSpreadsheetTimezone_ gagal: ' + (e && e.message));
+    }
+  }
+}
+
 /** Membuat sheet + menambahkan kolom baru tanpa mengubah urutan/data lama. */
 function ensureAllSheets_() {
   var ss = getSpreadsheet_();
+  ensureSpreadsheetTimezone_(ss);
   ALL_SHEET_NAMES.forEach(function (name) {
     var sh = ss.getSheetByName(name);
     if (!sh) {

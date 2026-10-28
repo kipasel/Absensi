@@ -822,6 +822,12 @@ check('initializeSheets mengisi header sheet kosong dari kolom pertama', () => {
   }
   return true;
 });
+check('initializeSheets menyelaraskan zona waktu spreadsheet ke Asia/Jakarta', () => {
+  const env = createEnv({ props: { SPREADSHEET_ID: 'TEST_SS_ID' } });
+  env.sandbox.initializeSheets();
+  eq('zona spreadsheet', env.spreadsheet.getSpreadsheetTimeZone(), 'Asia/Jakarta');
+  return true;
+});
 check('migrasi menolak sheet tanpa header yang sudah berisi data', () => {
   const env = createEnv({ props: { SPREADSHEET_ID: 'TEST_SS_ID' } });
   const sh = env.spreadsheet.insertSheet('Akun');

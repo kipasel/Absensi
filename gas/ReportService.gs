@@ -31,6 +31,41 @@ var REPORT_DEFAULT_PAGE_LIMIT = 50;
 var REPORT_MAX_PAGE_LIMIT = 200;
 var REPORT_EXPORT_MAX_ROWS = 5000;
 
+/* ---------------- Format tampilan WIB (khusus keluaran ekspor) ---------------- */
+
+/**
+ * Mengubah nilai timestamp server (ISO UTC atau Date) menjadi teks WIB.
+ * Nilai sumber TIDAK diubah; fungsi ini hanya untuk tampilan/ekspor.
+ * @param {*} value
+ * @param {string} pattern pola Utilities.formatDate
+ * @return {string}
+ */
+function reportFormatWib_(value, pattern) {
+  if (value === null || value === undefined || value === '') return '';
+  var d = (Object.prototype.toString.call(value) === '[object Date]')
+    ? value : new Date(String(value));
+  if (isNaN(d.getTime())) return String(value);
+  return Utilities.formatDate(d, BIZ_TIMEZONE, pattern);
+}
+
+/** Tanggal bisnis YYYY-MM-DD (Asia/Jakarta) → dd/MM/yyyy tanpa pergeseran. */
+function reportFormatTanggal_(value) {
+  var s = value === null || value === undefined ? '' : String(value).trim();
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  if (m) return m[3] + '/' + m[2] + '/' + m[1];
+  return reportFormatWib_(value, 'dd/MM/yyyy');
+}
+
+function reportFormatWaktu_(value) {
+  var s = reportFormatWib_(value, 'HH:mm:ss');
+  return s ? s + ' WIB' : '';
+}
+
+function reportFormatTanggalWaktu_(value) {
+  var s = reportFormatWib_(value, 'dd/MM/yyyy HH:mm:ss');
+  return s ? s + ' WIB' : '';
+}
+
 /**
  * Definisi metrik rekapitulasi (dokumentasi hidup — dipakai tes & docs).
  * Setiap metrik menghitung CATATAN (baris), bukan "pegawai hadir", kecuali
@@ -411,20 +446,20 @@ function buildAbsensiCsv_(matched, statusMap, dayMap) {
     var f = reportAbsensiFields_(matched[i], statusMap, dayMap);
     lines.push([
       csvEscapeField_(f.id_absensi),
-      csvEscapeField_(f.tanggal),
+      csvEscapeField_(reportFormatTanggal_(f.tanggal)),
       csvEscapeField_(f.id_pegawai),
       csvEscapeField_(f.nama),
       csvEscapeField_(f.nip_nipk),
       csvEscapeField_(f.jenis),
       csvEscapeField_(f.mode_kerja),
-      csvEscapeField_(f.waktu_server),
+      csvEscapeField_(reportFormatTanggalWaktu_(f.waktu_server)),
       csvEscapeField_(f.sumber),
       csvEscapeField_(f.jarak_meter === null ? '' : f.jarak_meter),
       csvEscapeField_(f.ada_bukti ? 'ya' : 'tidak'),
       csvEscapeField_(f.status),
       csvEscapeField_(f.kondisi_harian),
-      csvEscapeField_(f.waktu_masuk),
-      csvEscapeField_(f.waktu_pulang),
+      csvEscapeField_(reportFormatTanggalWaktu_(f.waktu_masuk)),
+      csvEscapeField_(reportFormatTanggalWaktu_(f.waktu_pulang)),
       csvEscapeField_(f.uraian_pekerjaan),
       csvEscapeField_(f.output_pekerjaan)
     ].join(','));

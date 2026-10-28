@@ -77,13 +77,16 @@ function makeSheet(name) {
 
 function makeSpreadsheet() {
   const sheets = new Map();
+  let timeZone = 'America/New_York';
   return {
     getSheetByName: (n) => sheets.get(n) || null,
     insertSheet(n) {
       const s = makeSheet(n);
       sheets.set(n, s);
       return s;
-    }
+    },
+    getSpreadsheetTimeZone: () => timeZone,
+    setSpreadsheetTimeZone(tz) { timeZone = String(tz); }
   };
 }
 
@@ -163,6 +166,11 @@ export function createEnv(options = {}) {
     for (const part of fmt.formatToParts(d)) p[part.type] = part.value;
     if (pattern === 'yyyy-MM-dd') return `${p.year}-${p.month}-${p.day}`;
     if (pattern === 'HHmmss') return `${p.hour}${p.minute}${p.second}`;
+    if (pattern === 'dd/MM/yyyy') return `${p.day}/${p.month}/${p.year}`;
+    if (pattern === 'HH:mm:ss') return `${p.hour}:${p.minute}:${p.second}`;
+    if (pattern === 'dd/MM/yyyy HH:mm:ss') {
+      return `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}:${p.second}`;
+    }
     throw new Error('pattern formatDate tidak didukung di harness: ' + pattern);
   }
 

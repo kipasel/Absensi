@@ -13,6 +13,7 @@
   'use strict';
 
   var api = window.AppApi;
+  var dateTime = window.AppDateTime;
   var isAdmin = false;
   var pageOffset = 0;
   var pageSize = 50;
@@ -54,6 +55,14 @@
     setText(td, text);
     row.appendChild(td);
     return td;
+  }
+
+  function fmtDate(value) {
+    return dateTime ? dateTime.formatDate(value) : (value || '');
+  }
+
+  function fmtTime(value) {
+    return dateTime ? dateTime.formatTime(value) : (value || '');
   }
 
   /* ---------------- Filter ---------------- */
@@ -116,7 +125,7 @@
     clearNode(tbody);
     (harian || []).forEach(function (item) {
       var tr = document.createElement('tr');
-      cell(tr, item.tanggal);
+      cell(tr, fmtDate(item.tanggal));
       cell(tr, item.catatan_masuk);
       cell(tr, item.catatan_pulang);
       cell(tr, item.pulang_tanpa_masuk || 0);
@@ -156,16 +165,16 @@
     clearNode(tbody);
     (items || []).forEach(function (item) {
       var tr = document.createElement('tr');
-      cell(tr, item.tanggal);
+      cell(tr, fmtDate(item.tanggal));
       cell(tr, item.nama || item.id_pegawai);
       cell(tr, item.nip_nipk);
       cell(tr, item.jenis);
       cell(tr, item.mode_kerja);
-      cell(tr, item.waktu_server);
+      cell(tr, fmtTime(item.waktu_server) || '-');
       cell(tr, item.status || '-');
       cell(tr, item.kondisi_harian || '-');
-      cell(tr, item.waktu_masuk || '-');
-      cell(tr, item.waktu_pulang || '-');
+      cell(tr, fmtTime(item.waktu_masuk) || '-');
+      cell(tr, fmtTime(item.waktu_pulang) || '-');
       cell(tr, item.sumber);
       cell(tr, item.jarak_meter === null ? '-' : String(item.jarak_meter));
       cell(tr, item.ada_bukti ? 'Ada' : 'Tidak ada');

@@ -2,6 +2,7 @@
 (function () {
   'use strict';
   var api = window.AppApi;
+  var dateTime = window.AppDateTime;
   var el = function (id) { return document.getElementById(id); };
   var currentMonth = '';
   var busy = false;
@@ -11,18 +12,12 @@
     if (node) node.textContent = value;
   }
   function time(iso) {
-    var date = new Date(iso);
-    if (isNaN(date.getTime())) return '—';
-    return new Intl.DateTimeFormat('id-ID', {
-      timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
-    }).format(date) + ' WIB';
+    if (!dateTime) return '—';
+    return dateTime.formatTime(iso) || '—';
   }
   function dateLabel(value) {
-    var date = new Date(value + 'T00:00:00+07:00');
-    if (isNaN(date.getTime())) return value;
-    return new Intl.DateTimeFormat('id-ID', {
-      timeZone: 'Asia/Jakarta', day: 'numeric', month: 'long', year: 'numeric'
-    }).format(date);
+    if (!dateTime) return value;
+    return dateTime.formatDate(value) || value;
   }
   function addItem(container, item) {
     var card = document.createElement('article');

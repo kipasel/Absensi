@@ -750,3 +750,48 @@ Pengguna memberikan URL Web App baru (DEC-P21 diperbarui):
   **57/0**, attendance **200/0**, admin **168/0**, report **178/0**, susulan **67/0**.
 - Belum dideploy ke Apps Script. Error login runtime tetap memerlukan detail
   eksekusi Web App; perbaikan lokal tidak mengonfirmasi deployment.
+
+## Perbaikan zona waktu laporan (WIB) — 2026-10-28
+
+Masalah: laporan menampilkan timestamp `...Z` (UTC/Zulu). Audit menemukan
+bahwa `waktu_server` memang disimpan sebagai ISO-8601 UTC (DEC-P15) tetapi
+`assets/js/report.js` dan `assets/js/admin.js` merender string tersebut apa
+adanya; ekspor CSV juga menulis ISO UTC. `assets/js/attendance.js` sudah
+mengonversi ke WIB, tetapi dengan menambah 7 jam manual dan format `HH.mm.ss`.
+Ini masalah **tampilan/format**, bukan data historis yang salah.
+
+Perubahan:
+- `assets/js/datetime.js` (baru) — formatter tunggal memakai
+  `Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jakarta', hourCycle: 'h23' })`.
+  Tanggal `dd/MM/yyyy`, jam `HH:mm:ss WIB`, tanggal+waktu
+  `dd/MM/yyyy HH:mm:ss WIB`; tanggal bisnis `YYYY-MM-DD` dibaca tanpa
+  pergeseran.
+- `assets/js/report.js` — tanggal, waktu catatan, waktu masuk/pulang memakai
+  formatter WIB (tabel harian & rincian).
+- `assets/js/admin.js` — tabel absensi, detail absensi, susulan, lockout akun,
+  dan log audit memakai formatter WIB.
+- `assets/js/my-attendance.js` — riwayat pegawai memakai formatter yang sama
+  (tanggal ringkas `dd/MM/yyyy`, jam `HH:mm:ss WIB`).
+- `assets/js/attendance.js` — menghapus konversi `+7 jam` manual; memakai
+  formatter WIB (termasuk pergantian tanggal).
+- `gas/ReportService.gs` — hanya keluaran CSV dikonversi sekali ke WIB dengan
+  `Utilities.formatDate(..., BIZ_TIMEZONE, ...)`; API tetap mengirim ISO UTC
+  agar pengurutan/perhitungan tidak berubah, dan data sumber tidak diubah.
+- `gas/Repo.gs` — `initializeSheets()` menyelaraskan zona waktu spreadsheet ke
+  `Asia/Jakarta` (konfigurasi tampilan; nilai sel tidak diubah).
+- `index.html`, `service-worker.js`, `assets/js/config.js` — muat/cache
+  `datetime.js`, versi `0.9.5` → `0.9.6`.
+- `tests/datetime.test.mjs` (baru), `tests/harness.mjs` (pola format WIB),
+  `tests/report.test.mjs` (CSV WIB + batas tengah malam), dan pemeriksaan
+  fondasi (tanpa offset manual).
+
+Konfigurasi: `gas/appsscript.json` sudah `"timeZone": "Asia/Jakarta"`. Zona
+waktu spreadsheet diselaraskan saat `initializeSheets()` dijalankan. Data
+historis TIDAK digeser/dimigrasi.
+
+Pengujian lokal (Node + stub, bukan runtime/browser nyata):
+- `check-foundation` **84/0** · `auth` **57/0** · `attendance` **200/0**
+  · `admin` **170/0** · `report` **192/0** · `susulan` **67/0**
+  · `datetime` **14/0**.
+- Belum dijalankan: tampilan/ekspor di browser nyata, deployment Apps Script,
+  verifikasi isi spreadsheet produksi.

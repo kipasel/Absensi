@@ -44,6 +44,7 @@ console.log('== Struktur berkas ==');
   'service-worker.js',
   'assets/css/styles.css',
   'assets/js/config.js',
+  'assets/js/datetime.js',
   'assets/js/api.js',
   'assets/js/app.js',
   'assets/js/auth.js',
@@ -76,7 +77,8 @@ console.log('== Struktur berkas ==');
 ].forEach((f) => check('ada: ' + f, () => existsSync(abs(f))));
 
 console.log('== Sintaks JavaScript frontend ==');
-['assets/js/config.js', 'assets/js/api.js', 'assets/js/app.js', 'assets/js/auth.js', 'assets/js/admin.js', 'assets/js/report.js', 'assets/js/my-attendance.js', 'assets/js/nav.js', 'assets/js/susulan.js', 'service-worker.js'].forEach((f) => {
+['assets/js/config.js', 'assets/js/datetime.js', 'assets/js/api.js',
+  'assets/js/app.js', 'assets/js/auth.js', 'assets/js/admin.js', 'assets/js/report.js', 'assets/js/my-attendance.js', 'assets/js/nav.js', 'assets/js/susulan.js', 'service-worker.js'].forEach((f) => {
   check('sintaks: ' + f, () => {
     execFileSync(process.execPath, ['--check', abs(f)]);
     return true;
@@ -149,6 +151,7 @@ console.log('== Konten frontend: tanpa rahasia / dummy ==');
 const frontendFiles = [
   'index.html',
   'assets/js/config.js',
+  'assets/js/datetime.js',
   'assets/js/api.js',
   'assets/js/app.js',
   'assets/js/auth.js',
@@ -206,6 +209,19 @@ check('attendance.js: showStage(summary) menonaktifkan-aktifkan kembali att-subm
   const src = readFileSync(abs('assets/js/attendance.js'), 'utf8');
   const m = src.match(/if \(name === 'summary'\) \{[\s\S]{0,300}?att-submit[\s\S]{0,120}?disabled = false;/);
   if (!m) throw new Error('pola aktifkan-att-submit di showStage tidak ditemukan');
+  return true;
+});
+check('datetime.js: zona eksplisit Asia/Jakarta & tanpa offset manual', () => {
+  const src = readFileSync(abs('assets/js/datetime.js'), 'utf8');
+  if (!/Asia\/Jakarta/.test(src)) throw new Error('zona Asia/Jakarta tidak ada');
+  if (!/hourCycle:\s*'h23'/.test(src)) throw new Error('hourCycle h23 tidak ada');
+  if (/getTimezoneOffset|\+\s*7\s*\*\s*3600/.test(src)) throw new Error('offset manual tidak boleh dipakai');
+  return true;
+});
+check('attendance.js: format waktu memakai AppDateTime (tanpa +7 jam manual)', () => {
+  const src = readFileSync(abs('assets/js/attendance.js'), 'utf8');
+  if (!/window\.AppDateTime/.test(src)) throw new Error('AppDateTime tidak dipakai');
+  if (/getTime\(\)\s*\+\s*7\s*\*\s*3600/.test(src)) throw new Error('konversi +7 jam manual masih ada');
   return true;
 });
 check('auth.js: menangani auth:session-lost (bersihkan token & sesi lokal)', () => {

@@ -143,7 +143,7 @@ BUKAN runtime Apps Script. Data uji sintetis berlabel `TEST`.
 | AD-22 | Referensi foto mengikuti catatan absensi; struktur folder baru (DEC-P29) | LULUS (otomatis) |
 
 ## 8. Laporan & Ekspor (PHASE 5) — otomatis
-Dijalankan dengan `node tests/report.test.mjs` (178 cek) — Node + stub,
+Dijalankan dengan `node tests/report.test.mjs` (192 cek) — Node + stub,
 BUKAN runtime Apps Script. Data uji sintetis berlabel `TEST`.
 | ID | Kasus | Hasil |
 |----|-------|-------|
@@ -163,6 +163,24 @@ BUKAN runtime Apps Script. Data uji sintetis berlabel `TEST`.
 | RP-14 | Router `doPost`: ekspor → JSON `ok` + `csv`/`filename`/`rows` | LULUS (otomatis) |
 | RP-15 | UI tab Laporan di browser (filter, rekap, paginasi, visibilitas peran) | BELUM DIJALANKAN |
 | RP-16 | Unduhan Blob CSV di browser (nama berkas, isi) | BELUM DIJALANKAN |
+| RP-17 | CSV: ISO UTC → `dd/MM/yyyy HH:mm:ss WIB` (termasuk 03:00Z → 10:00 WIB) | LULUS (otomatis) |
+| RP-18 | CSV: pergantian tanggal saat konversi melewati tengah malam | LULUS (otomatis) |
+| RP-19 | CSV: tidak menambah 7 jam dua kali; nilai kosong tetap kosong | LULUS (otomatis) |
+| RP-20 | CSV: data sumber (`waktu_server` ISO UTC) tidak diubah oleh ekspor | LULUS (otomatis) |
+
+## 8b. Formatter Tanggal/Waktu (WIB) — otomatis
+Dijalankan dengan `node tests/datetime.test.mjs` — menguji `assets/js/datetime.js`
+di Node (bukan browser nyata).
+| ID | Kasus | Hasil |
+|----|-------|-------|
+| DT-01 | `2026-10-28T03:00:00Z` → `10:00:00 WIB` | LULUS (otomatis) |
+| DT-02 | `2026-10-28T16:30:00Z` → `23:30:00 WIB` | LULUS (otomatis) |
+| DT-03 | `2026-10-28T17:30:00Z` → `29/10/2026 00:30:00 WIB` | LULUS (otomatis) |
+| DT-04 | Konversi tidak menambah 7 jam dua kali | LULUS (otomatis) |
+| DT-05 | Tanggal bisnis `YYYY-MM-DD` tidak bergeser | LULUS (otomatis) |
+| DT-06 | Nilai kosong/tidak valid tidak menghasilkan tanggal palsu | LULUS (otomatis) |
+| DT-07 | Semua komponen laporan/admin/riwayat memakai formatter yang sama | DIPERIKSA STATIS (Node) |
+| DT-08 | Tampilan WIB di browser nyata (zona perangkat berbeda) | BELUM DIJALANKAN |
 | RP-17 | Otorisasi & data laporan pada Web App nyata (runtime Apps Script) | BELUM DIJALANKAN |
 
 ## 8b. PHASE 6 — QA rilis (2026-10-19) — otomatis + verifikasi runtime

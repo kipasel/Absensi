@@ -45,7 +45,7 @@ Legenda: `PK` kunci utama internal · `FK` referensi · `?` belum tersedia/opsio
 | `tanggal` | Date | Tanggal absensi (Asia/Jakarta) |
 | `jenis` | Enum | `masuk` \| `pulang` |
 | `mode_kerja` | Enum | `WFO` \| `WFH` |
-| `waktu_server` | DateTime | Waktu keputusan server (AMB-17) |
+| `waktu_server` | DateTime | Waktu keputusan server; disimpan ISO-8601 UTC (AMB-17), ditampilkan WIB |
 | `lintang` | Number? | Latitude (jika ada) |
 | `bujur` | Number? | Longitude (jika ada) |
 | `akurasi` | Number? | Akurasi GPS |
@@ -145,20 +145,20 @@ Dibuat `report.absensi.exportCsv` sesuai DEC-P07 (CSV saja). Urutan kolom tetap:
 | Kolom | Sumber | Keterangan |
 |-------|--------|------------|
 | `id_absensi` | Absensi | ID baris |
-| `tanggal` | Absensi | Tanggal absensi (`YYYY-MM-DD`, Asia/Jakarta) |
+| `tanggal` | Absensi | Tanggal absensi (`YYYY-MM-DD`, Asia/Jakarta); pada CSV ditampilkan `dd/MM/yyyy` |
 | `id_pegawai` | Absensi | ID internal pegawai |
 | `nama` | Pegawai (join) | Nama pegawai |
 | `nip_nipk` | Pegawai (join) | NIP/NIPK |
 | `jenis` | Absensi | `masuk` / `pulang` |
 | `mode_kerja` | Absensi | `WFO` / `WFH_WFA` |
-| `waktu_server` | Absensi | Waktu server (ISO-8601) |
+| `waktu_server` | Absensi | Waktu server; sumber ISO-8601 UTC, ditampilkan `dd/MM/yyyy HH:mm:ss WIB` |
 | `sumber` | Absensi | `reguler` / `susulan_disetujui` |
 | `jarak_meter` | Absensi | Jarak ke kantor (WFO); kosong bila tidak berlaku |
 | `ada_bukti` | Absensi | `ada` / `tidak ada` (hanya metadata; tanpa referensi foto) |
 | `status` | Absensi | Status baris masuk atau marker `TANPA_ABSEN_MASUK` pada pulang |
 | `kondisi_harian` | Absensi (turunan) | `ADA_MASUK_DAN_PULANG`, `ADA_MASUK_TANPA_PULANG`, atau `TANPA_MASUK_DENGAN_PULANG` |
-| `waktu_masuk` | Absensi (turunan) | Waktu server masuk yang ada; kosong jika tidak ada catatan masuk |
-| `waktu_pulang` | Absensi (turunan) | Waktu server pulang yang ada; kosong jika tidak ada catatan pulang |
+| `waktu_masuk` | Absensi (turunan) | Waktu server masuk; ditampilkan `dd/MM/yyyy HH:mm:ss WIB`; kosong jika tidak ada catatan masuk |
+| `waktu_pulang` | Absensi (turunan) | Waktu server pulang; ditampilkan `dd/MM/yyyy HH:mm:ss WIB`; kosong jika tidak ada catatan pulang |
 | `uraian_pekerjaan` | Absensi | Uraian dari baris pulang; kosong bila tidak ada |
 | `output_pekerjaan` | Absensi | Output dari baris pulang; kosong bila tidak ada |
 
@@ -168,6 +168,9 @@ Catatan:
   (guard formula-injection); data sumber tidak diubah.
 - Berkas diawali BOM UTF-8; pemisah `,`; quoting RFC 4180; baris `\r\n`.
 - Nama berkas: `laporan-absensi_YYYY-MM-DD_YYYY-MM-DD.csv`.
+- Waktu pada CSV dikonversi sekali dari ISO UTC ke `Asia/Jakarta` oleh backend
+  (`Utilities.formatDate`); tanggal bisnis `YYYY-MM-DD` tidak digeser. Data
+  sumber di sheet TIDAK diubah oleh proses ekspor.
 
 ## Belum Ditetapkan
 - Format ID (AMB-16), format waktu (AMB-17), field akhir (AMB-13/15).

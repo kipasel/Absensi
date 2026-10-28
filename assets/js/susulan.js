@@ -181,9 +181,13 @@
       if (res && res.ok) {
         form.reset();
         setTanggalBounds();
+        var dateTime = window.AppDateTime;
+        var tanggalTampil = dateTime
+          ? (dateTime.formatDate(res.tanggal_absensi) || res.tanggal_absensi)
+          : res.tanggal_absensi;
         showMessage(
           'Pengajuan susulan tercatat (' + res.id_pengajuan + ') untuk ' +
-          res.tanggal_absensi + '. Status: menunggu persetujuan admin.',
+          tanggalTampil + '. Status: menunggu persetujuan admin.',
           'info'
         );
       } else {

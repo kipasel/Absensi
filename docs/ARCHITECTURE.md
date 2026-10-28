@@ -23,15 +23,19 @@ Google Apps Script Web App  (doGet/doPost; satu-satunya lapisan tepercaya)
   `session-view`. Tidak ada data fiktif.
 - `manifest.webmanifest` — manifest PWA (`start_url`/`scope` relatif `./` agar
   kompatibel dengan sub-path GitHub Pages).
-- `service-worker.js` — cache aset statis only (termasuk `api.js`/`auth.js`/
-  `camera.js`/`attendance.js`/`admin.js`/`report.js`/`nav.js`); permintaan
-  lintas-origin diteruskan tanpa di-cache; navigasi fallback app shell.
+- `service-worker.js` — cache aset statis only (termasuk `datetime.js`/`api.js`/
+  `auth.js`/`camera.js`/`attendance.js`/`admin.js`/`report.js`/`nav.js`);
+  permintaan lintas-origin diteruskan tanpa di-cache; navigasi fallback app shell.
 - `assets/css/styles.css` — sistem desain mobile-first; **palet warna ciri khas
   KPU** (merah `#D82731`, marun `#771414`, emas `#F8A73E` dari `www.kpu.go.id`)
   di atas netral lembut; latar bergaya teknologi (gradien radial + kisi halus,
   tanpa aset gambar); app bar, kartu, tombol besar, bilah navigasi bawah; mode
   gelap sistem.
 - `assets/js/config.js` — konfigurasi publik (nama, versi, `API_BASE_URL`). Tanpa rahasia.
+- `assets/js/datetime.js` — **satu-satunya formatter tampilan tanggal/waktu**:
+  `Intl.DateTimeFormat('id-ID')` dengan `timeZone: 'Asia/Jakarta'`; tanggal
+  `dd/MM/yyyy`, jam `HH:mm:ss WIB`. Tidak memakai offset/`+7` manual dan tidak
+  memakai `toISOString()` untuk tampilan. Timestamp server tetap ISO-8601 UTC.
 - `assets/js/api.js` — klien POST `text/plain`; token di memori, atau `localStorage`
   bila opsi "Ingat saya" aktif (DEC-P30).
 - `assets/js/app.js` — status jaringan, status backend (health check), registrasi SW.

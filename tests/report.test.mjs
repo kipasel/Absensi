@@ -835,5 +835,66 @@ check('router doPost: report.absensi.list tanpa token → JSON UNAUTHORIZED', ()
   return true;
 });
 
+/* ================= Ekspor CSV: zona waktu WIB ================= */
+
+console.log('== Ekspor CSV: zona waktu WIB ==');
+check('CSV: ISO UTC → tanggal/jam WIB (tanpa pergeseran tanggal bisnis)', () => {
+  const { env, tokenAdmin } = envAdmin();
+  seedLaporanDasar(env);
+  const res = env.sandbox.handleReportAbsensiExportCsv_(
+    { token: tokenAdmin, ...RANGE }, 'POST');
+  const rows = parseCsv(res.csv);
+  const byId = {};
+  for (let i = 1; i < rows.length; i++) byId[rows[i][0]] = rows[i];
+  eq('tanggal bisnis ABS-R1', byId['ABS-R1'][1], '05/10/2026');
+  eq('waktu server ABS-R1 (00:30Z → 07:30 WIB)', byId['ABS-R1'][7], '05/10/2026 07:30:00 WIB');
+  eq('waktu server ABS-R2 (10:00Z → 17:00 WIB)', byId['ABS-R2'][7], '05/10/2026 17:00:00 WIB');
+  eq('waktu masuk turunan', byId['ABS-R1'][13], '05/10/2026 07:30:00 WIB');
+  eq('waktu pulang turunan', byId['ABS-R1'][14], '05/10/2026 17:00:00 WIB');
+  return true;
+});
+check('CSV: konversi melewati tengah malam mengubah tanggal tampilan', () => {
+  const { env, tokenAdmin } = envAdmin();
+  seedAbsensi(env, {
+    id_absensi: 'ABS-MIDNIGHT', id_pegawai: 'PEG-EMP-1',
+    tanggal: '2026-10-29', jenis: 'masuk',
+    waktu_server: '2026-10-28T17:30:00.000Z'
+  });
+  const res = env.sandbox.handleReportAbsensiExportCsv_(
+    { token: tokenAdmin, tanggal_dari: '2026-10-29', tanggal_sampai: '2026-10-29' }, 'POST');
+  const rows = parseCsv(res.csv);
+  eq('tanggal bisnis WIB', rows[1][1], '29/10/2026');
+  eq('jam WIB berganti hari', rows[1][7], '29/10/2026 00:30:00 WIB');
+  return true;
+});
+check('CSV: tidak menambah 7 jam dua kali', () => {
+  const { env, tokenAdmin } = envAdmin();
+  seedAbsensi(env, {
+    id_absensi: 'ABS-NODOUBLE', id_pegawai: 'PEG-EMP-1',
+    tanggal: '2026-10-28', jenis: 'masuk',
+    waktu_server: '2026-10-28T03:00:00.000Z'
+  });
+  const res = env.sandbox.handleReportAbsensiExportCsv_(
+    { token: tokenAdmin, tanggal_dari: '2026-10-28', tanggal_sampai: '2026-10-28' }, 'POST');
+  const rows = parseCsv(res.csv);
+  eq('03:00Z → 10:00 WIB', rows[1][7], '28/10/2026 10:00:00 WIB');
+  return true;
+});
+check('CSV: waktu kosong tetap kosong; data sumber tidak diubah', () => {
+  const { env, tokenAdmin } = envAdmin();
+  seedAbsensi(env, {
+    id_absensi: 'ABS-EMPTY-WAKTU', id_pegawai: 'PEG-EMP-1',
+    tanggal: '2026-10-30', jenis: 'masuk',
+    waktu_server: '2026-10-30T09:00:00.000Z'
+  });
+  const res = env.sandbox.handleReportAbsensiExportCsv_(
+    { token: tokenAdmin, tanggal_dari: '2026-10-30', tanggal_sampai: '2026-10-30' }, 'POST');
+  const rows = parseCsv(res.csv);
+  eq('waktu pulang turunan kosong', rows[1][14], '');
+  const sumber = env.sandbox.findAbsensiById_('ABS-EMPTY-WAKTU');
+  eq('waktu_server sumber tetap ISO UTC', String(sumber.waktu_server), '2026-10-30T09:00:00.000Z');
+  return true;
+});
+
 console.log('\n== Ringkasan: ' + passed + ' lulus, ' + failed + ' gagal ==');
 process.exit(failed === 0 ? 0 : 1);

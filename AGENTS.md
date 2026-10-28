@@ -59,8 +59,11 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   retensi permanen. Impor CSV (AMB-14) & notifikasi (AMB-25) dikesampingkan.
 - Perintah uji: `node tests/check-foundation.mjs`, `node tests/auth.test.mjs`,
   `node tests/attendance.test.mjs`, `node tests/admin.test.mjs`,
-  `node tests/report.test.mjs`, `node tests/susulan.test.mjs`.
-  Hasil terakhir (2026-10-24): 74 / 57 / 200 / 168 / 178 / 67 — semua **0 gagal**.
+  `node tests/report.test.mjs`, `node tests/susulan.test.mjs`,
+  `node tests/datetime.test.mjs`.
+  Hasil terakhir (2026-10-28): 84 / 57 / 200 / 170 / 192 / 67 / 14 — semua **0 gagal**.
+- Tampilan tanggal/waktu memakai `assets/js/datetime.js` (Asia/Jakarta);
+  timestamp server tetap ISO-8601 UTC dan CSV dikonversi sekali di backend.
 - Jalankan lokal: `py -m http.server 8765` lalu buka `http://127.0.0.1:8765/`.
 
 ## Blocker Aktif (jangan diimplementasikan sebelum dijawab)

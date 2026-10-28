@@ -13,6 +13,7 @@
   'use strict';
 
   var api = window.AppApi;
+  var dateTime = window.AppDateTime;
   var isAdmin = false;
   var currentTab = 'pegawai';
   var editingId = null;
@@ -59,6 +60,24 @@
     setText(td, text);
     row.appendChild(td);
     return td;
+  }
+
+  function fmtDate(value) {
+    return dateTime ? dateTime.formatDate(value) : (value || '');
+  }
+
+  function fmtTime(value) {
+    return dateTime ? dateTime.formatTime(value) : (value || '');
+  }
+
+  function fmtDateTime(value) {
+    return dateTime ? dateTime.formatDateTime(value) : (value || '');
+  }
+
+  function fmtWallClock(value) {
+    if (!value) return '-';
+    var s = String(value);
+    return /^\d{1,2}:\d{2}(:\d{2})?$/.test(s) ? s + ' WIB' : s;
   }
 
   function actionButton(label, onClick) {
@@ -177,7 +196,7 @@
         row('Status akun', res.akun.status_aktif ? 'Aktif' : 'Nonaktif');
         row('PIN terdaftar', res.akun.ada_pin ? 'Ya' : 'Belum');
         row('Percobaan gagal', String(res.akun.gagal_login));
-        row('Terkunci sampai', res.akun.terkunci_sampai || '-');
+        row('Terkunci sampai', fmtDateTime(res.akun.terkunci_sampai) || '-');
       } else {
         row('Akun', 'Belum ada akun untuk pegawai ini');
       }
@@ -353,7 +372,7 @@
       }
       setStatus(res.total + ' absensi ditemukan.', 'info');
       fillTable('absensi-table', res.items, function (tr, item) {
-        cell(tr, item.tanggal);
+        cell(tr, fmtDate(item.tanggal));
         cell(tr, item.nama || item.id_pegawai);
         cell(tr, item.jenis);
         cell(tr, item.mode_kerja);
@@ -454,10 +473,10 @@
       dl.className = 'session-info';
       appendInfoRows(dl, [
         ['Pegawai', res.pegawai ? res.pegawai.nama + ' (' + res.pegawai.nip_nipk + ')' : res.absensi.id_pegawai],
-        ['Tanggal', res.absensi.tanggal],
+        ['Tanggal', fmtDate(res.absensi.tanggal)],
         ['Jenis', res.absensi.jenis],
         ['Mode kerja', res.absensi.mode_kerja],
-        ['Waktu server', res.absensi.waktu_server],
+        ['Waktu server', fmtTime(res.absensi.waktu_server) || '-'],
         ['Sumber', res.absensi.sumber],
         ['Jarak (m)', res.absensi.jarak_meter === null ? '-' : String(res.absensi.jarak_meter)],
         ['GPS lintang', res.absensi.lintang === null ? '-' : String(res.absensi.lintang)],
@@ -499,11 +518,11 @@
       }
       setStatus(res.total + ' pengajuan ditemukan.', 'info');
       fillTable('susulan-table', res.items, function (tr, item) {
-        cell(tr, item.tanggal_absensi);
+        cell(tr, fmtDate(item.tanggal_absensi));
         cell(tr, item.nama || item.id_pegawai);
         cell(tr, item.jenis);
         cell(tr, item.status);
-        cell(tr, item.waktu_pengajuan_server);
+        cell(tr, fmtTime(item.waktu_pengajuan_server) || '-');
         var td = document.createElement('td');
         td.className = 'admin-actions';
         td.appendChild(actionButton('Detail', function () { showSusulanDetail(item.id_pengajuan); }));
@@ -556,16 +575,17 @@
       dl.className = 'session-info';
       appendInfoRows(dl, [
         ['Pegawai', item.nama ? item.nama + ' (' + item.nip_nipk + ')' : item.id_pegawai],
-        ['Tanggal absensi', item.tanggal_absensi],
+        ['Tanggal absensi', fmtDate(item.tanggal_absensi)],
         ['Jenis', item.jenis],
         ['Mode kerja (diklaim)', item.mode_kerja],
-        ['Waktu aktual (diklaim)', item.waktu_diklaim || '-'],
-        ['Pengajuan diterima server', item.waktu_pengajuan_server || '-'],
+        ['Waktu aktual (diklaim)', fmtWallClock(item.waktu_diklaim)],
+        ['Pengajuan diterima server', fmtTime(item.waktu_pengajuan_server) || '-'],
         ['Alasan', item.alasan || '-'],
         ['Bukti dilampirkan', res.ada_bukti ? 'Ya' : 'Tidak'],
         ['Status', item.status],
         ['Keputusan admin', item.waktu_keputusan
-          ? item.status + ' oleh ' + item.id_admin + ' pada ' + item.waktu_keputusan
+          ? item.status + ' oleh ' + item.id_admin + ' pada ' +
+            (fmtTime(item.waktu_keputusan) || '-')
           : 'Belum diputuskan'],
         ['Catatan keputusan', item.catatan_keputusan || '-']
       ]);
@@ -631,7 +651,7 @@
       }
       setStatus(res.total + ' entri log.', 'info');
       fillTable('log-table', res.items, function (tr, item) {
-        cell(tr, item.waktu);
+        cell(tr, fmtDateTime(item.waktu) || '-');
         cell(tr, item.aksi);
         cell(tr, item.id_aktor);
         cell(tr, item.peran_aktor);

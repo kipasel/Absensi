@@ -10,7 +10,7 @@
 
 // Strategi pembaruan cache: naikkan CACHE_VERSION setiap kali aset statis berubah.
 // Versi ini harus diselaraskan dengan APP_CONFIG.VERSION di assets/js/config.js.
-const CACHE_VERSION = 'app-v0.9.5';
+const CACHE_VERSION = 'app-v0.9.6';
 const STATIC_CACHE = `absensi-static-${CACHE_VERSION}`;
 
 // Daftar aset statis yang aman di-cache. Tidak ada data privat di sini.
@@ -20,6 +20,7 @@ const STATIC_ASSETS = [
   './manifest.webmanifest',
   './assets/css/styles.css',
   './assets/js/config.js',
+  './assets/js/datetime.js',
   './assets/js/api.js',
   './assets/js/app.js',
   './assets/js/auth.js',
