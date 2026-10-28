@@ -81,8 +81,10 @@ Alur data: `Browser/PWA → HTTPS → Apps Script → Sheets + Drive`.
   Rekap memisahkan pulang tanpa catatan masuk.
 - **Ekspor CSV** (BOM UTF-8, quote RFC 4180, guard formula-injection,
   maks. 5000 baris) — **tanpa** PIN/token/referensi foto.
-- Status `TERLAMBAT` dicatat per baris masuk sesuai DEC-P31; rekap tidak
-  menghitung persentase kehadiran atau indikator kebijakan lain.
+- Status `TERLAMBAT` dicatat per baris masuk sesuai DEC-P31; status masuk/pulang
+  laporan diturunkan ulang dari catatan aktual. Pulang tanpa masuk menampilkan
+  `TANPA_ABSEN_MASUK` pada kedua kolom status. Rekap tidak menghitung
+  persentase kehadiran atau indikator kebijakan lain.
 
 ### 3.6 Tampilan / PWA
 - Antarmuka **mobile app shell**: app bar + **bilah navigasi bawah**

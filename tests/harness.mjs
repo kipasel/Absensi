@@ -61,6 +61,15 @@ function makeSheet(name) {
     getRange(rowStart, colStart, numRows, numCols) {
       return {
         getColumn: () => colStart,
+        getValue() {
+          const row = data[rowStart - 1] || [];
+          return row[colStart - 1];
+        },
+        setValue(value) {
+          const idx = rowStart - 1;
+          if (!data[idx]) data[idx] = [];
+          data[idx][colStart - 1] = value;
+        },
         setValues(values) {
           for (let i = 0; i < numRows; i++) {
             const idx = rowStart - 1 + i;

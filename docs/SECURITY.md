@@ -121,7 +121,7 @@ Kontrol di `gas/ReportService.gs` (semua aksi `report.*`):
 - **Otorisasi server penuh:** `requirePost_` + `requireAdmin_`; peran diambil
   dari sesi terverifikasi server, TIDAK dari body klien. Penerima laporan =
   admin (DEC-P07). Diuji: tanpa token → `UNAUTHORIZED`; token pegawai →
-  `FORBIDDEN`; peran palsu diabaikan; GET → `METHOD_NOT_ALLOWED` (178 cek LULUS).
+  `FORBIDDEN`; peran palsu diabaikan; GET → `METHOD_NOT_ALLOWED` (245 cek LULUS).
 - **Ekspor CSV aman secara konten:** kolom tetap (tidak mengikuti filter apa
   pun ke keamanan); TIDAK memuat `drive_file_id`, tautan/URL foto, `pin_hash`,
   `pin_salt`, atau token. Guard formula-injection (nilai berawalan

@@ -77,14 +77,23 @@ Google Apps Script Web App  (doGet/doPost; satu-satunya lapisan tepercaya)
   POST + `requirePost_` + `requireAdmin_`; pembacaan saja (tanpa lock);
   filter wajib rentang tanggal ≤92 hari; ekspor CSV (BOM UTF-8, guard
   formula-injection, ≤5000 baris) + `logActivity_('report_exported')`.
+  Status masuk/pulang per pegawai-hari **diturunkan ulang** dari catatan
+  aktual (`waktu_server` + `tanggal`), tidak menyalin sel `status` lama;
+  `TEPAT_WAKTU`/`TERLAMBAT` hanya dibuat bila ada masuk valid pada jendela
+  waktu, dan pulang tanpa masuk menghasilkan `TANPA_ABSEN_MASUK` pada kedua
+  kolom status laporan.
 - `gas/TimeRule.gs`, `gas/Geo.gs`, `gas/Drive.gs`, `gas/Attendance.gs` — mesin absensi (PHASE 3).
 - `attendance.submit`: validasi sesi, jenis, waktu server, GPS khusus masuk WFO,
   foto JPEG, dan data pekerjaan untuk pulang dilakukan backend. Pulang tetap
   boleh dicatat tanpa masuk pada tanggal tersebut. Seluruh pemeriksaan duplikat
   dan penulisan berjalan di dalam `LockService`; status `TANPA_ABSEN_MASUK`
-  dicatat hanya pada baris pulang. `Repo.gs` menambahkan header baru ke kanan
-  tanpa mengubah kolom atau baris historis. Status `TERLAMBAT` diberi
-  conditional formatting merah di sheet `Absensi`.
+  dicatat pada baris pulang yang tidak memiliki masuk valid. Bila masuk valid
+  dicatat belakangan, marker pada baris pulang dibersihkan. `Repo.gs`
+  menambahkan header baru ke kanan tanpa mengubah kolom atau baris historis.
+  Status `TERLAMBAT` diberi conditional formatting merah dan
+  `TANPA_ABSEN_MASUK` diberi penanda kuning-netral di sheet `Absensi`.
+  `reconcileAbsensiStatuses()` menyediakan pratinjau/apply untuk memperbaiki
+  status historis yang tidak konsisten tanpa menyentuh timestamp/foto.
 - `gas/Bootstrap.gs` — `initializeSheets()` & `seedAdmin()` (manual, tanpa PIN default).
 - `gas/appsscript.json` — timezone `Asia/Jakarta`, runtime V8, blok `webapp` (D8).
 

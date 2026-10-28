@@ -214,6 +214,21 @@ function handleAttendanceSubmit_(payload, method) {
         'silakan coba lagi — permintaan dengan ID sama tidak akan menghasilkan duplikat.', true);
     }
 
+    // Pulang yang tercatat lebih dahulu (tanpa masuk) tidak boleh tetap
+    // bertanda TANPA_ABSEN_MASUK setelah masuk valid tersimpan. Kegagalan
+    // pembersihan tidak membatalkan absensi yang sudah tersimpan; laporan
+    // tetap menurunkan status dari catatan masuk yang sebenarnya.
+    if (jenis === 'masuk') {
+      try {
+        clearTanpaAbsenMasukMarker_(idPegawai, tanggal);
+      } catch (markerErr) {
+        if (typeof Logger !== 'undefined') {
+          Logger.log('clearTanpaAbsenMasukMarker_ gagal id_absensi=' + idAbsensi +
+            ' error=' + (markerErr && markerErr.message ? markerErr.message : String(markerErr)));
+        }
+      }
+    }
+
     logActivity_('attendance_recorded', idPegawai, ctx.account.peran, 'absensi', idAbsensi);
 
     var record = findAbsensiById_(idAbsensi);

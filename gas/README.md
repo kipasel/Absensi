@@ -12,7 +12,7 @@ CSV** (PHASE 5: filter periode, rekapitulasi, ekspor CSV — admin saja).
 | `Code.gs` | Titik masuk `doGet`/`doPost`, router aksi, respons JSON, penanganan error. |
 | `Config.gs` | Konfigurasi Script Properties + kebijakan (iterasi PBKDF2, TTL sesi, lockout). |
 | `Auth.gs` | Primitif PBKDF2-HMAC-SHA256, PIN, token, lockout, validitas sesi. |
-| `Repo.gs` | Akses Google Sheets, `LockService`, ID internal, log aktivitas. |
+| `Repo.gs` | Akses Google Sheets, `LockService`, ID internal, log aktivitas; fungsi manual `reconcileAbsensiStatusesPreview()` / `reconcileAbsensiStatusesApply()` untuk memperbaiki kolom `status` dari catatan aktual. |
 | `AuthService.gs` | Alur login/logout/session.check, otorisasi peran, manajemen akun admin. |
 | `AdminService.gs` | Endpoint panel admin (semua wajib peran `admin` diverifikasi server). |
 | `ReportService.gs` | Endpoint laporan, rekap, dan ekspor CSV (PHASE 5; semua wajib peran `admin`). |
@@ -63,6 +63,8 @@ Catatan PHASE 5:
 - Indikator kebijakan (terlambat, persentase kehadiran, dll.) **tidak
   dihitung** — aturannya belum ditetapkan (DEC-P07).
 - Ekspor tercatat di log sebagai `report_exported`.
+- Status masuk/pulang laporan diturunkan ulang dari catatan aktual; CSV memuat
+  kolom `status_masuk` dan `status_pulang`.
 
 Catatan PHASE 4:
 - Respons **tidak pernah** memuat `pin_hash`, `pin_salt`, `drive_file_id`, atau

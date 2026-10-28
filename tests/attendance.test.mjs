@@ -216,6 +216,22 @@ check('civilFromServerMs_ 2026-10-15T17:00:01Z → tanggal 2026-10-16 (lintas ha
   if (c.detikHari !== 1) throw new Error('detik ' + c.detikHari);
   return true;
 });
+check('masukStatusFromServerIso_: 07:30 TEPAT, 09:00 TERLAMBAT, 06:30 kosong', () => {
+  const { sandbox } = createEnv();
+  if (sandbox.masukStatusFromServerIso_('2026-10-15T00:30:00.000Z') !== 'TEPAT_WAKTU') {
+    throw new Error('07:30 seharusnya TEPAT_WAKTU');
+  }
+  if (sandbox.masukStatusFromServerIso_('2026-10-15T02:00:00.000Z') !== 'TERLAMBAT') {
+    throw new Error('09:00 seharusnya TERLAMBAT');
+  }
+  if (sandbox.masukStatusFromServerIso_('2026-10-14T23:30:00.000Z') !== '') {
+    throw new Error('06:30 seharusnya kosong (di luar jendela)');
+  }
+  if (sandbox.masukStatusFromServerIso_('bukan-timestamp') !== '') {
+    throw new Error('timestamp invalid seharusnya kosong');
+  }
+  return true;
+});
 check('evaluateAttendanceTime_ menolak pulang lintas tanggal (00:00:01)', () => {
   const { sandbox } = createEnv();
   const r = sandbox.evaluateAttendanceTime_('pulang', T.nextDay);
@@ -652,16 +668,19 @@ check('status pulang normal tidak menyalin status TERLAMBAT', () => {
   eq('status pulang normal kosong', env.sandbox.findAbsensiById_(pulangRes.id_absensi).status, '');
   return true;
 });
-check('status TERLAMBAT diformat merah satu kali', () => {
+check('status TERLAMBAT merah dan TANPA_ABSEN_MASUK dibedakan', () => {
   const { env } = envAttendance();
   const sheet = env.spreadsheet.getSheetByName('Absensi');
-  const late = sheet.getConditionalFormatRules().filter((rule) =>
-    rule._style && rule._style.value === 'TERLAMBAT');
-  eq('satu rule', late.length, 1);
+  const rules = sheet.getConditionalFormatRules();
+  const late = rules.filter((rule) => rule._style && rule._style.value === 'TERLAMBAT');
+  const marker = rules.filter((rule) => rule._style && rule._style.value === 'TANPA_ABSEN_MASUK');
+  eq('satu rule TERLAMBAT', late.length, 1);
   eq('latar merah muda', late[0]._style.background, '#fce8e6');
   eq('teks merah', late[0]._style.fontColor, '#b3261e');
+  eq('satu rule marker', marker.length, 1);
+  eq('latar marker berbeda', marker[0]._style.background, '#fff4e5');
   env.sandbox.initializeSheets();
-  eq('idempotensi', sheet.getConditionalFormatRules().length, 1);
+  eq('idempotensi', sheet.getConditionalFormatRules().length, 2);
   return true;
 });
 check('pulang ganda → DUPLICATE', () => {
@@ -683,6 +702,43 @@ check('pulang tanpa masuk kedua kali tetap DUPLICATE', () => {
   eq('satu catatan', countAbsensi(env), 1);
   eq('satu file', env.driveRegistry.files.length, 1);
   eq('status marker', env.sandbox.findAbsensiById_(first.id_absensi).status, 'TANPA_ABSEN_MASUK');
+  return true;
+});
+check('marker pulang dibersihkan setelah masuk valid tersimpan', () => {
+  const { env, token } = envAttendance();
+  atTime(env, T.openPulang);
+  const pulang = submit(env, token, { jenis: 'pulang', gps: null });
+  eq('marker awal', env.sandbox.findAbsensiById_(pulang.id_absensi).status, 'TANPA_ABSEN_MASUK');
+  atTime(env, T.openPulang + 60 * 1000);
+  const masuk = submit(env, token);
+  eq('masuk tercatat terlambat', env.sandbox.findAbsensiById_(masuk.id_absensi).status, 'TERLAMBAT');
+  eq('marker lama dibersihkan', env.sandbox.findAbsensiById_(pulang.id_absensi).status, '');
+  eq('dua baris saja', countAbsensi(env), 2);
+  return true;
+});
+check('riwayat pribadi menurunkan status dari catatan aktual', () => {
+  const { env, token } = envAttendance();
+  function seed(id, tanggal, jenis, waktu, status) {
+    env.sandbox.appendObject_('Absensi', {
+      id_absensi: id, id_pegawai: 'PEG-ATT-1', tanggal, jenis,
+      mode_kerja: 'WFO', waktu_server: waktu, lintang: '', bujur: '', akurasi: '',
+      jarak_meter: '', sumber: 'reguler', id_bukti: '', status,
+      uraian_pekerjaan: '', output_pekerjaan: '',
+      dibuat_pada: waktu, diubah_pada: waktu, diubah_oleh: 'PEG-ATT-1'
+    });
+  }
+  seed('ABS-HIST-1', '2026-10-05', 'pulang', '2026-10-05T10:00:00.000Z', 'TEPAT_WAKTU');
+  seed('ABS-HIST-2', '2026-10-06', 'masuk', '2026-10-06T02:00:00.000Z', 'TEPAT_WAKTU');
+  seed('ABS-HIST-2P', '2026-10-06', 'pulang', '2026-10-06T10:00:00.000Z', '');
+  seed('ABS-HIST-3', '2026-10-07', 'masuk', '2026-10-07T00:30:00.000Z', '');
+  seed('ABS-HIST-3P', '2026-10-07', 'pulang', '2026-10-07T10:00:00.000Z', 'TANPA_ABSEN_MASUK');
+  const res = env.sandbox.handleMyAttendance_({ token, bulan: '2026-10' }, 'POST');
+  const find = (tanggal, jenis) => res.items.find((it) => it.tanggal === tanggal && it.jenis === jenis);
+  eq('pulang tanpa masuk', find('2026-10-05', 'pulang').status, 'TANPA_ABSEN_MASUK');
+  eq('masuk terlambat', find('2026-10-06', 'masuk').status, 'TERLAMBAT');
+  eq('pulang normal', find('2026-10-06', 'pulang').status, '');
+  eq('masuk tepat waktu', find('2026-10-07', 'masuk').status, 'TEPAT_WAKTU');
+  eq('marker pulang dibersihkan', find('2026-10-07', 'pulang').status, '');
   return true;
 });
 check('id_absensi dipakai untuk pegawai lain → INVALID_INPUT (bentrok ID)', () => {

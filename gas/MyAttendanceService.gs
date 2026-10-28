@@ -21,12 +21,23 @@ function handleMyAttendance_(payload, method) {
   var waktuPulangHariIni = '';
   var masuk = 0;
   var pulang = 0;
+  var validMasukByDate = {};
+  for (var v = 0; v < rows.length; v++) {
+    var vr = rows[v];
+    if (String(vr.id_pegawai) !== idPegawai) continue;
+    if (String(vr.jenis) !== 'masuk') continue;
+    if (!masukStatusFromServerIso_(vr.waktu_server)) continue;
+    validMasukByDate[String(vr.tanggal || '')] = true;
+  }
   for (var i = 0; i < rows.length; i++) {
     var row = rows[i];
     if (String(row.id_pegawai) !== idPegawai) continue;
     var tanggal = String(row.tanggal || '');
     var jenis = String(row.jenis || '');
-    if (tanggal === today && jenis === 'masuk' && !waktuMasukHariIni) {
+    var status = jenis === 'masuk'
+      ? (masukStatusFromServerIso_(row.waktu_server) || '')
+      : (jenis === 'pulang' && !validMasukByDate[tanggal] ? 'TANPA_ABSEN_MASUK' : '');
+    if (tanggal === today && jenis === 'masuk' && status && !waktuMasukHariIni) {
       waktuMasukHariIni = String(row.waktu_server || '');
     }
     if (tanggal === today && jenis === 'pulang' && !waktuPulangHariIni) {
@@ -40,7 +51,7 @@ function handleMyAttendance_(payload, method) {
       jenis: jenis,
       waktu_server: String(row.waktu_server || ''),
       mode_kerja: String(row.mode_kerja || ''),
-      status: String(row.status || '')
+      status: status
     });
   }
   items.sort(function (a, b) {

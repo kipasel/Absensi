@@ -171,7 +171,8 @@
       cell(tr, item.jenis);
       cell(tr, item.mode_kerja);
       cell(tr, fmtTime(item.waktu_server) || '-');
-      cell(tr, item.status || '-');
+      cell(tr, item.status_masuk || '-');
+      cell(tr, item.status_pulang || '-');
       cell(tr, item.kondisi_harian || '-');
       cell(tr, fmtTime(item.waktu_masuk) || '-');
       cell(tr, fmtTime(item.waktu_pulang) || '-');

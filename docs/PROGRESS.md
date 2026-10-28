@@ -795,3 +795,37 @@ Pengujian lokal (Node + stub, bukan runtime/browser nyata):
   · `datetime` **14/0**.
 - Belum dijalankan: tampilan/ekspor di browser nyata, deployment Apps Script,
   verifikasi isi spreadsheet produksi.
+
+## Perbaikan konsistensi status masuk/pulang — 2026-10-28
+
+Masalah: laporan dapat menampilkan status masuk `TEPAT_WAKTU` padahal tidak ada
+catatan masuk valid, sementara status pulang `TANPA_ABSEN_MASUK`.
+
+Audit:
+- Tidak ada sheet rekap atau formula laporan di repositori; laporan dibentuk
+  dari sheet `Absensi` oleh `ReportService.gs`, lalu dirender frontend/CSV.
+  Rekap eksternal di spreadsheet, bila ada, berada di luar kode ini.
+- `reportAbsensiDayMap_` sebelumnya hanya mencatat keberadaan baris masuk dan
+  menyalin `status` mentah; nilai lama yang salah tidak dihitung ulang.
+- Marker `TANPA_ABSEN_MASUK` pada pulang tidak dibersihkan bila masuk valid
+  dicatat belakangan.
+
+Perubahan:
+- `gas/TimeRule.gs` — `civilFromServerIso_` dan `masukStatusFromServerIso_`:
+  status masuk hanya dibuat dari timestamp valid di dalam jendela masuk.
+- `gas/ReportService.gs` — status per pegawai-hari diturunkan ulang (termasuk
+  hitungan rekap `pulang_tanpa_masuk`); tambah `status_masuk`/`status_pulang`
+  pada respons dan CSV; status baris tidak lagi menyalin sel lama.
+- `gas/Repo.gs` — `clearTanpaAbsenMasukMarker_`, `reconcileAbsensiStatuses`
+  (pratinjau default), `reconcileAbsensiStatusesPreview/Apply`; marker
+  `TANPA_ABSEN_MASUK` diberi format kuning-netral.
+- `gas/Attendance.gs` — membersihkan marker pulang setelah masuk valid.
+- `gas/MyAttendanceService.gs` — riwayat pegawai juga menurunkan status dari
+  catatan aktual, bukan menyalin sel lama.
+- `index.html`, `assets/js/report.js` — kolom Status Absen Masuk/Pulang.
+- Versi frontend/cache `0.9.7`.
+
+Pengujian lokal (Node + stub): foundation **84/0**, auth **57/0**,
+attendance **214/0**, admin **170/0**, report **245/0**, susulan **67/0**,
+datetime **14/0**. Belum dijalankan: deployment Apps Script, rekonsiliasi pada
+spreadsheet produksi, dan uji browser nyata.

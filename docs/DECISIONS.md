@@ -349,8 +349,10 @@ Sumber: jawaban pengguna atas pertanyaan D0–D8 (lihat `docs/PHASE2_AUDIT.md`).
   disimpan dengan status `TANPA_ABSEN_MASUK`. Ini menyatakan catatan masuk tidak
   tersedia; bukan bukti ketidakhadiran. Tidak ada baris masuk/foto/GPS sintetis.
 - Laporan detail menampilkan status, waktu catatan, uraian, dan output; rekap
-  harian memisahkan jumlah pulang tanpa catatan masuk. Header baru ditambahkan
-  di kanan pada sheet lama dan baris historis tidak diubah.
+  harian memisahkan jumlah pulang tanpa catatan masuk. Status masuk/pulang
+  diturunkan ulang dari catatan aktual: tanpa masuk valid, kedua kolom status
+  laporan menunjukkan `TANPA_ABSEN_MASUK`. Header baru ditambahkan di kanan
+  pada sheet lama dan baris historis tidak diubah.
 - Form pengajuan susulan tetap nonaktif dalam antarmuka dan router aktif.
 - Sumber: MASTER CHANGE PROMPT pengguna "IZINKAN ABSENSI PULANG TANPA ABSENSI MASUK".
 

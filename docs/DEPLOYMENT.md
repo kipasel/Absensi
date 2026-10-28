@@ -70,7 +70,12 @@ tetap wajib memverifikasi identitas & peran di backend.
    menambahkan header absensi yang belum ada di kolom baru dan mempertahankan
    data/baris historis; kolom baru `status`, `uraian_pekerjaan`, dan
    `output_pekerjaan` tidak memerlukan pengisian ulang. Pastikan aturan
-   conditional formatting `TERLAMBAT` merah muncul pada kolom `status`.
+   conditional formatting `TERLAMBAT` merah dan `TANPA_ABSEN_MASUK` kuning
+   muncul pada kolom `status`.
+   Setelah header sinkron, jalankan `reconcileAbsensiStatusesPreview()` dari
+   editor Apps Script. Periksa `contoh`/`perlu_diperbaiki`; bila sesuai,
+   jalankan `reconcileAbsensiStatusesApply()`. Fungsi ini hanya mengubah kolom
+   `status` dan tidak menyentuh timestamp, foto, atau jumlah baris.
 7. Deploy sebagai Web app → salin URL `/exec`.
 8. Salin URL `/exec` ke `assets/js/config.js` → `API_BASE_URL` (publik, bukan rahasia).
 9. Deploy Apps Script sebagai versi Web App baru setelah perubahan absensi;

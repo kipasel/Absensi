@@ -5,7 +5,7 @@
 > Node dengan stub; integrasi runtime Apps Script & browser BELUM dijalankan.
 >
 > Catatan 2026-10-24 (DEC-P31): suite otomatis `check-foundation` 74, `auth` 56,
-> `attendance` 200, `admin` 166, `report` 178, `susulan` 67 — semua LULUS.
+> `attendance` 214, `admin` 170, `report` 245, `susulan` 67 — semua LULUS.
 
 ## Strategi
 - Unit test logika murni (perhitungan jarak, evaluasi jam, validasi input) bila memungkinkan di JS.
@@ -36,9 +36,9 @@ Dijalankan dengan `node tests/check-foundation.mjs`.
 | FD-16 | Pengujian autentikasi otomatis (`tests/auth.test.mjs`, 56 cek) | LULUS |
 | FD-17 | Vektor PBKDF2-HMAC-SHA256 RFC 7914 §11 (c=1, c=80000) | LULUS |
 | FD-18 | Benchmark iterasi PBKDF2 di runtime Apps Script nyata | BELUM DIJALANKAN |
-| FD-19 | Pengujian mesin absensi (`tests/attendance.test.mjs`, 200 cek) | LULUS |
+| FD-19 | Pengujian mesin absensi (`tests/attendance.test.mjs`, 214 cek) | LULUS |
 | FD-20 | Pengujian panel admin (`tests/admin.test.mjs`, 166 cek) | LULUS |
-| FD-21 | Pengujian laporan (`tests/report.test.mjs`, 178 cek) | LULUS |
+| FD-21 | Pengujian laporan (`tests/report.test.mjs`, 245 cek) | LULUS |
 | FD-22 | Pengujian pengajuan susulan (`tests/susulan.test.mjs`, 67 cek) | LULUS |
 
 ## 1. Aturan Waktu (zona `Asia/Jakarta`)
@@ -106,6 +106,11 @@ diuji otomatis di Node dengan stub (`tests/auth.test.mjs`) — BUKAN runtime App
 | TX-03 | Dua request masuk bersamaan | Hanya satu tercatat |
 | TX-04 | Klik ganda | Tidak menghasilkan duplikat |
 | TX-05 | Laporan harian: masuk+pulang, masuk tanpa pulang, pulang tanpa masuk | Kondisi per pegawai/hari dibedakan; waktu yang tidak memiliki catatan kosong; uraian/output pulang tersedia |
+| TX-05a | Hanya pulang, status lama keliru `TEPAT_WAKTU` | Laporan menurunkan status masuk & pulang = `TANPA_ABSEN_MASUK` |
+| TX-05b | Masuk 09.00 WIB + pulang | Status masuk `TERLAMBAT`; status pulang kosong |
+| TX-05c | Masuk sebelum 07.00 WIB (data lama/impor) | Tidak dianggap valid; bukan `TEPAT_WAKTU` |
+| TX-05d | Pegawai berbeda pada tanggal sama | Status tidak tertukar |
+| TX-05e | Rekonsiliasi pratinjau/apply | Hanya baris tidak konsisten yang berubah; timestamp/foto/jumlah baris tetap |
 
 ## 6. PWA & Privasi
 | ID | Kasus | Ekspektasi |
@@ -143,7 +148,7 @@ BUKAN runtime Apps Script. Data uji sintetis berlabel `TEST`.
 | AD-22 | Referensi foto mengikuti catatan absensi; struktur folder baru (DEC-P29) | LULUS (otomatis) |
 
 ## 8. Laporan & Ekspor (PHASE 5) — otomatis
-Dijalankan dengan `node tests/report.test.mjs` (192 cek) — Node + stub,
+Dijalankan dengan `node tests/report.test.mjs` (245 cek) — Node + stub,
 BUKAN runtime Apps Script. Data uji sintetis berlabel `TEST`.
 | ID | Kasus | Hasil |
 |----|-------|-------|
@@ -167,6 +172,7 @@ BUKAN runtime Apps Script. Data uji sintetis berlabel `TEST`.
 | RP-18 | CSV: pergantian tanggal saat konversi melewati tengah malam | LULUS (otomatis) |
 | RP-19 | CSV: tidak menambah 7 jam dua kali; nilai kosong tetap kosong | LULUS (otomatis) |
 | RP-20 | CSV: data sumber (`waktu_server` ISO UTC) tidak diubah oleh ekspor | LULUS (otomatis) |
+| RP-21 | CSV: kolom `status_masuk`/`status_pulang` konsisten untuk pulang tanpa masuk | LULUS (otomatis) |
 
 ## 8b. Formatter Tanggal/Waktu (WIB) — otomatis
 Dijalankan dengan `node tests/datetime.test.mjs` — menguji `assets/js/datetime.js`
@@ -218,7 +224,7 @@ BUKAN runtime Apps Script. Data uji sintetis berlabel `TEST`.
 | SU-11 | Otorisasi & penyimpanan susulan pada Web App nyata (runtime) | BELUM DIJALANKAN |
 
 ## 8d. Struktur Folder Foto Absensi (DEC-P29) — otomatis
-Dijalankan di `tests/attendance.test.mjs` (200 cek) — Node + stub Drive
+Dijalankan di `tests/attendance.test.mjs` (214 cek) — Node + stub Drive
 in-memory. Struktur diverifikasi lewat `BuktiAbsensi.path`, nama file, dan
 pohon folder stub. Data uji sintetis.
 | ID | Kasus | Hasil |
@@ -244,7 +250,7 @@ pohon folder stub. Data uji sintetis.
 - Kasus laporan RP-15/RP-16/RP-17 (browser & runtime) — baru otomatis Node.
 - Kasus panel admin AD-18/AD-19 (browser & runtime) — baru otomatis Node.
 - Kasus fungsional absensi (WT/GP/PH/TX) dijalankan otomatis via
-  `tests/attendance.test.mjs` (200 cek) tetapi **belum** diuji di runtime &
+  `tests/attendance.test.mjs` (214 cek) tetapi **belum** diuji di runtime &
   browser nyata; kasus AU-13/AU-14 dan integrasi runtime (FD-14, FD-18) belum.
 - Pengujian autentikasi E2E di browser (form masuk, sesi di memori, offline).
 - Kasus PWA (PW-01..03).

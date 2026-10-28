@@ -52,7 +52,7 @@ Legenda: `PK` kunci utama internal · `FK` referensi · `?` belum tersedia/opsio
 | `jarak_meter` | Number? | Jarak ke kantor (WFO masuk) |
 | `sumber` | Enum | `reguler` \| `susulan_disetujui` |
 | `id_bukti` (FK)? | String | → BuktiAbsensi |
-| `status` | String | `masuk`: `TEPAT_WAKTU`/`TERLAMBAT`; `pulang`: `TANPA_ABSEN_MASUK` bila tidak ada catatan masuk, selain itu kosong. Bukan indikator ketidakhadiran. |
+| `status` | String | `masuk`: `TEPAT_WAKTU`/`TERLAMBAT` hanya bila `waktu_server` valid dan berada pada jendela masuk; `pulang`: `TANPA_ABSEN_MASUK` bila tidak ada catatan masuk valid, selain itu kosong. Bukan indikator ketidakhadiran. |
 | `uraian_pekerjaan` | String | Wajib pada catatan pulang; kosong pada catatan masuk |
 | `output_pekerjaan` | String | Wajib pada catatan pulang; kosong pada catatan masuk |
 | `dibuat_pada` | DateTime | Metadata |
@@ -155,12 +155,14 @@ Dibuat `report.absensi.exportCsv` sesuai DEC-P07 (CSV saja). Urutan kolom tetap:
 | `sumber` | Absensi | `reguler` / `susulan_disetujui` |
 | `jarak_meter` | Absensi | Jarak ke kantor (WFO); kosong bila tidak berlaku |
 | `ada_bukti` | Absensi | `ada` / `tidak ada` (hanya metadata; tanpa referensi foto) |
-| `status` | Absensi | Status baris masuk atau marker `TANPA_ABSEN_MASUK` pada pulang |
+| `status` | Absensi | Status baris; diturunkan ulang dari catatan aktual (bukan menyalin sel lama) |
 | `kondisi_harian` | Absensi (turunan) | `ADA_MASUK_DAN_PULANG`, `ADA_MASUK_TANPA_PULANG`, atau `TANPA_MASUK_DENGAN_PULANG` |
 | `waktu_masuk` | Absensi (turunan) | Waktu server masuk; ditampilkan `dd/MM/yyyy HH:mm:ss WIB`; kosong jika tidak ada catatan masuk |
 | `waktu_pulang` | Absensi (turunan) | Waktu server pulang; ditampilkan `dd/MM/yyyy HH:mm:ss WIB`; kosong jika tidak ada catatan pulang |
 | `uraian_pekerjaan` | Absensi | Uraian dari baris pulang; kosong bila tidak ada |
 | `output_pekerjaan` | Absensi | Output dari baris pulang; kosong bila tidak ada |
+| `status_masuk` | Absensi (turunan) | `TEPAT_WAKTU`/`TERLAMBAT` bila ada masuk valid; `TANPA_ABSEN_MASUK` bila hanya ada pulang; kosong bila tidak ada catatan valid |
+| `status_pulang` | Absensi (turunan) | `TANPA_ABSEN_MASUK` bila ada pulang tanpa masuk valid; kosong bila ada masuk valid atau tidak ada pulang |
 
 Catatan:
 - TIDAK ada `drive_file_id`, URL foto, `pin_hash`, `pin_salt`, atau token.
@@ -168,6 +170,8 @@ Catatan:
   (guard formula-injection); data sumber tidak diubah.
 - Berkas diawali BOM UTF-8; pemisah `,`; quoting RFC 4180; baris `\r\n`.
 - Nama berkas: `laporan-absensi_YYYY-MM-DD_YYYY-MM-DD.csv`.
+- Kolom `status_masuk` dan `status_pulang` ditambahkan di akhir CSV; nilainya
+  sama dengan hasil turunan laporan (bukan status mentah per baris).
 - Waktu pada CSV dikonversi sekali dari ISO UTC ke `Asia/Jakarta` oleh backend
   (`Utilities.formatDate`); tanggal bisnis `YYYY-MM-DD` tidak digeser. Data
   sumber di sheet TIDAK diubah oleh proses ekspor.

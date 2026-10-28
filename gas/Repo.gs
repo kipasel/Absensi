@@ -101,31 +101,47 @@ function ensureSheetHeaders_(name, sh) {
   return headers;
 }
 
-/** Tandai status TERLAMBAT merah tanpa mengganti conditional formatting lain. */
+/**
+ * Format status pada kolom `status`: TERLAMBAT merah, TANPA_ABSEN_MASUK
+ * kuning-netral. Aturan lain tidak diganti.
+ */
 function ensureLateStatusFormatting_(sh) {
   var headers = sh.getDataRange().getValues()[0].map(function (h) { return String(h); });
   var statusColumn = headers.indexOf('status') + 1;
   if (!statusColumn || !sh.getConditionalFormatRules ||
       !sh.setConditionalFormatRules || !SpreadsheetApp.newConditionalFormatRule) return;
   var rules = sh.getConditionalFormatRules();
-  var found = rules.some(function (rule) {
-    var condition = rule.getBooleanCondition && rule.getBooleanCondition();
-    if (!condition || condition.getCriteriaType() !== SpreadsheetApp.BooleanCriteria.TEXT_EQUAL_TO) return false;
-    var values = condition.getCriteriaValues();
-    if (!values || String(values[0]) !== 'TERLAMBAT') return false;
-    return (rule.getRanges() || []).some(function (range) {
-      return range.getColumn() === statusColumn;
+  function hasRule(value) {
+    return rules.some(function (rule) {
+      var condition = rule.getBooleanCondition && rule.getBooleanCondition();
+      if (!condition || condition.getCriteriaType() !== SpreadsheetApp.BooleanCriteria.TEXT_EQUAL_TO) return false;
+      var values = condition.getCriteriaValues();
+      if (!values || String(values[0]) !== value) return false;
+      return (rule.getRanges() || []).some(function (range) {
+        return range.getColumn() === statusColumn;
+      });
     });
-  });
-  if (found) return;
-  var range = sh.getRange(2, statusColumn, Math.max(1, sh.getMaxRows() - 1), 1);
-  rules.push(SpreadsheetApp.newConditionalFormatRule()
-    .whenTextEqualTo('TERLAMBAT')
-    .setBackground('#fce8e6')
-    .setFontColor('#b3261e')
-    .setRanges([range])
-    .build());
-  sh.setConditionalFormatRules(rules);
+  }
+  var changed = false;
+  if (!hasRule('TERLAMBAT')) {
+    rules.push(SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo('TERLAMBAT')
+      .setBackground('#fce8e6')
+      .setFontColor('#b3261e')
+      .setRanges([sh.getRange(2, statusColumn, Math.max(1, sh.getMaxRows() - 1), 1)])
+      .build());
+    changed = true;
+  }
+  if (!hasRule('TANPA_ABSEN_MASUK')) {
+    rules.push(SpreadsheetApp.newConditionalFormatRule()
+      .whenTextEqualTo('TANPA_ABSEN_MASUK')
+      .setBackground('#fff4e5')
+      .setFontColor('#8a4b00')
+      .setRanges([sh.getRange(2, statusColumn, Math.max(1, sh.getMaxRows() - 1), 1)])
+      .build());
+    changed = true;
+  }
+  if (changed) sh.setConditionalFormatRules(rules);
 }
 
 /**
@@ -166,6 +182,150 @@ function updateObjectRow_(name, rowNumber, obj) {
     return (obj[h] !== undefined && obj[h] !== null) ? obj[h] : '';
   });
   sh.getRange(rowNumber, 1, 1, headers.length).setValues([row]);
+}
+
+/**
+ * Menghapus marker TANPA_ABSEN_MASUK pada baris pulang setelah catatan masuk
+ * valid untuk pegawai/tanggal yang sama tersedia. Hanya kolom status diubah.
+ * Dipanggil di dalam lock absensi.
+ * @return {number} jumlah baris yang diperbarui
+ */
+function clearTanpaAbsenMasukMarker_(idPegawai, tanggal) {
+  var sh = getSheet_('Absensi');
+  var values = sh.getDataRange().getValues();
+  if (values.length < 2) return 0;
+  var headers = values[0].map(function (h) { return String(h); });
+  var col = {
+    id_pegawai: headers.indexOf('id_pegawai'),
+    tanggal: headers.indexOf('tanggal'),
+    jenis: headers.indexOf('jenis'),
+    status: headers.indexOf('status')
+  };
+  if (col.id_pegawai < 0 || col.tanggal < 0 || col.jenis < 0 || col.status < 0) return 0;
+  var changed = 0;
+  for (var r = 1; r < values.length; r++) {
+    if (String(values[r][col.id_pegawai]) !== String(idPegawai) ||
+        String(values[r][col.tanggal]) !== String(tanggal) ||
+        String(values[r][col.jenis]) !== 'pulang' ||
+        String(values[r][col.status] || '') !== 'TANPA_ABSEN_MASUK') continue;
+    sh.getRange(r + 1, col.status + 1).setValue('');
+    changed++;
+  }
+  return changed;
+}
+
+/**
+ * Rekonsiliasi kolom status pada sheet Absensi berdasarkan catatan aktual.
+ * - Masuk: status dihitung ulang dari `waktu_server`; timestamp tidak valid
+ *   atau di luar jendela masuk menghasilkan status kosong (tidak pernah
+ *   TEPAT_WAKTU/TERLAMBAT tanpa catatan masuk valid).
+ * - Pulang: TANPA_ABSEN_MASUK hanya bila tidak ada masuk valid pada
+ *   pegawai+tanggal yang sama; selain itu kosong.
+ * Hanya kolom status yang diubah. Default mode pratinjau (apply:false).
+ * @param {{apply?:boolean, limit?:number}} [options]
+ * @return {Object} ringkasan
+ */
+function reconcileAbsensiStatuses(options) {
+  options = options || {};
+  var apply = options.apply === true;
+  function run() {
+    return reconcileAbsensiStatuses_(apply, options.limit);
+  }
+  return apply ? withLock_(run) : run();
+}
+
+/** Pratinjau rekonsiliasi status (tanpa menulis). Jalankan dari editor Apps Script. */
+function reconcileAbsensiStatusesPreview() {
+  return reconcileAbsensiStatuses({ apply: false, limit: 50 });
+}
+
+/** Terapkan rekonsiliasi status setelah pratinjau diperiksa. */
+function reconcileAbsensiStatusesApply() {
+  return reconcileAbsensiStatuses({ apply: true, limit: 50 });
+}
+
+function reconcileAbsensiStatuses_(apply, limitRaw) {
+  var sh = getSheet_('Absensi');
+  var values = sh.getDataRange().getValues();
+  var headerRow = values.length ? values[0].map(function (h) { return String(h); }) : [];
+  var col = {
+    id_absensi: headerRow.indexOf('id_absensi'),
+    id_pegawai: headerRow.indexOf('id_pegawai'),
+    tanggal: headerRow.indexOf('tanggal'),
+    jenis: headerRow.indexOf('jenis'),
+    waktu_server: headerRow.indexOf('waktu_server'),
+    status: headerRow.indexOf('status')
+  };
+  ['id_absensi', 'id_pegawai', 'tanggal', 'jenis', 'waktu_server', 'status'].forEach(function (name) {
+    if (col[name] < 0) {
+      throw AppError_('SCHEMA_INVALID', 'Kolom "' + name + '" tidak ditemukan pada sheet Absensi.', true);
+    }
+  });
+  var limit = parseInt(limitRaw, 10);
+  if (!isFinite(limit) || limit < 1) limit = 50;
+  if (limit > 200) limit = 200;
+
+  var validMasuk = {};
+  var catatanMasukValid = 0;
+  var i;
+  for (i = 1; i < values.length; i++) {
+    if (String(values[i][col.jenis]) !== 'masuk') continue;
+    if (!masukStatusFromServerIso_(values[i][col.waktu_server])) continue;
+    catatanMasukValid++;
+    validMasuk[String(values[i][col.id_pegawai]) + '|' + String(values[i][col.tanggal])] = true;
+  }
+
+  var candidates = [];
+  var diperiksa = 0;
+  var pulangTanpaMasuk = 0;
+  for (i = 1; i < values.length; i++) {
+    diperiksa++;
+    var jenis = String(values[i][col.jenis]);
+    var key = String(values[i][col.id_pegawai]) + '|' + String(values[i][col.tanggal]);
+    var expected = '';
+    if (jenis === 'masuk') {
+      expected = masukStatusFromServerIso_(values[i][col.waktu_server]) || '';
+    } else if (jenis === 'pulang') {
+      if (!validMasuk[key]) {
+        expected = 'TANPA_ABSEN_MASUK';
+        pulangTanpaMasuk++;
+      }
+    }
+    var lama = String(values[i][col.status] || '');
+    if (lama === expected) continue;
+    candidates.push({
+      baris: i + 1,
+      id_absensi: String(values[i][col.id_absensi]),
+      id_pegawai: String(values[i][col.id_pegawai]),
+      tanggal: String(values[i][col.tanggal]),
+      jenis: jenis,
+      status_lama: lama,
+      status_baru: expected
+    });
+  }
+
+  var diperbaiki = 0;
+  if (apply) {
+    candidates.forEach(function (item) {
+      sh.getRange(item.baris, col.status + 1).setValue(item.status_baru);
+      diperbaiki++;
+    });
+    if (diperbaiki > 0) {
+      logActivity_('absensi_status_reconciled', 'sistem', 'sistem', 'Absensi',
+        'diperiksa=' + diperiksa + ';diperbaiki=' + diperbaiki);
+    }
+  }
+
+  return {
+    ok: true,
+    mode: apply ? 'apply' : 'preview',
+    diperiksa: diperiksa,
+    catatan_masuk_valid: catatanMasukValid,
+    pulang_tanpa_masuk: pulangTanpaMasuk,
+    perlu_diperbaiki: candidates.length,
+    diperbaiki: diperbaiki,
+    contoh: candidates.slice(0, limit)
+  };
 }
 
 /** Menjalankan fn di bawah script lock (mengurangi race condition). */

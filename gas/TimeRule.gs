@@ -111,6 +111,35 @@ function civilFromServerMs_(nowMs) {
 }
 
 /**
+ * Mengekstrak tanggal bisnis & detik-hari dari timestamp ISO-8601 UTC.
+ * Timestamp kosong/tidak valid menghasilkan null (bukan status buatan).
+ * @param {string} value
+ * @return {{tanggal:string, detikHari:number}|null}
+ */
+function civilFromServerIso_(value) {
+  if (value === null || value === undefined || String(value).trim() === '') return null;
+  var ms = Date.parse(String(value));
+  if (!isFinite(ms)) return null;
+  return civilFromServerMs_(ms);
+}
+
+/**
+ * Status absensi masuk dari timestamp server. Mengembalikan string kosong
+ * bila timestamp tidak valid atau berada di luar jendela masuk (mis. sebelum
+ * 07:00 WIB), sehingga status TEPAT_WAKTU/TERLAMBAT tidak pernah dibuat
+ * tanpa catatan masuk yang valid.
+ * @param {string} value timestamp ISO-8601
+ * @return {'TEPAT_WAKTU'|'TERLAMBAT'|''}
+ */
+function masukStatusFromServerIso_(value) {
+  var civil = civilFromServerIso_(value);
+  if (!civil) return '';
+  var windowEval = evaluateTimeWindow_('masuk', civil.detikHari);
+  if (!windowEval.ok) return '';
+  return getMasukStatus_(civil.detikHari);
+}
+
+/**
  * Evaluasi waktu absensi memakai waktu server sekarang.
  * @param {string} jenis
  * @param {number} nowMs
