@@ -100,6 +100,8 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 - Gulir vertikal sisi kanan dan header sticky tabel laporan terbit di frontend
   `0.10.6` (commit `32e215b`); Pages run `40687118909` sukses. Uji browser
   nyata belum dijalankan.
+- Penolakan absensi duplikat dini dan pesan “Sudah absen” ada lokal di backend
+  dan frontend `0.10.7`; belum diuji atau dideploy ke Apps Script.
 - Jalankan lokal: `py -m http.server 8765` lalu buka `http://127.0.0.1:8765/`.
 
 ## Blocker Aktif (jangan diimplementasikan sebelum dijawab)

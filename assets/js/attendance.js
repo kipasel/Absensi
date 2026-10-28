@@ -350,8 +350,8 @@
     if (code === 'DUPLICATE') {
       var dupMsg = (res && res.message)
         ? res.message
-        : 'Absensi sudah tercatat untuk jenis ini pada tanggal tersebut.';
-      setStatus('Sudah pernah absen — ' + dupMsg + ' Periksa jenis (masuk/pulang) atau kembali ke menu Beranda.', 'info');
+        : 'Sudah absen untuk jenis ini pada tanggal tersebut. Data duplikat ditolak.';
+      setStatus(dupMsg + ' Periksa jenis (masuk/pulang) atau kembali ke menu Beranda.', 'info');
       return;
     }
     setStatus(mapErrorToMessage(res), 'error');

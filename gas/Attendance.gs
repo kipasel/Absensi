@@ -70,6 +70,14 @@ function handleAttendanceSubmit_(payload, method) {
   }
   var tanggal = timeEval.tanggal;
 
+  // Beri penolakan duplikat secepatnya agar pesan "sudah absen" tidak tertutup
+  // validasi foto/uraian pada percobaan kedua. Pemeriksaan di bawah LockService
+  // tetap menjadi penjaga akhir terhadap dua kiriman yang datang bersamaan.
+  var existingAttendance = findAbsensiByUniq_(ctx.pegawai.id_pegawai, tanggal, jenis);
+  if (existingAttendance && String(existingAttendance.id_absensi) !== idAbsensi) {
+    throw AppError_('DUPLICATE', duplicateAttendanceMessage_(jenis, tanggal), true);
+  }
+
   // Data pekerjaan wajib divalidasi sebelum menyimpan foto atau bukti.
   var uraianPekerjaan = '';
   var outputPekerjaan = '';
@@ -134,7 +142,7 @@ function handleAttendanceSubmit_(payload, method) {
     // Duplikat bisnis: satu masuk + satu pulang per pegawai per tanggal.
     var existing = findAbsensiByUniq_(idPegawai, tanggal, jenis);
     if (existing) {
-      throw AppError_('DUPLICATE', 'Absensi ' + jenis + ' pada ' + tanggal + ' sudah tercatat.', true);
+      throw AppError_('DUPLICATE', duplicateAttendanceMessage_(jenis, tanggal), true);
     }
 
     // Status pulang hanya bergantung pada catatan pulang valid (waktu server
@@ -242,6 +250,12 @@ function handleAttendanceSubmit_(payload, method) {
       jarak_meter: jarakMeter
     });
   });
+}
+
+function duplicateAttendanceMessage_(jenis, tanggal) {
+  var label = jenis === 'masuk' ? 'masuk' : 'pulang';
+  return 'Sudah absen ' + label + ' pada tanggal ' + tanggal +
+    '. Data duplikat ditolak.';
 }
 
 /**

@@ -599,6 +599,23 @@ check('masuk ganda pada tanggal sama → DUPLICATE', () => {
   if (countAbsensi(env) !== 1) throw new Error('baris ' + countAbsensi(env));
   return true;
 });
+check('duplikat masuk ditolak dengan pesan sudah absen sebelum validasi foto', () => {
+  const { env, token } = envAttendance();
+  atTime(env, T.midMasuk);
+  submit(env, token);
+  try {
+    submit(env, token, { foto_base64: undefined });
+  } catch (err) {
+    if (err.code !== 'DUPLICATE') throw err;
+    if (!/Sudah absen masuk/.test(err.message) || !/duplikat ditolak/i.test(err.message)) {
+      throw new Error('pesan duplikat tidak menjelaskan bahwa sudah absen: ' + err.message);
+    }
+    eq('tetap satu catatan', countAbsensi(env), 1);
+    eq('tetap satu foto', env.driveRegistry.files.length, 1);
+    return true;
+  }
+  throw new Error('duplikat tidak ditolak');
+});
 check('retry dengan id_absensi sama (respons hilang) → sukses idempoten, 1 baris', () => {
   const { env, token } = envAttendance();
   atTime(env, T.midMasuk);

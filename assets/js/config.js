@@ -9,12 +9,12 @@ window.APP_CONFIG = Object.freeze({
 
   // Sumber tunggal versi aplikasi. Selaraskan dengan CACHE_VERSION di
   // service-worker.js dan catat perubahan di docs/PROGRESS.md.
-  VERSION: '0.10.6',
+  VERSION: '0.10.7',
 
   // URL Web App Apps Script (publik — URL /exec memang dirancang dapat diakses
   // publik; keamanan ada di backend: token sesi + otorisasi). Bukan rahasia.
   // Contoh format: 'https://script.google.com/macros/s/ID/exec'
-  API_BASE_URL: 'https://script.google.com/macros/s/AKfycbyrUXAu0hU99hBWzooq8MdeUv22mbrhlGeUqlxAWuryDYjvblxDIFUMKY02W1uaAe0Vsw/exec',
+  API_BASE_URL: 'https://script.google.com/macros/s/AKfycbzrzCLe3d6PUGo-ROv9vh1MUPy7il6JD8qleBGE4XWVhfBo-bk36WkH16SVcuHnwfdp/exec',
 
   // Nama aksi health check yang sudah ada di kerangka backend (gas/Code.gs).
   HEALTH_ACTION: 'health'

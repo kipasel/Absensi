@@ -966,3 +966,15 @@ nyata.
 - Versi frontend/cache dinaikkan ke `0.10.6`.
 - Status: terbit dari commit `32e215b`; Pages run `40687118909` sukses dan aset
   live memuat `0.10.6`. Uji browser nyata belum dijalankan.
+
+## Penolakan absensi duplikat dengan pesan jelas — 2026-10-28
+
+- `gas/Attendance.gs` memeriksa catatan pegawai/tanggal/jenis segera setelah
+  waktu bisnis diketahui, sebelum validasi foto dan uraian. Percobaan kedua
+  menjawab `DUPLICATE` dengan catatan “Sudah absen … Data duplikat ditolak.”
+- Pemeriksaan duplikat tetap diulang di dalam `LockService` untuk mencegah dua
+  kiriman baru yang bersamaan. Retry dengan `id_absensi` yang sama tetap
+  idempoten; tidak membuat absensi/foto kedua.
+- `assets/js/attendance.js` menampilkan pesan backend langsung. Tes regresi
+  menambahkan duplikat tanpa foto dan memastikan jumlah catatan/foto tetap satu.
+- Versi frontend/cache `0.10.7`. Status: belum diuji/dideploy ke Apps Script.
