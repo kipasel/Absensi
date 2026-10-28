@@ -104,6 +104,8 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   dan frontend `0.10.7`; belum diuji atau dideploy ke Apps Script.
 - Rekap bulanan per pegawai (DEC-P35) ditambahkan lokal di frontend/backend
   `0.10.8`; belum diuji browser atau dideploy ke Apps Script.
+- Tombol cetak khusus panel rekap bulanan ditambahkan lokal di frontend/cache
+  `0.10.9`; belum diuji browser atau diterbitkan.
 - Jalankan lokal: `py -m http.server 8765` lalu buka `http://127.0.0.1:8765/`.
 
 ## Blocker Aktif (jangan diimplementasikan sebelum dijawab)

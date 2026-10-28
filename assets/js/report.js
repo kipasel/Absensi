@@ -208,6 +208,17 @@
     });
   }
 
+  function printMonthlyRecap() {
+    var panel = el('report-monthly-recap');
+    if (!panel || panel.hidden) {
+      setStatus('Tampilkan rekap bulanan terlebih dahulu.', 'error');
+      return;
+    }
+    document.body.classList.add('print-monthly-recap');
+    window.print();
+    document.body.classList.remove('print-monthly-recap');
+  }
+
   /* ---------------- Tabel detail ---------------- */
 
   function renderDetail(items) {
@@ -625,6 +636,8 @@
     if (run) run.addEventListener('click', runReport);
     var monthlyRun = el('report-monthly-recap-run');
     if (monthlyRun) monthlyRun.addEventListener('click', loadMonthlyRecap);
+    var monthlyPrint = el('report-monthly-recap-print');
+    if (monthlyPrint) monthlyPrint.addEventListener('click', printMonthlyRecap);
     var exp = el('report-export');
     if (exp) exp.addEventListener('click', exportCsv);
     var expXlsx = el('report-export-xlsx');

@@ -998,6 +998,18 @@ textarea.form-input {
   margin-top: 0;
 }
 
+.report-monthly-recap__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.report-monthly-recap__head p {
+  margin-bottom: 0;
+}
+
 .report-monthly-recap th {
   text-align: center;
 }
@@ -1006,6 +1018,55 @@ textarea.form-input {
   margin: 0.65rem 0 0;
   color: var(--text-muted);
   font-size: 0.85rem;
+}
+
+@page {
+  margin: 12mm;
+}
+
+@media print {
+  body.print-monthly-recap * {
+    visibility: hidden !important;
+  }
+
+  body.print-monthly-recap #report-monthly-recap,
+  body.print-monthly-recap #report-monthly-recap * {
+    visibility: visible !important;
+  }
+
+  body.print-monthly-recap #report-monthly-recap {
+    display: block !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+  }
+
+  body.print-monthly-recap .report-monthly-recap__print {
+    display: none !important;
+  }
+
+  body.print-monthly-recap #report-monthly-recap .admin-table-wrap {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  body.print-monthly-recap #report-monthly-recap .admin-table {
+    width: 100%;
+    font-size: 9pt;
+  }
+
+  body.print-monthly-recap #report-monthly-recap th,
+  body.print-monthly-recap #report-monthly-recap td {
+    padding: 4px;
+    border: 1px solid #777;
+    color: #111;
+    white-space: normal;
+  }
 }
 
 .report-rekap__grid {

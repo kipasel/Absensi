@@ -434,8 +434,13 @@
           <p id="report-status" class="att-status" role="status" aria-live="polite" hidden></p>
 
           <section id="report-monthly-recap" class="report-rekap report-monthly-recap" hidden>
-            <h3 class="att-step__subtitle">REKAP ABSENSI BULANAN</h3>
-            <p id="report-monthly-recap-period" class="report-page-info"></p>
+            <div class="report-monthly-recap__head">
+              <div>
+                <h3 class="att-step__subtitle">REKAP ABSENSI BULANAN</h3>
+                <p id="report-monthly-recap-period" class="report-page-info"></p>
+              </div>
+              <button class="btn report-monthly-recap__print" id="report-monthly-recap-print" type="button">Cetak rekap</button>
+            </div>
             <div class="admin-table-wrap">
               <table class="admin-table" id="report-monthly-recap-table">
                 <thead>

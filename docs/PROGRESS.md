@@ -994,3 +994,12 @@ nyata.
   tabel rekap dengan kelompok WFO / WFH-WFA.
 - Versi frontend/cache `0.10.8`. Status: belum diuji browser atau deployment
   Apps Script; belum diverifikasi pada data produksi.
+
+## Tombol cetak rekap bulanan — 2026-10-28
+
+- Panel rekap bulanan menampilkan tombol **Cetak rekap**.
+- `assets/js/report.js` membuka dialog cetak browser; CSS cetak hanya
+  menampilkan panel rekap bulanan, menyembunyikan tombol, dan menata tabel agar
+  kolom serta baris dapat dicetak tanpa batas gulir layar.
+- Versi frontend/cache `0.10.9`. Status: perubahan lokal; belum diuji browser
+  atau diterbitkan.
