@@ -250,6 +250,12 @@
       cell(tr, item.ada_bukti ? 'Ada' : 'Tidak ada');
       cell(tr, item.uraian_pekerjaan || '-');
       cell(tr, item.output_pekerjaan || '-');
+      var effectiveSeconds = Number(item.jam_efektif_detik) || 0;
+      var effectiveHours = Math.floor(effectiveSeconds / 3600);
+      var effectiveMinutes = Math.floor((effectiveSeconds % 3600) / 60);
+      cell(tr, item.status_jam_efektif
+        ? effectiveHours + ' jam ' + effectiveMinutes + ' menit; ' + item.status_jam_efektif
+        : '-');
       tbody.appendChild(tr);
     });
     updateTableScrollButtons();

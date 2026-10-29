@@ -1023,3 +1023,16 @@ nyata.
   `git diff --check` bersih.
 - Frontend/cache `0.10.10`. Status: perubahan lokal, belum diuji browser,
   diterbitkan, atau dideploy ke Apps Script.
+
+## Jam efektif pada tabel rincian absensi — 2026-10-29
+
+- `gas/ReportService.gs` memakai fungsi hitung yang sama untuk menambahkan
+  `jam_efektif_detik` dan `status_jam_efektif` pada tiap baris laporan. Nilai
+  harian yang sama tampil pada baris masuk/pulang tanggal yang sama.
+- `index.html` / `assets/js/report.js` menampilkan kolom Jam Efektif di ujung
+  Tabel Rincian Catatan Absensi: durasi dan label **Terpenuhi 7,5 jam** atau
+  **Belum terpenuhi Jam Efektif**. Hari tanpa catatan valid tetap kosong dari
+  kesimpulan status.
+- Tes regresi memeriksa status/durasi pasangan penuh dan parsial.
+- Frontend/cache `0.10.11`. Status: perubahan lokal, belum diuji browser,
+  diterbitkan, atau dideploy ke Apps Script.

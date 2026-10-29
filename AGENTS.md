@@ -111,6 +111,9 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   hanya dengan pasangan masuk/pulang valid; total durasi dan hari terpenuhi/
   belum ditampilkan. Uji lokal tercatat di `docs/PROGRESS.md`; deployment
   Apps Script dan uji browser belum dilakukan.
+- Kolom Jam Efektif juga ditambahkan di ujung Tabel Rincian Catatan Absensi
+  pada frontend/cache `0.10.11`; menampilkan durasi harian dan label status
+  DEC-P36. Perubahan lokal; backend belum dideploy.
 - Jalankan lokal: `py -m http.server 8765` lalu buka `http://127.0.0.1:8765/`.
 
 ## Blocker Aktif (jangan diimplementasikan sebelum dijawab)

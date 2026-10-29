@@ -272,7 +272,8 @@ function reportAbsensiDayMap_(rows) {
     var key = String(row.id_pegawai) + '|' + String(row.tanggal);
     if (!out[key]) out[key] = {
       ada_masuk: false, ada_pulang: false, waktu_masuk: '', waktu_pulang: '',
-      status_masuk: '', status_pulang: '', uraian_pekerjaan: '', output_pekerjaan: ''
+      status_masuk: '', status_pulang: '', uraian_pekerjaan: '', output_pekerjaan: '',
+      jam_efektif_detik: 0, status_jam_efektif: ''
     };
     var jenis = String(row.jenis);
     if (jenis === 'masuk') {
@@ -299,8 +300,22 @@ function reportAbsensiDayMap_(rows) {
     day.kondisi_harian = day.ada_masuk
       ? (day.ada_pulang ? 'ADA_MASUK_DAN_PULANG' : 'ADA_MASUK_TANPA_PULANG')
       : (day.ada_pulang ? 'TANPA_MASUK_DENGAN_PULANG' : '');
+    if (day.ada_masuk || day.ada_pulang) {
+      day.jam_efektif_detik = reportEffectiveSeconds_(day.waktu_masuk, day.waktu_pulang);
+      day.status_jam_efektif = day.jam_efektif_detik >= 7.5 * 60 * 60
+        ? 'Terpenuhi 7,5 jam' : 'Belum terpenuhi Jam Efektif';
+    }
   });
   return out;
+}
+
+/** Durasi efektif satu tanggal; hanya pasangan valid menghasilkan durasi. */
+function reportEffectiveSeconds_(entryIso, exitIso) {
+  var entry = civilFromServerIso_(entryIso);
+  var exit = civilFromServerIso_(exitIso);
+  if (!entry || !exit || entry.tanggal !== exit.tanggal) return 0;
+  var startSeconds = Math.max(entry.detikHari, 8 * 60 * 60);
+  return Math.max(0, Math.min(7.5 * 60 * 60, exit.detikHari - startSeconds));
 }
 
 function reportAbsensiFields_(row, statusMap, dayMap) {
@@ -330,6 +345,8 @@ function reportAbsensiFields_(row, statusMap, dayMap) {
     kondisi_harian: String(day.kondisi_harian || ''),
     waktu_masuk: String(day.waktu_masuk || ''),
     waktu_pulang: String(day.waktu_pulang || ''),
+    jam_efektif_detik: Number(day.jam_efektif_detik) || 0,
+    status_jam_efektif: String(day.status_jam_efektif || ''),
     uraian_pekerjaan: String(day.uraian_pekerjaan || row.uraian_pekerjaan || ''),
     output_pekerjaan: String(day.output_pekerjaan || row.output_pekerjaan || '')
   };
@@ -569,13 +586,7 @@ function handleReportMonthlyRecap_(payload, method) {
   Object.keys(effectiveDays).forEach(function (key) {
     var day = effectiveDays[key];
     if (!day.valid) return;
-    var entry = civilFromServerIso_(day.masuk);
-    var exit = civilFromServerIso_(day.pulang);
-    var seconds = 0;
-    if (entry && exit && entry.tanggal === exit.tanggal) {
-      var startSeconds = Math.max(entry.detikHari, 8 * 60 * 60);
-      seconds = Math.max(0, Math.min(7.5 * 60 * 60, exit.detikHari - startSeconds));
-    }
+    var seconds = reportEffectiveSeconds_(day.masuk, day.pulang);
     day.employee.jam_efektif_detik += seconds;
     if (seconds >= 7.5 * 60 * 60) day.employee.hari_terpenuhi_75++;
     else day.employee.hari_belum_terpenuhi_75++;

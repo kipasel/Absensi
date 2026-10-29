@@ -438,9 +438,13 @@ check('laporan membedakan masuk+pulang dan masuk tanpa pulang', () => {
   eq('status pulang normal', complete.status_pulang, 'SUDAH_ABSEN_PULANG');
   eq('waktu masuk pasangan', complete.waktu_masuk, '2026-10-05T00:30:00.000Z');
   eq('waktu pulang pasangan', complete.waktu_pulang, '2026-10-05T10:00:00.000Z');
+  eq('durasi efektif hari lengkap dibatasi 7,5 jam', complete.jam_efektif_detik, 27000);
+  eq('hari lengkap memenuhi jam efektif', complete.status_jam_efektif, 'Terpenuhi 7,5 jam');
   const entryOnly = list.items.find((r) => r.id_absensi === 'ABS-R3');
   eq('masuk tanpa pulang', entryOnly.kondisi_harian, 'ADA_MASUK_TANPA_PULANG');
   eq('waktu pulang kosong', entryOnly.waktu_pulang, '');
+  eq('durasi hari tanpa pasangan', entryOnly.jam_efektif_detik, 0);
+  eq('hari tanpa pasangan belum memenuhi jam efektif', entryOnly.status_jam_efektif, 'Belum terpenuhi Jam Efektif');
   return true;
 });
 check('status pulang valid konsisten untuk TEPAT_WAKTU, TERLAMBAT, dan TANPA_ABSEN_MASUK', () => {

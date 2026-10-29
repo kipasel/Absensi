@@ -422,6 +422,9 @@ Sumber: jawaban pengguna atas pertanyaan D0–D8 (lihat `docs/PHASE2_AUDIT.md`).
   terpenuhi. Tanggal tanpa catatan tidak dihitung sebagai belum terpenuhi.
 - Perhitungan menggunakan timestamp server Asia/Jakarta dan hanya untuk
   rekap admin. Data absensi sumber tidak diubah.
+- Tabel rincian catatan absensi juga menampilkan durasi dan status jam efektif
+  harian pada kolom terakhir; nilai hari yang sama terlihat pada baris masuk
+  maupun pulang untuk tanggal tersebut.
 - Sumber: instruksi pengguna 2026-10-29 dan klarifikasi bahwa perlu pasangan
   valid, durasi dibatasi 7,5 jam, serta ringkasan berupa total durasi dan jumlah
   hari terpenuhi/belum.
