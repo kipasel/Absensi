@@ -192,8 +192,8 @@
       var seconds = Number(pegawai.jam_efektif_detik) || 0;
       var hours = Math.floor(seconds / 3600);
       var minutes = Math.floor((seconds % 3600) / 60);
-      cell(tr, hours + ' jam ' + minutes + ' menit; Terpenuhi: ' +
-        (Number(pegawai.hari_terpenuhi_75) || 0) + ' hari; Belum terpenuhi: ' +
+      cell(tr, hours + ' jam ' + minutes + ' menit; Terpenuhi 7,5 jam: ' +
+        (Number(pegawai.hari_terpenuhi_75) || 0) + ' hari; Belum terpenuhi Jam Efektif: ' +
         (Number(pegawai.hari_belum_terpenuhi_75) || 0) + ' hari');
       tbody.appendChild(tr);
     });
