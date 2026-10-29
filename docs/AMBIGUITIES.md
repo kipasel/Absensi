@@ -26,7 +26,7 @@ Legenda status: `OPEN` (belum dijawab) · `ANSWERED` (dijawab) · `DEFERRED` (se
 | AMB-16 | Skema ID | Format ID internal stabil (Pegawai, Absensi, Bukti, Pengajuan). | 1 | ANSWERED (DEC-P15: ID berupa string) |
 | AMB-17 | Format waktu & tanggal | Simpan UTC ISO-8601 atau waktu lokal `Asia/Jakarta`? Batas "tanggal" untuk aturan masuk/pulang. | 1,3 | ANSWERED (DEC-P15: ISO-8601 UTC + kolom tanggal lokal; DEC-002 zona waktu) |
 | AMB-18 | Retensi data | Kebijakan retensi & penghapusan foto/metadata (dinyatakan belum ditetapkan). | 4 | ANSWERED 2026-10-21 (DEC-P26: simpan permanen, tanpa hapus otomatis) |
-| AMB-19 | Laporan & ekspor | Isi rekap, format ekspor (CSV/PDF), siapa yang boleh mengekspor? | 5 | ANSWERED (DEC-P07: CSV saja, admin; DEC-P28 2026-10-21: tanpa indikator kebijakan, fakta saja) |
+| AMB-19 | Laporan & ekspor | Isi rekap, format ekspor (CSV/PDF), siapa yang boleh mengekspor? | 5 | ANSWERED (DEC-P07: admin; DEC-P28: indikator kebijakan; DEC-P34: CSV/XLSX; DEC-P35/P36: rekap bulanan) |
 | AMB-20 | Akses foto admin | Bagaimana admin melihat foto privat secara aman (tanpa tautan publik)? Ditampilkan inline, unduhan terproteksi? | 4 | ANSWERED 2026-10-21 (DEC-P25: endpoint blob ber-token, inline) |
 | AMB-21 | Visibilitas Web App | Deploy Apps Script sebagai "Execute as: Me" + "Who has access: Anyone" (perlu untuk PWA lintas-origin) atau "Anyone with Google account"? Implikasi CORS & keamanan. | 1 | ANSWERED (DEC-P16: USER_DEPLOYING + ANYONE_ANONYMOUS) |
 | AMB-22 | Ukuran & kompresi foto | Batas ukuran/kompresi foto; resolusi; batas payload base64 ke Apps Script; penanganan kegagalan unggah besar. | 3 | ANSWERED (DEC-P17: JPEG q0.85, sisi terpanjang 1280 px, maks 1.000.000 byte) |

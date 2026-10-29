@@ -408,3 +408,20 @@ Sumber: jawaban pengguna atas pertanyaan D0–D8 (lihat `docs/PHASE2_AUDIT.md`).
   ada catatan valid yang dihitung; tidak menyatakan pegawai tidak hadir. Rekap
   tidak menghitung “tidak absen pulang” atau tanggal tanpa catatan.
 - Sumber: instruksi pengguna “munculkan tombol rekap” 2026-10-28.
+
+### DEC-P36 - Jam efektif pada rekap bulanan
+- Tanggal: 2026-10-29; Status: DISETUJUI (instruksi dan klarifikasi pengguna).
+- Rekap bulanan menampilkan total jam efektif per pegawai, jumlah hari
+  terpenuhi 7,5 jam, dan jumlah hari belum terpenuhi.
+- Per tanggal dengan setidaknya satu catatan masuk/pulang valid, pasangan masuk
+  dan pulang valid diperlukan untuk memperoleh durasi. Jika masuk sebelum
+  08:00 WIB, hitungan dimulai pukul 08:00; jika masuk pukul 08:00 atau sesudahnya,
+  hitungan dimulai dari waktu masuk aktual. Durasi maksimal yang dihitung adalah
+  7 jam 30 menit per tanggal. Durasi mencapai batas dihitung terpenuhi.
+- Hari dengan hanya satu catatan valid menghasilkan 0 jam dan dihitung belum
+  terpenuhi. Tanggal tanpa catatan tidak dihitung sebagai belum terpenuhi.
+- Perhitungan menggunakan timestamp server Asia/Jakarta dan hanya untuk
+  rekap admin. Data absensi sumber tidak diubah.
+- Sumber: instruksi pengguna 2026-10-29 dan klarifikasi bahwa perlu pasangan
+  valid, durasi dibatasi 7,5 jam, serta ringkasan berupa total durasi dan jumlah
+  hari terpenuhi/belum.

@@ -1178,5 +1178,42 @@ check('CSV: waktu kosong tetap kosong; data sumber tidak diubah', () => {
   return true;
 });
 
+console.log('\n== Rekap bulanan & jam efektif ==');
+check('jam efektif bulanan: mulai 08:00 sebelum batas, mulai aktual sesudah batas, maksimum 7,5 jam; hari parsial belum terpenuhi', () => {
+  const { env, tokenAdmin } = envAdmin();
+  const rows = [
+    ['2026-10-01', 'masuk', '2026-10-01T00:30:00.000Z'], // 07:30 WIB
+    ['2026-10-01', 'pulang', '2026-10-01T09:00:00.000Z'], // 16:00 WIB => capped 7.5h
+    ['2026-10-02', 'masuk', '2026-10-02T01:30:00.000Z'], // 08:30 WIB
+    ['2026-10-02', 'pulang', '2026-10-02T09:00:00.000Z'], // 16:00 WIB => 7.5h
+    ['2026-10-03', 'masuk', '2026-10-03T02:00:00.000Z'], // 09:00 WIB
+    ['2026-10-03', 'pulang', '2026-10-03T09:00:00.000Z'], // 16:00 WIB => 7h
+    ['2026-10-04', 'masuk', '2026-10-04T00:30:00.000Z'], // no out
+    ['2026-10-05', 'pulang', '2026-10-05T09:00:00.000Z']  // no in
+  ];
+  rows.forEach((r, i) => seedAbsensi(env, {
+    id_absensi: 'ABS-EFF-' + i, id_pegawai: 'PEG-EMP-1', tanggal: r[0],
+    jenis: r[1], waktu_server: r[2], mode_kerja: i % 2 ? 'WFH_WFA' : 'WFO',
+    status: r[1] === 'masuk' ? 'TEPAT_WAKTU' : 'SUDAH_ABSEN_PULANG'
+  }));
+  const res = env.sandbox.handleReportMonthlyRecap_(
+    { token: tokenAdmin, ...RANGE }, 'POST');
+  const pegawai = res.pegawai.find((p) => p.id_pegawai === 'PEG-EMP-1');
+  eq('total jam efektif dalam detik', pegawai.jam_efektif_detik, 22 * 3600);
+  eq('hari terpenuhi', pegawai.hari_terpenuhi_75, 2);
+  eq('hari belum terpenuhi termasuk pasangan tidak lengkap', pegawai.hari_belum_terpenuhi_75, 3);
+  return true;
+});
+check('jam efektif: tanggal tanpa catatan tidak dihitung sebagai belum terpenuhi', () => {
+  const { env, tokenAdmin } = envAdmin();
+  const res = env.sandbox.handleReportMonthlyRecap_(
+    { token: tokenAdmin, ...RANGE }, 'POST');
+  const pegawai = res.pegawai.find((p) => p.id_pegawai === 'PEG-EMP-1');
+  eq('durasi tanpa catatan', pegawai.jam_efektif_detik, 0);
+  eq('hari terpenuhi tanpa catatan', pegawai.hari_terpenuhi_75, 0);
+  eq('hari belum tanpa catatan', pegawai.hari_belum_terpenuhi_75, 0);
+  return true;
+});
+
 console.log('\n== Ringkasan: ' + passed + ' lulus, ' + failed + ' gagal ==');
 process.exit(failed === 0 ? 0 : 1);

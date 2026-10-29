@@ -106,6 +106,11 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   `0.10.8`; belum diuji browser atau dideploy ke Apps Script.
 - Tombol cetak khusus panel rekap bulanan ditambahkan lokal di frontend/cache
   `0.10.9`; belum diuji browser atau diterbitkan.
+- Jam efektif rekap bulanan (DEC-P36) ditambahkan lokal di `0.10.10`: hitung
+  dari pukul 08.00 atau waktu masuk sesudahnya, maksimal 7,5 jam per hari,
+  hanya dengan pasangan masuk/pulang valid; total durasi dan hari terpenuhi/
+  belum ditampilkan. Uji lokal tercatat di `docs/PROGRESS.md`; deployment
+  Apps Script dan uji browser belum dilakukan.
 - Jalankan lokal: `py -m http.server 8765` lalu buka `http://127.0.0.1:8765/`.
 
 ## Blocker Aktif (jangan diimplementasikan sebelum dijawab)
@@ -127,9 +132,11 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 - Impor CSV (AMB-14) & notifikasi (AMB-25) → dikesampingkan (DEC-P27).
 - Konversi persetujuan susulan menjadi baris absensi → masih butuh keputusan
   aturan; jangan diimplementasikan sendiri.
-- Kesimpulan tidak hadir, persentase kehadiran, dan hari kerja efektif →
-  **BELUM DITETAPKAN** (DEC-P28); jangan ditambahkan sendiri. Hitungan catatan
-  masuk tepat waktu/terlambat dan pulang valid per mode diizinkan DEC-P35.
+- Kesimpulan tidak hadir, persentase kehadiran, dan hari kerja efektif menurut
+  kalender/kebijakan → **BELUM DITETAPKAN** (DEC-P28); jangan ditambahkan
+  sendiri. Jam efektif berbasis catatan untuk rekap bulanan telah ditetapkan
+  secara terpisah pada DEC-P36. Hitungan catatan masuk tepat waktu/terlambat dan
+  pulang valid per mode diizinkan DEC-P35.
 - Jangan mulai PHASE 7 (atau fitur baru) tanpa instruksi.
 
 ## Catatan Runtime (2026-10-19)

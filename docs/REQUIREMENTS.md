@@ -137,4 +137,8 @@ dan PWA tidak termasuk kecuali disetujui. Rekap/ekspor detail: format ekspor
 aturan indikator kebijakan (terlambat/persen kehadiran) tetap belum ditetapkan.
 Rekap bulanan per pegawai menghitung jumlah catatan masuk tepat waktu/terlambat
 dan pulang valid berdasarkan mode kerja (DEC-P35); angka nol bukan kesimpulan
-tidak hadir.
+tidak hadir. DEC-P36 menambahkan jam efektif bulanan: hitung mulai pukul 08:00
+bila masuk lebih awal, atau dari waktu masuk aktual bila masuk pukul 08:00 atau
+sesudahnya; wajib pasangan masuk/pulang valid; maksimum 7,5 jam per tanggal.
+Rekap menampilkan total durasi dan jumlah hari terpenuhi/belum terpenuhi.
+Tanggal tanpa catatan tidak dinilai.

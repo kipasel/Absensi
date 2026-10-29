@@ -529,7 +529,10 @@ function handleReportMonthlyRecap_(payload, method) {
       nama: info.nama,
       nip_nipk: info.nip_nipk,
       WFO: { masuk_tepat_waktu: 0, masuk_terlambat: 0, pulang: 0 },
-      WFH_WFA: { masuk_tepat_waktu: 0, masuk_terlambat: 0, pulang: 0 }
+      WFH_WFA: { masuk_tepat_waktu: 0, masuk_terlambat: 0, pulang: 0 },
+      jam_efektif_detik: 0,
+      hari_terpenuhi_75: 0,
+      hari_belum_terpenuhi_75: 0
     };
   });
 
@@ -539,17 +542,43 @@ function handleReportMonthlyRecap_(payload, method) {
     jenis: '', mode_kerja: '', sumber: '', status_pegawai: filters.status_pegawai
   };
   var matched = filterAbsensiRows_(rows, range, metricFilters, statusMap);
+  var effectiveDays = {};
   matched.forEach(function (row) {
     var item = records[String(row.id_pegawai)];
     var mode = String(row.mode_kerja);
     if (!item || (mode !== 'WFO' && mode !== 'WFH_WFA')) return;
+    var dayKey = String(row.id_pegawai) + '\\u0000' + String(row.tanggal);
+    var day = effectiveDays[dayKey] || (effectiveDays[dayKey] = {
+      employee: item, masuk: '', pulang: '', valid: false
+    });
     if (String(row.jenis) === 'masuk') {
       var statusMasuk = masukStatusFromServerIso_(row.waktu_server);
-      if (statusMasuk === 'TEPAT_WAKTU') item[mode].masuk_tepat_waktu++;
-      else if (statusMasuk === 'TERLAMBAT') item[mode].masuk_terlambat++;
+      if (statusMasuk === 'TEPAT_WAKTU') {
+        item[mode].masuk_tepat_waktu++;
+        day.masuk = String(row.waktu_server || ''); day.valid = true;
+      } else if (statusMasuk === 'TERLAMBAT') {
+        item[mode].masuk_terlambat++;
+        day.masuk = String(row.waktu_server || ''); day.valid = true;
+      }
     } else if (String(row.jenis) === 'pulang' && pulangStatusFromServerIso_(row.waktu_server)) {
       item[mode].pulang++;
+      day.pulang = String(row.waktu_server || ''); day.valid = true;
     }
+  });
+
+  Object.keys(effectiveDays).forEach(function (key) {
+    var day = effectiveDays[key];
+    if (!day.valid) return;
+    var entry = civilFromServerIso_(day.masuk);
+    var exit = civilFromServerIso_(day.pulang);
+    var seconds = 0;
+    if (entry && exit && entry.tanggal === exit.tanggal) {
+      var startSeconds = Math.max(entry.detikHari, 8 * 60 * 60);
+      seconds = Math.max(0, Math.min(7.5 * 60 * 60, exit.detikHari - startSeconds));
+    }
+    day.employee.jam_efektif_detik += seconds;
+    if (seconds >= 7.5 * 60 * 60) day.employee.hari_terpenuhi_75++;
+    else day.employee.hari_belum_terpenuhi_75++;
   });
 
   var employees = Object.keys(records).map(function (id) { return records[id]; });
@@ -563,7 +592,7 @@ function handleReportMonthlyRecap_(payload, method) {
     tanggal_dari: range.dari,
     tanggal_sampai: range.sampai,
     pegawai: employees,
-    definisi: 'Hitungan berasal dari catatan masuk tepat waktu/terlambat dan pulang valid. Pegawai tanpa catatan tetap bernilai 0; angka 0 bukan kesimpulan tidak hadir.'
+    definisi: 'Hitungan masuk/pulang berasal dari catatan valid. Jam efektif dihitung pada tanggal dengan setidaknya satu catatan valid: mulai pukul 08:00 bila masuk sebelum pukul 08:00, atau dari waktu masuk aktual bila masuk mulai pukul 08:00; maksimum 7 jam 30 menit per hari. Pasangan masuk dan pulang valid diperlukan untuk memperoleh durasi; tanggal dengan satu sisi valid dihitung belum terpenuhi. Tanggal tanpa catatan tidak dihitung sebagai belum terpenuhi.'
   };
 }
 

@@ -1003,3 +1003,23 @@ nyata.
   kolom serta baris dapat dicetak tanpa batas gulir layar.
 - Versi frontend/cache `0.10.9`. Status: perubahan lokal; belum diuji browser
   atau diterbitkan.
+
+## Jam efektif pada rekap bulanan — 2026-10-29 (DEC-P36)
+
+- `gas/ReportService.gs` menghitung jam efektif per pegawai/tanggal hanya pada
+  tanggal dengan setidaknya satu catatan valid. Perlu pasangan masuk/pulang
+  valid; masuk sebelum pukul 08.00 WIB dihitung mulai 08.00, sedangkan masuk
+  pukul 08.00 atau sesudahnya dihitung dari waktu aktual. Durasi dibatasi
+  7 jam 30 menit per hari.
+- Hari parsial (hanya masuk atau hanya pulang valid) dihitung 0 jam dan belum
+  terpenuhi; tanggal tanpa catatan tidak dimasukkan sebagai belum terpenuhi.
+  Data absensi sumber tidak diubah.
+- `index.html` / `assets/js/report.js` menampilkan satu kolom Jam Efektif
+  dengan total durasi serta jumlah hari terpenuhi/belum; kolom ikut panel cetak.
+- Tes regresi di `tests/report.test.mjs` meliputi masuk sebelum/setelah batas,
+  pembatasan maksimum, pasangan parsial, dan tanggal tanpa catatan.
+- Validasi Node: foundation **84/0**, auth **57/0**, attendance **221/0**,
+  admin **170/0**, report **290/0**, susulan **67/0**, datetime **14/0**;
+  `git diff --check` bersih.
+- Frontend/cache `0.10.10`. Status: perubahan lokal, belum diuji browser,
+  diterbitkan, atau dideploy ke Apps Script.

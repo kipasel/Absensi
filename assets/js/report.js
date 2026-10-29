@@ -189,6 +189,12 @@
       cell(tr, pegawai.WFH_WFA.masuk_tepat_waktu);
       cell(tr, pegawai.WFH_WFA.masuk_terlambat);
       cell(tr, pegawai.WFH_WFA.pulang);
+      var seconds = Number(pegawai.jam_efektif_detik) || 0;
+      var hours = Math.floor(seconds / 3600);
+      var minutes = Math.floor((seconds % 3600) / 60);
+      cell(tr, hours + ' jam ' + minutes + ' menit; Terpenuhi: ' +
+        (Number(pegawai.hari_terpenuhi_75) || 0) + ' hari; Belum terpenuhi: ' +
+        (Number(pegawai.hari_belum_terpenuhi_75) || 0) + ' hari');
       tbody.appendChild(tr);
     });
     show(panel);
