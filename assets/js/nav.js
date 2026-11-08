@@ -14,6 +14,7 @@
   var VIEWS = {
     home: 'home-view',
     attendance: 'attendance-view',
+    history: 'history-view',
     admin: 'admin-view',
     session: 'session-view'
   };

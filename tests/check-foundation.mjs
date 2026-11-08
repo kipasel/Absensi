@@ -258,6 +258,10 @@ check('versi config.js == CACHE_VERSION service-worker.js', () => {
   if (c !== 'app-v' + v) throw new Error('config VERSION=' + v + ' tapi SW CACHE_VERSION=' + c);
   return true;
 });
+  check('nav.js mendaftarkan history-view agar Riwayat dapat ditampilkan', () => {
+    const nav = readFileSync(abs('assets/js/nav.js'), 'utf8');
+    return /history:\s*'history-view'/.test(nav);
+  });
 
 console.log('\n== Ringkasan: ' + passed + ' lulus, ' + failed + ' gagal ==');
 process.exit(failed === 0 ? 0 : 1);

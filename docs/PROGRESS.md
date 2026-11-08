@@ -1,5 +1,17 @@
 # PROGRESS
 
+## Perbaikan tampilan Riwayat kosong (2026-11-08)
+
+- Penyebab: `history-view` tidak terdaftar pada peta view di `assets/js/nav.js`.
+  Tombol Riwayat dapat dipilih, tetapi view tidak pernah ditampilkan sehingga
+  layar tampak kosong.
+- Perbaikan lokal: menambahkan peta `history: 'history-view'`, menaikkan
+  frontend/cache ke `0.10.16`, dan menambah regresi foundation. Tidak ada
+  perubahan backend atau data produksi; publikasi Pages dan uji browser nyata
+  masih diperlukan.
+- Validasi lokal: `node tests/check-foundation.mjs` **85/0** dan
+  `git diff --check` bersih.
+
 ## DEC-P39 — Rangkaian Mulai Piket & Lepas Piket mandiri (2026-11-08)
 
 - Klarifikasi pengguna: Mulai Piket adalah pasangan `masuk` dan `pulang` dengan

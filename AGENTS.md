@@ -38,6 +38,9 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   absensi mandiri 08.00–10.00 WIB pada tanggalnya sendiri, foto tanpa GPS.
   `lepas_piket` ditolak untuk Reguler. Deployment Apps Script dan uji browser
   belum dilakukan (rincian `docs/PROGRESS.md`).
+- Perbaikan lokal Riwayat kosong (2026-11-08): `history-view` kini terdaftar
+  pada navigasi; frontend/cache `0.10.16`, foundation **85/0**. Perlu terbit
+  ke GitHub Pages sebelum terlihat di browser live.
 - Perubahan DEC-P33 (2026-10-28) menetapkan status pulang dari catatan pulang
   valid: `SUDAH_ABSEN_PULANG`/`BELUM_ABSEN_PULANG`; `TANPA_ABSEN_MASUK` tetap
   dipakai untuk status masuk yang tidak tersedia. Frontend `0.10.6` terbit
