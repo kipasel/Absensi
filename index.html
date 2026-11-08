@@ -90,7 +90,7 @@
                   <path d="M12 3v12m-5-5 5 5 5-5" /><path d="M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
                 </svg>
               </span>
-              <span class="home-action__copy"><strong>Absen Masuk</strong><small>Catat waktu mulai kerja</small></span>
+              <span class="home-action__copy"><strong id="home-action-masuk-title">Absen Masuk</strong><small id="home-action-masuk-desc">Catat waktu mulai kerja</small></span>
               <span class="home-action__arrow" aria-hidden="true">›</span>
             </button>
             <button class="home-action home-action--out" type="button"
@@ -100,7 +100,7 @@
                   <path d="M12 21V9m-5 5 5-5 5 5" /><path d="M5 9V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4" />
                 </svg>
               </span>
-              <span class="home-action__copy"><strong>Absen Pulang</strong><small>Catat penyelesaian kerja</small></span>
+              <span class="home-action__copy"><strong id="home-action-pulang-title">Absen Pulang</strong><small id="home-action-pulang-desc">Catat penyelesaian kerja</small></span>
               <span class="home-action__arrow" aria-hidden="true">›</span>
             </button>
           </div>
@@ -188,11 +188,15 @@
             <legend class="form-label">Jenis absensi</legend>
             <label class="att-choice">
               <input type="radio" name="att-jenis" value="masuk" checked />
-              <span>Masuk</span>
+              <span id="att-jenis-masuk-label">Masuk</span>
             </label>
             <label class="att-choice">
               <input type="radio" name="att-jenis" value="pulang" />
-              <span>Pulang</span>
+              <span id="att-jenis-pulang-label">Pulang</span>
+            </label>
+            <label class="att-choice" id="att-jenis-lepas-choice" hidden>
+              <input type="radio" name="att-jenis" value="lepas_piket" />
+              <span>Lepas piket</span>
             </label>
           </fieldset>
 
@@ -311,6 +315,13 @@
               <label class="form-label" for="pegawai-unit">Unit kerja</label>
               <input class="form-input" id="pegawai-unit" type="text" maxlength="120" />
             </div>
+            <div class="form-field">
+              <label class="form-label" for="pegawai-kategori">Kategori</label>
+              <select class="form-input" id="pegawai-kategori">
+                <option value="REGULER">Reguler</option>
+                <option value="JAGAT_SAKSANA">Jagat Saksana</option>
+              </select>
+            </div>
             <div class="att-actions">
               <button class="btn btn--primary" id="pegawai-submit" type="submit">Simpan</button>
               <button class="btn" id="pegawai-cancel" type="button" hidden>Batal edit</button>
@@ -337,7 +348,7 @@
           <div class="admin-table-wrap">
             <table class="admin-table" id="pegawai-table">
               <thead>
-                <tr><th>Nama</th><th>NIP/NIPK</th><th>Jabatan</th><th>Unit kerja</th><th>Status</th><th>Aksi</th></tr>
+                <tr><th>Nama</th><th>NIP/NIPK</th><th>Jabatan</th><th>Unit kerja</th><th>Kategori</th><th>Status</th><th>Aksi</th></tr>
               </thead>
               <tbody></tbody>
             </table>
@@ -355,8 +366,9 @@
               <label class="form-label" for="absensi-jenis">Jenis</label>
               <select class="form-input" id="absensi-jenis">
                 <option value="">Semua</option>
-                <option value="masuk">Masuk</option>
+                <option value="masuk">Masuk / mulai piket</option>
                 <option value="pulang">Pulang</option>
+                <option value="lepas_piket">Lepas piket</option>
               </select>
             </div>
             <button class="btn" id="absensi-reload" type="button">Muat</button>
@@ -392,11 +404,20 @@
               </select>
             </div>
             <div class="form-field">
+              <label class="form-label" for="report-kategori">Kategori pegawai</label>
+              <select class="form-input" id="report-kategori">
+                <option value="">Semua kategori</option>
+                <option value="REGULER">Reguler</option>
+                <option value="JAGAT_SAKSANA">Jagat Saksana</option>
+              </select>
+            </div>
+            <div class="form-field">
               <label class="form-label" for="report-jenis">Jenis</label>
               <select class="form-input" id="report-jenis">
                 <option value="">Semua</option>
-                <option value="masuk">Masuk</option>
+                <option value="masuk">Masuk / mulai piket</option>
                 <option value="pulang">Pulang</option>
+                <option value="lepas_piket">Lepas piket</option>
               </select>
             </div>
             <div class="form-field">
@@ -446,6 +467,7 @@
                 <thead>
                   <tr>
                     <th rowspan="2">Nama pegawai</th>
+                    <th rowspan="2">Kategori</th>
                     <th colspan="3">WFO</th>
                     <th colspan="3">WFH/WFA</th>
                     <th rowspan="2">Jam Efektif</th>
@@ -458,7 +480,7 @@
                 <tbody></tbody>
               </table>
             </div>
-            <p class="report-recap-note">Hitungan mencakup semua jenis dan mode kerja. Jam efektif dihitung per tanggal dari masuk dan pulang valid; sebelum pukul 08.00 dihitung mulai pukul 08.00, setelahnya mulai dari waktu masuk, maksimum 7,5 jam per hari. Hari dengan satu catatan valid dihitung belum terpenuhi. Tanggal tanpa catatan tidak dinilai.</p>
+            <p class="report-recap-note">Hitungan mencakup semua jenis dan mode kerja. Jam efektif 7,5 jam dihitung untuk kategori Reguler; Jagat Saksana tidak memakai hitungan jam efektif ini. Tanggal tanpa catatan tidak dinilai.</p>
           </section>
 
           <div id="report-rekap" class="report-rekap" hidden>

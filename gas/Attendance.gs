@@ -44,11 +44,14 @@ function handleAttendanceSubmit_(payload, method) {
   payload = payload || {};
 
   var ctx = requireSession_(payload.token);
+  var isJagat = normalizePegawaiCategory_(ctx.pegawai.kategori) === 'JAGAT_SAKSANA';
 
   // --- Validasi input (id_pegawai dari body diabaikan; identitas dari sesi) ---
-  var jenisRes = normalizeJenis_(payload.jenis);
+  var jenisRes = normalizeJenisForCategory_(payload.jenis, isJagat);
   if (!jenisRes.ok) {
-    throw AppError_('INVALID_INPUT', 'Jenis absensi tidak valid.', true);
+    throw AppError_('INVALID_INPUT', isJagat
+      ? 'Jenis absensi Jagat Saksana harus masuk/pulang (mulai piket) atau lepas_piket.'
+      : 'Jenis absensi tidak valid.', true);
   }
   var jenis = jenisRes.jenis;
 
@@ -64,7 +67,9 @@ function handleAttendanceSubmit_(payload, method) {
   }
 
   var nowMs = nowMs_();
-  var timeEval = evaluateAttendanceTime_(jenis, nowMs);
+  var timeEval = isJagat
+    ? evaluateJagatAttendanceTime_(jenis, nowMs)
+    : evaluateAttendanceTime_(jenis, nowMs);
   if (!timeEval.ok) {
     throw AppError_(timeEval.code, timeEval.message, true);
   }
@@ -105,8 +110,13 @@ function handleAttendanceSubmit_(payload, method) {
   var bujur = '';
   var akurasi = '';
   var jarakMeter = '';
-  if (jenis === 'masuk' && mode === 'WFO') {
-    var gpsEval = evaluateGpsForMasukWfo_(payload.gps || null, getOfficeLocation_());
+  var requiresGps = isJagat
+    ? jenis === 'masuk'
+    : (jenis === 'masuk' && mode === 'WFO');
+  if (requiresGps) {
+    var office = getOfficeLocation_();
+    if (isJagat && office) office.radiusMeters = 100;
+    var gpsEval = evaluateGpsForMasukWfo_(payload.gps || null, office);
     if (!gpsEval.ok) {
       throw AppError_(gpsEval.code, gpsEval.message, true);
     }
@@ -149,8 +159,8 @@ function handleAttendanceSubmit_(payload, method) {
     // sudah lolos jendela pulang). Status masuk diturunkan terpisah dan tidak
     // diubah oleh status pulang (DEC-P33).
     var statusAbsensi = jenis === 'masuk'
-      ? getMasukStatus_(timeEval.detikHari)
-      : 'SUDAH_ABSEN_PULANG';
+      ? (isJagat ? 'TEPAT_WAKTU' : getMasukStatus_(timeEval.detikHari))
+      : (jenis === 'lepas_piket' ? 'SUDAH_LEPAS_PIKET' : 'SUDAH_ABSEN_PULANG');
 
     // Unggah foto ke Drive (masih di dalam lock agar tidak ada baris ganda).
     var saved;
@@ -199,6 +209,7 @@ function handleAttendanceSubmit_(payload, method) {
         tanggal: tanggal,
         jenis: jenis,
         mode_kerja: mode,
+        kategori_pegawai: isJagat ? 'JAGAT_SAKSANA' : 'REGULER',
         waktu_server: waktuServerIso,
         lintang: lintang,
         bujur: bujur,
@@ -253,7 +264,8 @@ function handleAttendanceSubmit_(payload, method) {
 }
 
 function duplicateAttendanceMessage_(jenis, tanggal) {
-  var label = jenis === 'masuk' ? 'masuk' : 'pulang';
+  var label = jenis === 'masuk' ? 'masuk'
+    : (jenis === 'lepas_piket' ? 'lepas piket' : 'pulang');
   return 'Sudah absen ' + label + ' pada tanggal ' + tanggal +
     '. Data duplikat ditolak.';
 }
@@ -286,7 +298,8 @@ function attendanceStatusMasuk_(record) {
   if (String(record.jenis) === 'masuk') return String(record.status || '');
   var masuk = findAbsensiByUniq_(record.id_pegawai, record.tanggal, 'masuk');
   if (!masuk) return 'TANPA_ABSEN_MASUK';
-  return masukStatusFromServerIso_(masuk.waktu_server) || 'TANPA_ABSEN_MASUK';
+  var isJagat = String(record.kategori_pegawai || '') === 'JAGAT_SAKSANA';
+  return (isJagat ? jagatMasukStatusFromServerIso_(masuk.waktu_server) : masukStatusFromServerIso_(masuk.waktu_server)) || 'TANPA_ABSEN_MASUK';
 }
 
 function attendanceSuccessResponse_(record) {

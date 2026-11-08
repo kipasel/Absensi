@@ -63,7 +63,9 @@
     setText('session-name', user.nama || '-');
     setText('session-role', user.peran === 'admin' ? 'Administrator' : 'Pegawai');
     setMessage('login-message', '', '');
-    document.dispatchEvent(new CustomEvent('auth:login', { detail: { nama: user.nama, peran: user.peran } }));
+    document.dispatchEvent(new CustomEvent('auth:login', { detail: {
+      nama: user.nama, peran: user.peran, kategori: user.kategori || 'REGULER'
+    } }));
   }
 
   function onSubmit(event) {
@@ -101,7 +103,7 @@
       .then(function (res) {
         if (res && res.ok && res.token) {
           api.setToken(res.token, remember);
-          renderLoggedIn({ nama: res.nama, peran: res.peran });
+          renderLoggedIn({ nama: res.nama, peran: res.peran, kategori: res.kategori });
         } else {
           setMessage('login-message',
             (res && res.message) || 'NIP atau PIN tidak sesuai.', 'error');
@@ -140,7 +142,7 @@
     api.call('session.check', {})
       .then(function (res) {
         if (res && res.ok) {
-          renderLoggedIn({ nama: res.nama, peran: res.peran });
+          renderLoggedIn({ nama: res.nama, peran: res.peran, kategori: res.kategori });
         } else {
           api.clearToken();
           renderLoggedOut();

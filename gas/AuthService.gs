@@ -77,6 +77,7 @@ function handleLogin_(payload, method) {
       token: token,
       peran: akun.peran,
       nama: pegawai.nama,
+      kategori: normalizePegawaiCategory_(pegawai.kategori),
       expiresAt: new Date(expiresAtMs).toISOString()
     };
   });
@@ -105,6 +106,7 @@ function handleSessionCheck_(payload, method) {
     ok: true,
     peran: ctx.account.peran,
     nama: ctx.pegawai ? ctx.pegawai.nama : '',
+    kategori: ctx.pegawai ? normalizePegawaiCategory_(ctx.pegawai.kategori) : 'REGULER',
     expiresAt: new Date(ctx.expiresAtMs).toISOString()
   };
 }

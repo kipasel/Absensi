@@ -26,18 +26,26 @@ function handleMyAttendance_(payload, method) {
     if (String(row.id_pegawai) !== idPegawai) continue;
     var tanggal = String(row.tanggal || '');
     var jenis = String(row.jenis || '');
+    var isJagat = String(row.kategori_pegawai || '') === 'JAGAT_SAKSANA';
     var status = jenis === 'masuk'
-      ? (masukStatusFromServerIso_(row.waktu_server) || '')
-      : (jenis === 'pulang' ? (pulangStatusFromServerIso_(row.waktu_server) || '') : '');
+      ? (isJagat ? jagatMasukStatusFromServerIso_(row.waktu_server) : masukStatusFromServerIso_(row.waktu_server))
+      : (jenis === 'pulang'
+        ? (isJagat ? jagatPulangStatusFromServerIso_(row.waktu_server, row.tanggal) : pulangStatusFromServerIso_(row.waktu_server))
+        : (jenis === 'lepas_piket'
+          ? jagatLepasPiketStatusFromServerIso_(row.waktu_server, row.tanggal)
+          : ''));
     if (tanggal === today && jenis === 'masuk' && status && !waktuMasukHariIni) {
       waktuMasukHariIni = String(row.waktu_server || '');
     }
-    if (tanggal === today && jenis === 'pulang' && status && !waktuPulangHariIni) {
+    var civilToday = civilFromServerIso_(row.waktu_server);
+    var penutupHariIni = jenis === 'pulang' || jenis === 'lepas_piket';
+    if ((isJagat ? (civilToday && civilToday.tanggal === today) : tanggal === today) &&
+        penutupHariIni && status && !waktuPulangHariIni) {
       waktuPulangHariIni = String(row.waktu_server || '');
     }
     if (tanggal.substring(0, 7) !== month) continue;
     if (jenis === 'masuk') masuk++;
-    if (jenis === 'pulang') pulang++;
+    if (penutupHariIni) pulang++;
     items.push({
       tanggal: tanggal,
       jenis: jenis,

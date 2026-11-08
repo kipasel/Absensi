@@ -42,6 +42,10 @@ Arsitektur: `Browser/PWA → HTTPS → Google Apps Script → Google Sheets & Go
 - Pemilihan mandiri bukan bukti kepatuhan kebijakan kantor.
 
 ## 5. Jam Absensi (zona `Asia/Jakarta`, acuan waktu server)
+### Aturan khusus Jagat Saksana (DEC-P39)
+- **Mulai piket:** absen `masuk` `08:00:00`–`08:30:00` WIB, status `TEPAT_WAKTU`, wajib foto dan GPS radius 100 m; lalu `pulang` `08:00:00`–`08:30:00` WIB keesokan hari, wajib foto tanpa GPS. Tanggal bisnis pulang memakai tanggal mulai giliran (H-1).
+- **Lepas piket:** absensi mandiri sekali pada tanggalnya sendiri, `08:00:00`–`10:00:00` WIB, status `SUDAH_LEPAS_PIKET`, wajib foto tanpa GPS. Lepas piket bukan pengganti catatan pulang Mulai Piket.
+- Aplikasi tidak membuat jadwal rotasi.
 - **Absen masuk reguler:** sebelum `07:00:00` ditolak; `07:00:00`–`08:30:00` diterima dengan status `TEPAT_WAKTU`; setelah `08:30:00` sampai akhir hari diterima dengan status `TERLAMBAT` (DEC-P31).
 - **Absen pulang reguler:** mulai `16:00:00`, batas akhir `23:59:59`; setelah pergantian tanggal, absen pulang untuk tanggal sebelumnya ditolak sebagai reguler.
 - Keputusan memakai waktu server, bukan jam perangkat pengguna.
@@ -49,6 +53,7 @@ Arsitektur: `Browser/PWA → HTTPS → Google Apps Script → Google Sheets & Go
 - **BELUM DITETAPKAN:** perlakuan hari libur & akhir pekan → `AMB-10`.
 
 ## 6. Foto & GPS
+Jagat Saksana wajib foto kamera saat masuk/pulang Mulai Piket maupun Lepas Piket. GPS wajib hanya saat masuk Mulai Piket, dengan radius maksimum 100 m dari titik kantor; pulang dan lepas piket tidak mewajibkan GPS. Ketentuan ini mengikuti kategori profil pegawai dan berlaku terlepas dari mode kerja yang dipilih.
 - **Masuk WFO:** foto via kamera perangkat (wajib), GPS wajib, jarak maks 50 m dari titik kantor.
 - **Pulang WFO:** foto via kamera perangkat, GPS tidak diwajibkan.
 - **Masuk & pulang WFH/WFA:** foto via kamera perangkat, GPS tidak diwajibkan.
@@ -97,9 +102,10 @@ Arsitektur: `Browser/PWA → HTTPS → Google Apps Script → Google Sheets & Go
 
 ## 11. Drive & Privasi
 - Foto disimpan di folder Drive privat, terorganisir tahun/bulan/tanggal/pegawai.
-- Struktur final (DEC-P29):
-  `ABSENSI_KPU/YYYY/MM_NamaBulan/DD/NamaPegawai_IDPegawai/Absen_Masuk.jpg` &
-  `Absen_Pulang.jpg`. Nama folder bulan `MM_NamaBulan` (Indonesia) dan bagian
+- Struktur final (DEC-P29/DEC-P38):
+  `ABSENSI_KPU/YYYY/MM_NamaBulan/DD/NamaPegawai_IDPegawai/Absen_Masuk.jpg`,
+  `Absen_Pulang.jpg`, & `Absen_LepasPiket.jpg`. Nama folder bulan `MM_NamaBulan`
+  (Indonesia) dan bagian
   pegawai memakai ID internal sebagai kunci (nama saja tidak cukup).
 - Foto susulan tersimpan terpisah di `.../MM/Foto_Susulan/` (bukan catatan
   absensi reguler, DEC-P24).

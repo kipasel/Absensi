@@ -62,6 +62,13 @@
     return td;
   }
 
+  function jenisLabel(value) {
+    if (value === 'masuk') return 'Masuk / mulai piket';
+    if (value === 'lepas_piket') return 'Lepas piket';
+    if (value === 'pulang') return 'Pulang';
+    return value || '';
+  }
+
   function fmtDate(value) {
     return dateTime ? dateTime.formatDate(value) : (value || '');
   }
@@ -149,6 +156,7 @@
         cell(tr, item.nip_nipk);
         cell(tr, item.jabatan);
         cell(tr, item.unit_kerja);
+        cell(tr, item.kategori === 'JAGAT_SAKSANA' ? 'Jagat Saksana' : 'Reguler');
         cell(tr, item.status_aktif ? 'Aktif' : 'Nonaktif');
         var td = document.createElement('td');
         td.className = 'admin-actions';
@@ -190,6 +198,7 @@
       row('NIP/NIPK', res.pegawai.nip_nipk);
       row('Jabatan', res.pegawai.jabatan);
       row('Unit kerja', res.pegawai.unit_kerja);
+      row('Kategori', res.pegawai.kategori === 'JAGAT_SAKSANA' ? 'Jagat Saksana' : 'Reguler');
       row('Status pegawai', res.pegawai.status_aktif ? 'Aktif' : 'Nonaktif');
       if (res.akun) {
         row('Peran akun', res.akun.peran);
@@ -286,6 +295,7 @@
       var input = el(id);
       if (input) input.value = '';
     });
+    if (el('pegawai-kategori')) el('pegawai-kategori').value = 'REGULER';
     setText(el('pegawai-form-title'), 'Tambah pegawai');
     hide(el('pegawai-cancel'));
     setFormMessage('pegawai-message', '', '');
@@ -298,6 +308,7 @@
     el('pegawai-nip').value = item.nip_nipk;
     el('pegawai-jabatan').value = item.jabatan;
     el('pegawai-unit').value = item.unit_kerja;
+    el('pegawai-kategori').value = item.kategori || 'REGULER';
     show(el('pegawai-cancel'));
     setFormMessage('pegawai-message', '', '');
     el('pegawai-nama').focus();
@@ -335,7 +346,8 @@
       nama: nama,
       nip_nipk: nip,
       jabatan: el('pegawai-jabatan').value.trim(),
-      unit_kerja: el('pegawai-unit').value.trim()
+      unit_kerja: el('pegawai-unit').value.trim(),
+      kategori: el('pegawai-kategori').value
     };
     var action = 'admin.pegawai.create';
     if (editingId) {
@@ -374,7 +386,7 @@
       fillTable('absensi-table', res.items, function (tr, item) {
         cell(tr, fmtDate(item.tanggal));
         cell(tr, item.nama || item.id_pegawai);
-        cell(tr, item.jenis);
+        cell(tr, jenisLabel(item.jenis));
         cell(tr, item.mode_kerja);
         cell(tr, item.sumber);
         cell(tr, item.ada_bukti ? 'Ada' : 'Tidak ada');
@@ -474,7 +486,7 @@
       appendInfoRows(dl, [
         ['Pegawai', res.pegawai ? res.pegawai.nama + ' (' + res.pegawai.nip_nipk + ')' : res.absensi.id_pegawai],
         ['Tanggal', fmtDate(res.absensi.tanggal)],
-        ['Jenis', res.absensi.jenis],
+        ['Jenis', jenisLabel(res.absensi.jenis)],
         ['Mode kerja', res.absensi.mode_kerja],
         ['Waktu server', fmtTime(res.absensi.waktu_server) || '-'],
         ['Sumber', res.absensi.sumber],

@@ -49,7 +49,9 @@ function handleSusulanSubmit_(payload, method) {
   var ctx = requireSession_(payload.token);
 
   var jenisRes = normalizeJenis_(payload.jenis);
-  if (!jenisRes.ok) {
+  // Susulan tetap hanya untuk jenis reguler; lepas piket Jagat belum punya
+  // aturan susulan (route juga nonaktif, DEC-P31).
+  if (!jenisRes.ok || jenisRes.jenis === 'lepas_piket') {
     throw AppError_('INVALID_INPUT', 'Jenis absensi tidak valid.', true);
   }
   var jenis = jenisRes.jenis;

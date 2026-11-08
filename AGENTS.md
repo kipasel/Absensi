@@ -32,6 +32,12 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
 - Perubahan sekecil mungkin; jangan refactor tak berkaitan.
 
 ## Status Saat Ini
+- DEC-P39 (2026-11-08, implementasi lokal): Mulai Piket Jagat Saksana memakai
+  `masuk` dan `pulang` 08.00–08.30 WIB (pulang H+1 memakai tanggal bisnis H-1);
+  foto wajib keduanya dan GPS radius 100 m hanya saat masuk. `lepas_piket` adalah
+  absensi mandiri 08.00–10.00 WIB pada tanggalnya sendiri, foto tanpa GPS.
+  `lepas_piket` ditolak untuk Reguler. Deployment Apps Script dan uji browser
+  belum dilakukan (rincian `docs/PROGRESS.md`).
 - Perubahan DEC-P33 (2026-10-28) menetapkan status pulang dari catatan pulang
   valid: `SUDAH_ABSEN_PULANG`/`BELUM_ABSEN_PULANG`; `TANPA_ABSEN_MASUK` tetap
   dipakai untuk status masuk yang tidak tersedia. Frontend `0.10.6` terbit
@@ -62,7 +68,7 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   `node tests/attendance.test.mjs`, `node tests/admin.test.mjs`,
   `node tests/report.test.mjs`, `node tests/susulan.test.mjs`,
   `node tests/datetime.test.mjs`.
-  Hasil terakhir (2026-10-28): 84 / 57 / 218 / 170 / 282 / 67 / 14 — semua **0 gagal**.
+  Hasil terakhir setelah DEC-P38 (2026-11-08): 84 / 57 / 231 / 180 / 307 / 67 / 14 — semua **0 gagal**.
 - Tampilan tanggal/waktu memakai `assets/js/datetime.js` (Asia/Jakarta);
   timestamp server tetap ISO-8601 UTC dan CSV dikonversi sekali di backend.
 - Status masuk/pulang laporan **diturunkan ulang** dari catatan aktual (DEC-P33):
@@ -73,10 +79,13 @@ Google Apps Script → Google Sheets + Google Drive privat. Zona waktu `Asia/Jak
   Rekonsiliasi aman: `reconcileAbsensiStatusesPreview()` lalu
   `reconcileAbsensiStatusesApply()` (hanya kolom `status`). Belum dijalankan
   pada spreadsheet produksi.
-- Endpoint Web App terbaru (2026-10-28):
-  `https://script.google.com/macros/s/AKfycbyrUXAu0hU99hBWzooq8MdeUv22mbrhlGeUqlxAWuryDYjvblxDIFUMKY02W1uaAe0Vsw/exec`;
-  health `ok:true`, `backendConfigured:true`, `officeLocationConfigured:true`.
-  Disetel di `assets/js/config.js`; frontend/cache `0.10.6`.
+- Endpoint Web App terbaru (terverifikasi 2026-11-08):
+  `https://script.google.com/macros/s/AKfycbwuie4IDBYdhJRxL2CcKwsUpkxhZvoC4ZTsi_PKDD5zvSbuL5oWaqH7fEo5E10dy6zpEA/exec`;
+  health `ok:true`, `backendConfigured:true`, `officeLocationConfigured:true`,
+  `phase:report`.
+  Disetel di `assets/js/config.js`; frontend/cache lokal `0.10.14` (terbit live
+  masih `0.10.9` menurut README). Kode backend DEC-P38 **belum tentu** ada di
+  deployment ini — verifikasi hanya lewat health, bukan uji login/absensi.
 - Perbaikan status 2026-10-28: frontend `0.9.7` terbit dari commit `e5a6075`
   (`master`/`main`); Pages build `1321281841` sukses dan aset live memuat
   `0.9.7`. Backend `gas/TimeRule.gs`, `ReportService.gs`, `Repo.gs`,

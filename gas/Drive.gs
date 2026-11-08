@@ -31,7 +31,8 @@ var PHOTO_EXT = '.jpg';
 /** Nama file tetap per jenis (DEC-P29) — menimpa dicegah lewat prasyarat. */
 var ATTENDANCE_FILE_NAMES = Object.freeze({
   masuk: 'Absen_Masuk' + PHOTO_EXT,
-  pulang: 'Absen_Pulang' + PHOTO_EXT
+  pulang: 'Absen_Pulang' + PHOTO_EXT,
+  lepas_piket: 'Absen_LepasPiket' + PHOTO_EXT
 });
 
 /** Nama bulan bahasa Indonesia (indeks 1..12). */
@@ -159,13 +160,14 @@ function getOrCreateSubfolder_(parent, name) {
 }
 
 /**
- * Menyimpan foto absensi ke struktur folder hierarkis privat (DEC-P29):
- * ABSENSI_KPU/YYYY/MM_NamaBulan/DD/NamaPegawai_IDPegawai/Absen_Masuk|Absen_Pulang.jpg
+ * Menyimpan foto absensi ke struktur folder hierarkis privat (DEC-P29/DEC-P38):
+ * ABSENSI_KPU/YYYY/MM_NamaBulan/DD/NamaPegawai_IDPegawai/
+ * Absen_Masuk|Absen_Pulang|Absen_LepasPiket.jpg
  * Folder dibuat otomatis bila belum ada dan dipakai ulang bila sudah ada
  * (getOrCreateSubfolder_ tidak menghapus/membuat ulang folder yang ada).
  *
- * Pencegahan duplikat: prasyarat tanggal/jenis (satu masuk + satu pulang per
- * pegawai per tanggal) + idempotensi `id_absensi` + `withLock_` di
+ * Pencegahan duplikat: prasyarat tanggal/jenis (satu masuk + satu catatan
+ * penutup per pegawai per tanggal) + idempotensi `id_absensi` + `withLock_` di
  * Attendance.gs memastikan fungsi ini dipanggil maksimal sekali per
  * (pegawai, tanggal, jenis). Lihat docs/SECURITY.md.
  *

@@ -194,15 +194,17 @@ baru: `SPREADSHEET_ID` (DEC-P08), koordinat kantor (AMB-07), benchmark PBKDF2 (D
 
 ## Struktur Penyimpanan Foto (DEC-P29) — tinjauan keamanan
 - Struktur: `ABSENSI_KPU/{TAHUN}/{MM_NamaBulan}/{DD}/{NamaPegawai_IDPegawai}/`
-  dengan nama file tetap `Absen_Masuk.jpg`/`Absen_Pulang.jpg`.
+  dengan nama file tetap `Absen_Masuk.jpg`/`Absen_Pulang.jpg`/
+  `Absen_LepasPiket.jpg` (DEC-P38).
 - **Privasi:** file mengikuti ACL folder induk yang wajib privat; backend tidak
   mengubah ACL file atau memberi tautan publik. Admin mengakses lewat endpoint
   blob ber-token (DEC-P25).
 - **Sanitasi nama:** `sanitizePathSegment_` mengganti `\ / : * ? " < > |` &
   karakter kontrol → mencegah injeksi path/karakter aneh dari nama pegawai.
   ID internal disertakan sehingga nama pegawai yang sama tidak tertukar.
-- **Anti-duplikat:** nama file tetap + prasyarat satu masuk/satu pulang per
-  pegawai per tanggal + idempotensi `id_absensi` + `withLock_`. (T-08)
+- **Anti-duplikat:** nama file tetap + prasyarat satu masuk & satu catatan
+  penutup (`pulang` atau `lepas_piket`) per pegawai per tanggal + idempotensi
+  `id_absensi` + `withLock_`. (T-08)
 - **Kegagalan parsial (T-12):** gagal Drive → tidak ada tulisan sama sekali
   (`ATTENDANCE_NOT_STORED`); gagal Sheets setelah file dibuat → baris bukti
   dikompensasi, file **tidak** dihapus & dicatat sebagai orphan

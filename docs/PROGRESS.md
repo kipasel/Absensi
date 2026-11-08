@@ -1,5 +1,58 @@
 # PROGRESS
 
+## DEC-P39 — Rangkaian Mulai Piket & Lepas Piket mandiri (2026-11-08)
+
+- Klarifikasi pengguna: Mulai Piket adalah pasangan `masuk` dan `pulang` dengan
+  toleransi 30 menit (08.00–08.30 WIB); pulang dilakukan esok hari dan memakai
+  tanggal bisnis mulai piket. Lepas Piket adalah absensi mandiri pada tanggalnya
+  sendiri, 08.00–10.00 WIB, foto tanpa GPS.
+- Implementasi lokal: backend menerima `pulang` untuk Jagat, tetap menolak
+  `lepas_piket` untuk Reguler; GPS 100 m hanya pada masuk Mulai Piket. UI,
+  laporan, rekap, riwayat, dan tes diselaraskan. Deployment dan uji browser
+  nyata belum dilakukan.
+- Frontend/cache lokal `0.10.15`.
+
+## DEC-P38 — Mulai piket & lepas piket Jagat Saksana (2026-11-08)
+
+- Dua jenis absensi Jagat Saksana: `masuk` (mulai piket) 08.00–10.00 WIB dengan
+  GPS radius 100 m dan foto; `lepas_piket` (jenis baru) 08.00–10.00 WIB hari
+  berikutnya dengan foto tanpa GPS, status `SUDAH_LEPAS_PIKET`, tanggal bisnis
+  H-1. Jenis `pulang` ditolak untuk Jagat dan `lepas_piket` ditolak untuk
+  Reguler. Mulai piket dan lepas piket boleh tercatat pada hari kalender sama.
+- Lepas piket dicatat satu kali tanpa catatan pulang terpisah; tetap diterima
+  bila tidak ada catatan masuk H-1 dan laporan menandai `TANPA_ABSEN_MASUK`.
+  Uraian/output tetap wajib. Foto disimpan `Absen_LepasPiket.jpg`.
+- Penyesuaian: rekonsiliasi status, rekap bulanan (pulang mencakup lepas piket,
+  jam efektif tetap tidak dihitung), filter jenis laporan/admin, riwayat pribadi,
+  label UI (Mulai piket/Lepas piket), serta status harian
+  `SUDAH_LEPAS_PIKET`/`BELUM_LEPAS_PIKET`.
+- Suite: foundation **84/0**, auth **57/0**, attendance **231/0**, admin
+  **180/0**, report **307/0**, susulan **67/0**, datetime **14/0**.
+  Pengujian browser dan deployment Apps Script belum dilakukan.
+- Frontend/cache lokal `0.10.14`.
+
+## DEC-P37 — Absensi Jagat Saksana (2026-11-08)
+
+> Jendela jam pada entri ini digantikan DEC-P38. Ketentuan kategori, foto, dan
+> GPS tetap berlaku.
+
+- Ditambahkan kategori pegawai `REGULER`/`JAGAT_SAKSANA`, default Reguler;
+  admin dapat menetapkan atau mengubahnya. Kategori diteruskan oleh sesi dari
+  backend; klien tidak dapat memilih aturan kategori.
+- Jagat Saksana masuk 07.00–08.00 dan pulang 08.00–09.00 hari berikutnya,
+  inklusif. Tanggal catatan pulang mengikuti tanggal mulai giliran. Foto wajib
+  untuk kedua jenis; GPS hanya wajib saat masuk dengan radius 100 m. Absen pulang
+  tanpa GPS diterima (klarifikasi pengguna 2026-11-08).
+- Snapshot kategori disimpan pada catatan absensi. Laporan dapat difilter per
+  kategori dan rekap bulanan menampilkan kategori. Jam efektif DEC-P36 tidak
+  dihitung untuk Jagat Saksana.
+- Suite keseluruhan: foundation **84/0**, auth **57/0**, attendance **226/0**,
+  admin **179/0**, report **301/0**, susulan **67/0**, datetime **14/0**.
+  Pengujian browser dan deployment Apps Script belum dilakukan. Skema menambah
+  kolom di ujung sheet saat inisialisasi/penulisan; tidak ada data produksi yang
+  disentuh oleh perubahan lokal.
+- Frontend/cache lokal dinaikkan ke `0.10.13` setelah klarifikasi kewajiban GPS.
+
 ## Perbaikan — Gagal simpan foto absensi (2026-10-26)
 
 - Gejala: saat kirim absensi muncul "Foto gagal disimpan. Absensi TIDAK dicatat"

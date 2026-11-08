@@ -26,7 +26,9 @@ var TIME_WINDOWS = Object.freeze({
 var MASUK_TEPAT_WAKTU_END_SEC = 8 * 3600 + 30 * 60; // 08:30:00 termasuk tepat waktu
 
 
-var ATTENDANCE_JENIS = Object.freeze(['masuk', 'pulang']);
+var ATTENDANCE_JENIS = Object.freeze(['masuk', 'pulang', 'lepas_piket']);
+var ATTENDANCE_JENIS_REGULER = Object.freeze(['masuk', 'pulang']);
+var ATTENDANCE_JENIS_JAGAT = Object.freeze(['masuk', 'pulang', 'lepas_piket']);
 var ATTENDANCE_MODE = Object.freeze(['WFO', 'WFH_WFA']);
 
 /**
@@ -176,6 +178,59 @@ function evaluateAttendanceTime_(jenis, nowMs) {
 }
 
 /**
+ * Mulai piket: masuk dan pulang 08:00–08:30 WIB; pulang dipasangkan ke
+ * tanggal mulai giliran (H-1). Lepas piket mandiri: 08:00–10:00 WIB pada
+ * tanggal absensinya sendiri (DEC-P39).
+ */
+var JAGAT_SHIFT_WINDOW = Object.freeze({ startSec: 8 * 3600, endSec: 8 * 3600 + 30 * 60 });
+var JAGAT_LEPAS_PIKET_WINDOW = Object.freeze({ startSec: 8 * 3600, endSec: 10 * 3600 });
+
+function previousBusinessDate_(tanggal) {
+  var previous = new Date(Date.parse(tanggal + 'T00:00:00Z') - 86400000);
+  return Utilities.formatDate(previous, 'UTC', 'yyyy-MM-dd');
+}
+
+/** Jam Jagat Saksana. Pulang mulai piket dipasangkan ke tanggal mulai giliran. */
+function evaluateJagatAttendanceTime_(jenis, nowMs) {
+  var civil = civilFromServerMs_(nowMs);
+  if (!civil) return { ok: false, code: 'INTERNAL_ERROR', message: 'Gagal membaca waktu server.', tanggal: null, detikHari: null };
+  if (jenis !== 'masuk' && jenis !== 'pulang' && jenis !== 'lepas_piket') {
+    return { ok: false, code: 'INVALID_INPUT', message: 'Jenis absensi tidak dikenali.', tanggal: civil.tanggal, detikHari: civil.detikHari };
+  }
+  var window = jenis === 'lepas_piket' ? JAGAT_LEPAS_PIKET_WINDOW : JAGAT_SHIFT_WINDOW;
+  if (civil.detikHari < window.startSec || civil.detikHari > window.endSec) {
+    return { ok: false, code: 'TIME_WINDOW', message: jenis === 'lepas_piket'
+      ? 'Absen lepas piket hanya pukul 08:00–10:00 WIB.'
+      : ('Absen ' + (jenis === 'masuk' ? 'masuk' : 'pulang') + ' mulai piket hanya pukul 08:00–08:30 WIB.'),
+      tanggal: civil.tanggal, detikHari: civil.detikHari };
+  }
+  var tanggal = civil.tanggal;
+  if (jenis === 'pulang') {
+    tanggal = previousBusinessDate_(civil.tanggal);
+  }
+  return { ok: true, code: null, message: null, tanggal: tanggal, detikHari: civil.detikHari };
+}
+
+function jagatMasukStatusFromServerIso_(value) {
+  var civil = civilFromServerIso_(value);
+  return civil && civil.detikHari >= JAGAT_SHIFT_WINDOW.startSec && civil.detikHari <= JAGAT_SHIFT_WINDOW.endSec
+    ? 'TEPAT_WAKTU' : '';
+}
+
+function jagatPulangStatusFromServerIso_(value, tanggalShift) {
+  var civil = civilFromServerIso_(value);
+  if (!civil || civil.detikHari < JAGAT_SHIFT_WINDOW.startSec || civil.detikHari > JAGAT_SHIFT_WINDOW.endSec) return '';
+  var shiftDate = previousBusinessDate_(civil.tanggal);
+  return !tanggalShift || shiftDate === String(tanggalShift) ? 'SUDAH_ABSEN_PULANG' : '';
+}
+
+function jagatLepasPiketStatusFromServerIso_(value, tanggalAbsensi) {
+  var civil = civilFromServerIso_(value);
+  if (!civil || civil.detikHari < JAGAT_LEPAS_PIKET_WINDOW.startSec || civil.detikHari > JAGAT_LEPAS_PIKET_WINDOW.endSec) return '';
+  return !tanggalAbsensi || civil.tanggal === String(tanggalAbsensi) ? 'SUDAH_LEPAS_PIKET' : '';
+}
+
+/**
  * Memvalidasi nilai mode kerja. Fungsi murni.
  * @param {*} mode
  * @return {{ok:boolean, mode:(string|null)}}
@@ -193,4 +248,17 @@ function normalizeModeKerja_(mode) {
 function normalizeJenis_(jenis) {
   var j = jenis === null || jenis === undefined ? '' : String(jenis).trim().toLowerCase();
   return ATTENDANCE_JENIS.indexOf(j) !== -1 ? { ok: true, jenis: j } : { ok: false, jenis: null };
+}
+
+/**
+ * Memvalidasi jenis absensi menurut kategori pegawai (DEC-P39).
+ * Reguler: masuk/pulang. Jagat Saksana: mulai piket (masuk/pulang) atau lepas_piket.
+ * @param {*} jenis
+ * @param {boolean} isJagat
+ * @return {{ok:boolean, jenis:(string|null)}}
+ */
+function normalizeJenisForCategory_(jenis, isJagat) {
+  var j = jenis === null || jenis === undefined ? '' : String(jenis).trim().toLowerCase();
+  var allowed = isJagat ? ATTENDANCE_JENIS_JAGAT : ATTENDANCE_JENIS_REGULER;
+  return allowed.indexOf(j) !== -1 ? { ok: true, jenis: j } : { ok: false, jenis: null };
 }

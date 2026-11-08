@@ -286,6 +286,7 @@ check('tambah pegawai sukses (kolom DATA_DICTIONARY §1 + metadata admin)', () =
   eq('jabatan', String(row.jabatan), 'Staf TEST');
   eq('unit_kerja', String(row.unit_kerja), 'Unit TEST');
   eq('status_aktif default', String(row.status_aktif), 'true');
+  eq('kategori default', String(row.kategori), 'REGULER');
   return true;
 });
 check('tambah pegawai tanpa nama/NIP → INVALID_INPUT', () => {
@@ -293,6 +294,13 @@ check('tambah pegawai tanpa nama/NIP → INVALID_INPUT', () => {
   throwsCode('INVALID_INPUT', () => {
     env.sandbox.handleAdminPegawaiCreate_({ token: tokenAdmin, nama: '', nip_nipk: '' }, 'POST');
   }, 'INVALID_INPUT');
+});
+check('tambah pegawai menolak kategori di luar enum', () => {
+  const { env, tokenAdmin } = envAdmin();
+  throwsCode('INVALID_INPUT', () => env.sandbox.handleAdminPegawaiCreate_({
+    token: tokenAdmin, nama: 'Kategori Salah TEST', nip_nipk: '7777000011112222', kategori: 'SATPAM'
+  }, 'POST'), 'INVALID_INPUT');
+  return true;
 });
 check('tambah pegawai NIP duplikat → DUPLICATE', () => {
   const { env, tokenAdmin } = envAdmin();
@@ -325,6 +333,23 @@ check('edit pegawai (nama/jabatan/unit) → berubah + diubah_oleh admin', () => 
   const row = env.sandbox.findPegawaiById_('PEG-EMP-1');
   eq('nama baru', String(row.nama), 'Pegawai Diubah TEST');
   eq('diubah_oleh', String(row.diubah_oleh), String(admin.akun.id_akun));
+  return true;
+});
+check('admin dapat mengubah kategori pegawai menjadi Jagat Saksana', () => {
+  const { env, tokenAdmin } = envAdmin();
+  const res = env.sandbox.handleAdminPegawaiUpdate_({
+    token: tokenAdmin, id_pegawai: 'PEG-EMP-1', kategori: 'JAGAT_SAKSANA'
+  }, 'POST');
+  eq('kategori changed', res.changed[0], 'kategori');
+  eq('kategori tersimpan', env.sandbox.findPegawaiById_('PEG-EMP-1').kategori, 'JAGAT_SAKSANA');
+  eq('kategori tampil di daftar', env.sandbox.handleAdminPegawaiList_({ token: tokenAdmin }, 'POST').items[1].kategori, 'JAGAT_SAKSANA');
+  return true;
+});
+check('kategori pegawai di luar pilihan ditolak', () => {
+  const { env, tokenAdmin } = envAdmin();
+  throwsCode('INVALID_INPUT', () => env.sandbox.handleAdminPegawaiUpdate_({
+    token: tokenAdmin, id_pegawai: 'PEG-EMP-1', kategori: 'SATPAM'
+  }, 'POST'), 'INVALID_INPUT');
   return true;
 });
 check('edit NIP menjadi milik pegawai lain → DUPLICATE', () => {
@@ -443,12 +468,18 @@ check('filter tanggal & jenis bekerja', () => {
     id_absensi: 'ABS-TEST-3', id_pegawai: 'PEG-EMP-2', tanggal: '2026-10-16', jenis: 'masuk',
     idBukti: 'BKT-TEST-3'
   });
+  seedAbsensi(env, {
+    id_absensi: 'ABS-TEST-4', id_pegawai: 'PEG-EMP-2', tanggal: '2026-10-17', jenis: 'lepas_piket',
+    idBukti: 'BKT-TEST-4'
+  });
   eq('filter tanggal', env.sandbox.handleAdminAbsensiList_(
     { token: tokenAdmin, tanggal: '2026-10-15' }, 'POST').total, 2);
   eq('filter jenis', env.sandbox.handleAdminAbsensiList_(
     { token: tokenAdmin, jenis: 'pulang' }, 'POST').total, 1);
+  eq('filter jenis lepas_piket', env.sandbox.handleAdminAbsensiList_(
+    { token: tokenAdmin, jenis: 'lepas_piket' }, 'POST').total, 1);
   eq('filter id_pegawai', env.sandbox.handleAdminAbsensiList_(
-    { token: tokenAdmin, id_pegawai: 'PEG-EMP-2' }, 'POST').total, 1);
+    { token: tokenAdmin, id_pegawai: 'PEG-EMP-2', tanggal: '2026-10-16' }, 'POST').total, 1);
   return true;
 });
 check('filter tanggal salah format → INVALID_INPUT', () => {

@@ -1,8 +1,10 @@
 /*
  * Antarmuka absensi — Sistem Absensi KPU Kabupaten Aceh Selatan (PHASE 3).
  *
- * Alur: pilih jenis & mode → kamera → (GPS bila masuk WFO) → ringkasan →
- * kirim → hasil sesuai respons backend.
+ * Alur: pilih jenis & mode → kamera → (GPS bila mulai piket/masuk WFO) →
+ * ringkasan → kirim → hasil sesuai respons backend. Label jenis mengikuti
+ * kategori sesi: Reguler (Masuk/Pulang) atau Jagat Saksana (Mulai piket/Lepas
+ * piket). Nilai `lepas_piket` hanya dikirim untuk kategori Jagat Saksana.
  *
  * Prinsip keamanan:
  * - UI ini BUKAN pengaman. Backend memvalidasi ulang seluruh aturan; identitas
@@ -20,6 +22,7 @@
 
   // Status alur internal (hanya di memori).
   var flow = null;
+  var currentCategory = 'REGULER';
 
   function el(id) {
     return document.getElementById(id);
@@ -106,6 +109,27 @@
     return '';
   }
 
+  function isJagat() {
+    return currentCategory === 'JAGAT_SAKSANA';
+  }
+
+  function recordLabel(jenis) {
+    if (jenis === 'masuk') return isJagat() ? 'Mulai piket' : 'Masuk';
+    if (jenis === 'lepas_piket') return 'Lepas piket';
+    return 'Pulang';
+  }
+
+  function updateJenisLabels() {
+    setText('att-jenis-masuk-label', isJagat() ? 'Mulai piket' : 'Masuk');
+    setText('att-jenis-pulang-label', isJagat() ? 'Pulang piket' : 'Pulang');
+    var lepasChoice = el('att-jenis-lepas-choice');
+    if (lepasChoice) lepasChoice.hidden = !isJagat();
+    setText('home-action-masuk-title', isJagat() ? 'Mulai piket' : 'Absen Masuk');
+    setText('home-action-masuk-desc', isJagat() ? 'Catat awal giliran piket' : 'Catat waktu mulai kerja');
+    setText('home-action-pulang-title', isJagat() ? 'Pulang piket' : 'Absen Pulang');
+    setText('home-action-pulang-desc', isJagat() ? 'Catat akhir giliran piket' : 'Catat penyelesaian kerja');
+  }
+
   function updateTimeHint() {
     var node = el('att-time-hint');
     if (!node) return;
@@ -116,7 +140,8 @@
   }
 
   function needsGps() {
-    return selectedValue('att-jenis') === 'masuk' && selectedValue('att-mode') === 'WFO';
+    return selectedValue('att-jenis') === 'masuk' &&
+      (isJagat() || selectedValue('att-mode') === 'WFO');
   }
 
   /* ---------------- Kamera ---------------- */
@@ -198,7 +223,7 @@
     setStatus('Meminta lokasi perangkat…', 'info');
 
     if (!navigator.geolocation) {
-      setStatus('Perangkat ini tidak mendukung lokasi. Absensi masuk WFO memerlukan GPS.', 'error');
+      setStatus('Perangkat ini tidak mendukung lokasi. GPS wajib untuk absensi ini.', 'error');
       return;
     }
     navigator.geolocation.getCurrentPosition(function (pos) {
@@ -209,8 +234,8 @@
       };
       showSummary();
     }, function (err) {
-      var msg = 'Lokasi GPS diperlukan untuk absensi masuk WFO.';
-      if (err && err.code === 1) msg = 'Izin lokasi ditolak. Absensi masuk WFO memerlukan GPS.';
+      var msg = 'Lokasi GPS diperlukan untuk absensi ini.';
+      if (err && err.code === 1) msg = 'Izin lokasi ditolak. Absensi ini memerlukan GPS.';
       else if (err && err.code === 2) msg = 'Lokasi perangkat tidak tersedia.';
       else if (err && err.code === 3) msg = 'Permintaan lokasi habis waktu. Coba lagi.';
       setStatus(msg, 'error');
@@ -222,12 +247,12 @@
   function showSummary() {
     var jenis = selectedValue('att-jenis');
     var mode = selectedValue('att-mode');
-    setText('sum-jenis', jenis === 'masuk' ? 'Masuk' : 'Pulang');
+    setText('sum-jenis', recordLabel(jenis));
     setText('sum-mode', mode === 'WFO' ? 'WFO' : 'WFH/WFA');
     setText('sum-foto', flow.foto
       ? (flow.foto.width + '×' + flow.foto.height + ' px, ' + flow.foto.bytes + ' byte (JPEG)')
       : '-');
-    if (jenis === 'masuk' && mode === 'WFO') {
+    if (needsGps()) {
       show(el('sum-gps-row'));
       setText('sum-gps', flow.gps
         ? ('Terambil' + (flow.gps.accuracy !== null ? (', akurasi ±' + Math.round(flow.gps.accuracy) + ' m') : ''))
@@ -259,7 +284,7 @@
     if (res.message) return res.message;
     var map = {
       UNAUTHORIZED: 'Sesi tidak valid atau kedaluwarsa. Silakan masuk ulang.',
-      TIME_WINDOW: 'Di luar jendela jam absensi reguler.',
+      TIME_WINDOW: 'Di luar jendela jam absensi.',
       DUPLICATE: 'Absensi sudah tercatat untuk jenis ini pada tanggal tersebut.',
       OFFICE_NOT_CONFIGURED: 'Validasi lokasi kantor belum dikonfigurasi.',
       ATTENDANCE_STORAGE_PARTIAL: 'Penyimpanan gagal sebagian. Absensi BELUM tercatat; silakan coba lagi.',
@@ -280,7 +305,8 @@
       return;
     }
 
-    var jenis = selectedValue('att-jenis');
+    var selectedJenis = selectedValue('att-jenis');
+    var jenis = selectedJenis;
     var mode = selectedValue('att-mode');
     var data = {
       id_absensi: flow.idAbsensi,
@@ -289,7 +315,7 @@
       foto_base64: flow.foto.base64,
       foto_mime: camera.PHOTO_MIME
     };
-    if (jenis === 'pulang') {
+    if (selectedJenis === 'pulang') {
       var uraian = el('att-uraian');
       var output = el('att-output');
       var uraianVal = uraian && typeof uraian.value === 'string' ? uraian.value.trim() : '';
@@ -307,7 +333,7 @@
       data.uraian_pekerjaan = uraianVal;
       data.output_pekerjaan = outputVal;
     }
-    if (jenis === 'masuk' && mode === 'WFO' && flow.gps) {
+    if (needsGps() && flow.gps) {
       data.gps = { lat: flow.gps.lat, lng: flow.gps.lng, accuracy: flow.gps.accuracy };
     }
 
@@ -351,7 +377,7 @@
       var dupMsg = (res && res.message)
         ? res.message
         : 'Sudah absen untuk jenis ini pada tanggal tersebut. Data duplikat ditolak.';
-      setStatus(dupMsg + ' Periksa jenis (masuk/pulang) atau kembali ke menu Beranda.', 'info');
+      setStatus(dupMsg + ' Periksa jenis absensi atau kembali ke menu Beranda.', 'info');
       return;
     }
     setStatus(mapErrorToMessage(res), 'error');
@@ -362,7 +388,7 @@
     flow.stage = 'done';
     setText('att-result-title', 'Absensi tercatat');
     setText('att-result-detail',
-      (res.jenis === 'masuk' ? 'Masuk' : 'Pulang') + ' (' +
+      recordLabel(res.jenis) + ' (' +
       (res.mode_kerja === 'WFO' ? 'WFO' : 'WFH/WFA') + ') pada ' +
       formatServerDate(res.tanggal) +
       ' pukul ' + formatServerTime(res.waktu_server) + '.' +
@@ -389,6 +415,7 @@
   function restartFlow() {
     resetFlow();
     setStatus('', '');
+    updateJenisLabels();
     showStage('select');
     updateTimeHint();
   }
@@ -424,14 +451,28 @@
     var resultClose = el('att-result-close');
     if (resultClose) resultClose.addEventListener('click', restartFlow);
 
-    document.addEventListener('auth:login', function () { renderVisible(true); });
-    document.addEventListener('auth:logout', function () { renderVisible(false); });
-    document.addEventListener('auth:session-lost', function () { renderVisible(false); });
+    document.addEventListener('auth:login', function (event) {
+      currentCategory = event && event.detail && event.detail.kategori === 'JAGAT_SAKSANA'
+        ? 'JAGAT_SAKSANA' : 'REGULER';
+      updateJenisLabels();
+      renderVisible(true);
+    });
+    document.addEventListener('auth:logout', function () {
+      currentCategory = 'REGULER';
+      updateJenisLabels();
+      renderVisible(false);
+    });
+    document.addEventListener('auth:session-lost', function () {
+      currentCategory = 'REGULER';
+      updateJenisLabels();
+      renderVisible(false);
+    });
   }
 
   function init() {
     resetFlow();
     bind();
+    updateJenisLabels();
     hide(el('attendance-view'));
   }
 

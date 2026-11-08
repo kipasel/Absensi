@@ -55,9 +55,9 @@ function requireTanggalFilter_(raw) {
 }
 
 function normalizeJenisFilter_(raw) {
-  var s = cleanText_(raw, 10).toLowerCase();
+  var s = cleanText_(raw, 12).toLowerCase();
   if (s === '') return '';
-  if (s !== 'masuk' && s !== 'pulang') {
+  if (s !== 'masuk' && s !== 'pulang' && s !== 'lepas_piket') {
     throw AppError_('INVALID_INPUT', 'Jenis absensi tidak valid.', true);
   }
   return s;
@@ -91,10 +91,16 @@ function pegawaiListFields_(row) {
     nip_nipk: String(row.nip_nipk),
     jabatan: String(row.jabatan),
     unit_kerja: String(row.unit_kerja),
+    kategori: normalizePegawaiCategory_(row.kategori),
     status_aktif: isTruthy_(row.status_aktif),
     dibuat_pada: String(row.dibuat_pada || ''),
     diubah_pada: String(row.diubah_pada || '')
   };
+}
+
+function normalizePegawaiCategory_(value) {
+  var category = String(value || '').trim().toUpperCase();
+  return category === 'JAGAT_SAKSANA' ? 'JAGAT_SAKSANA' : 'REGULER';
 }
 
 function findNamaMap_() {
@@ -172,6 +178,11 @@ function handleAdminPegawaiCreate_(payload, method) {
   var ctx = adminRequire_(payload, method);
   var nama = cleanText_(payload.nama, 120);
   var nip = cleanText_(payload.nip_nipk, 40);
+  var kategori = payload.kategori === undefined || payload.kategori === null || payload.kategori === ''
+    ? 'REGULER' : String(payload.kategori).trim().toUpperCase();
+  if (kategori !== 'REGULER' && kategori !== 'JAGAT_SAKSANA') {
+    throw AppError_('INVALID_INPUT', 'Kategori pegawai tidak valid.', true);
+  }
   if (!nama || !nip) {
     throw AppError_('INVALID_INPUT', 'Nama dan NIP/NIPK wajib diisi.', true);
   }
@@ -188,6 +199,7 @@ function handleAdminPegawaiCreate_(payload, method) {
       nip_nipk: nip,
       jabatan: cleanText_(payload.jabatan, 120),
       unit_kerja: cleanText_(payload.unit_kerja, 120),
+      kategori: kategori,
       status_aktif: payload.status_aktif === undefined ? true : isTruthy_(payload.status_aktif),
       dibuat_pada: now,
       dibuat_oleh: ctx.account.id_akun,
@@ -208,7 +220,8 @@ function handleAdminPegawaiUpdate_(payload, method) {
   var hasNip = payload.nip_nipk !== undefined;
   var hasJabatan = payload.jabatan !== undefined;
   var hasUnit = payload.unit_kerja !== undefined;
-  if (!hasNama && !hasNip && !hasJabatan && !hasUnit) {
+  var hasKategori = payload.kategori !== undefined;
+  if (!hasNama && !hasNip && !hasJabatan && !hasUnit && !hasKategori) {
     throw AppError_('INVALID_INPUT', 'Tidak ada perubahan yang dikirim.', true);
   }
 
@@ -239,6 +252,15 @@ function handleAdminPegawaiUpdate_(payload, method) {
     if (hasUnit) {
       var unit = cleanText_(payload.unit_kerja, 120);
       if (unit !== String(pegawai.unit_kerja)) { pegawai.unit_kerja = unit; changed.push('unit_kerja'); }
+    }
+    if (hasKategori) {
+      var kategori = String(payload.kategori || '').trim().toUpperCase();
+      if (kategori !== 'REGULER' && kategori !== 'JAGAT_SAKSANA') {
+        throw AppError_('INVALID_INPUT', 'Kategori pegawai tidak valid.', true);
+      }
+      if (kategori !== normalizePegawaiCategory_(pegawai.kategori)) {
+        pegawai.kategori = kategori; changed.push('kategori');
+      }
     }
 
     if (changed.length === 0) {

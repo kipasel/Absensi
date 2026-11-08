@@ -293,6 +293,7 @@ export function seedAccount(sandbox, props, opts) {
     nip_nipk: opts.nip,
     jabatan: 'BELUM DITETAPKAN',
     unit_kerja: 'BELUM DITETAPKAN',
+    kategori: opts.kategori || 'REGULER',
     status_aktif: opts.aktif === undefined ? true : opts.aktif,
     dibuat_pada: sandbox.nowIso_(),
     dibuat_oleh: 'test',

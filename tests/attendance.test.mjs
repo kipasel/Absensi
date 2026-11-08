@@ -85,7 +85,8 @@ function envAttendance(opts = {}) {
   const env = createEnv({ props: {} });
   seedAccount(env.sandbox, env.props, {
     nip: '1111222233334444', pin: '246810', iterations: 1000,
-    idPegawai: 'PEG-ATT-1', idAkun: 'AKN-ATT-1', nama: 'Pegawai Absensi'
+    idPegawai: 'PEG-ATT-1', idAkun: 'AKN-ATT-1', nama: 'Pegawai Absensi',
+    kategori: opts.kategori || 'REGULER'
   });
   env.props.set('DRIVE_FOLDER_ID', 'TEST_DRIVE_ROOT');
   if (opts.office !== false) {
@@ -111,7 +112,7 @@ function submit(env, token, overrides = {}) {
   if (Object.prototype.hasOwnProperty.call(overrides, 'gps') && overrides.gps === null) {
     delete payload.gps;
   }
-  if (payload.jenis === 'pulang') {
+  if (payload.jenis === 'pulang' || payload.jenis === 'lepas_piket') {
     if (!Object.prototype.hasOwnProperty.call(overrides, 'uraian_pekerjaan')) {
       payload.uraian_pekerjaan = 'Pekerjaan hari ini';
     }
@@ -240,6 +241,21 @@ check('evaluateAttendanceTime_ menolak pulang lintas tanggal (00:00:01)', () => 
   if (r.tanggal !== '2026-10-16') throw new Error('tanggal bisnis ' + r.tanggal);
   return true;
 });
+check('Jagat Saksana: mulai piket 08:00–08:30 lintas hari, lepas piket mandiri sampai 10:00', () => {
+  const { sandbox } = createEnv();
+  const masukAwal = sandbox.evaluateJagatAttendanceTime_('masuk', Date.parse('2026-10-15T01:00:00Z'));
+  const masukAkhir = sandbox.evaluateJagatAttendanceTime_('masuk', Date.parse('2026-10-15T01:30:00Z'));
+  const pulang = sandbox.evaluateJagatAttendanceTime_('pulang', Date.parse('2026-10-16T01:30:00Z'));
+  const lepasAkhir = sandbox.evaluateJagatAttendanceTime_('lepas_piket', Date.parse('2026-10-16T03:00:00Z'));
+  if (!masukAwal.ok || !masukAkhir.ok || !pulang.ok || !lepasAkhir.ok) throw new Error('batas inklusif ditolak');
+  if (pulang.tanggal !== '2026-10-15') throw new Error('pulang tidak dipasangkan ke tanggal mulai giliran');
+  if (masukAwal.tanggal !== '2026-10-15') throw new Error('tanggal masuk salah: ' + masukAwal.tanggal);
+  if (sandbox.evaluateJagatAttendanceTime_('masuk', Date.parse('2026-10-15T00:59:59Z')).ok) throw new Error('masuk sebelum 08:00 diterima');
+  if (sandbox.evaluateJagatAttendanceTime_('masuk', Date.parse('2026-10-15T01:30:01Z')).ok) throw new Error('masuk lewat 08:30 diterima');
+  if (sandbox.evaluateJagatAttendanceTime_('pulang', Date.parse('2026-10-16T01:30:01Z')).ok) throw new Error('pulang lewat 08:30 diterima');
+  if (sandbox.evaluateJagatAttendanceTime_('lepas_piket', Date.parse('2026-10-16T03:00:01Z')).ok) throw new Error('lepas piket lewat 10:00 diterima');
+  return true;
+});
 
 console.log('== Mode kerja & jenis ==');
 check('normalizeModeKerja_: WFO/WFH_WFA (case-insensitive), lain ditolak', () => {
@@ -253,11 +269,21 @@ check('normalizeModeKerja_: WFO/WFH_WFA (case-insensitive), lain ditolak', () =>
   if (sandbox.normalizeModeKerja_(null).ok) throw new Error('null diterima');
   return true;
 });
-check('normalizeJenis_: masuk/pulang (case-insensitive), lain ditolak', () => {
+check('normalizeJenis_: masuk/pulang/lepas_piket (case-insensitive), lain ditolak', () => {
   const { sandbox } = createEnv();
   if (sandbox.normalizeJenis_('MASUK').jenis !== 'masuk') throw new Error('MASUK');
   if (sandbox.normalizeJenis_('Pulang').jenis !== 'pulang') throw new Error('Pulang');
+  if (sandbox.normalizeJenis_('Lepas_Piket').jenis !== 'lepas_piket') throw new Error('Lepas_Piket');
   if (sandbox.normalizeJenis_('susulan').ok) throw new Error('susulan diterima');
+  return true;
+});
+check('normalizeJenisForCategory_: Reguler masuk/pulang, Jagat masuk/pulang/lepas_piket', () => {
+  const { sandbox } = createEnv();
+  if (!sandbox.normalizeJenisForCategory_('pulang', false).ok) throw new Error('pulang reguler ditolak');
+  if (sandbox.normalizeJenisForCategory_('lepas_piket', false).ok) throw new Error('lepas_piket reguler diterima');
+  if (!sandbox.normalizeJenisForCategory_('lepas_piket', true).ok) throw new Error('lepas_piket jagat ditolak');
+  if (!sandbox.normalizeJenisForCategory_('pulang', true).ok) throw new Error('pulang jagat ditolak');
+  if (!sandbox.normalizeJenisForCategory_('masuk', true).ok) throw new Error('masuk jagat ditolak');
   return true;
 });
 
@@ -430,6 +456,58 @@ check('validatePhotoBlob_: menerima data-URL prefix', () => {
 /* ================= Alur attendance.submit ================= */
 
 console.log('== attendance.submit: alur sukses ==');
+check('Jagat Saksana: mulai piket wajib foto/GPS, pulang esok hari dan lepas piket mandiri tanpa GPS', () => {
+  const { env, token } = envAttendance({ kategori: 'JAGAT_SAKSANA' });
+  const lat80 = OFFICE.lat + 100 / M_PER_DEG_LAT;
+  atTime(env, Date.parse('2026-10-15T01:00:00Z')); // 08:00 WIB, inklusif
+  const masuk = submit(env, token, { mode_kerja: 'WFH_WFA', gps: { lat: lat80, lng: OFFICE.lng } });
+  if (!masuk.ok || masuk.tanggal !== '2026-10-15') throw new Error('masuk gagal: ' + JSON.stringify(masuk));
+  atTime(env, Date.parse('2026-10-16T01:00:00Z')); // esok hari 08:00 WIB
+  const pulang = submit(env, token, { jenis: 'pulang', mode_kerja: 'WFH_WFA', gps: null });
+  if (!pulang.ok || pulang.tanggal !== '2026-10-15') throw new Error('pulang tidak dikaitkan ke tanggal giliran: ' + JSON.stringify(pulang));
+  const rows = env.sandbox.readObjects_('Absensi');
+  if (rows.length !== 2 || rows.some((row) => row.kategori_pegawai !== 'JAGAT_SAKSANA')) throw new Error('kategori tidak terekam benar');
+  if (!rows[0].jarak_meter || rows[1].jarak_meter !== '') throw new Error('GPS masuk wajib dan GPS pulang harus kosong');
+  if (rows[1].status !== 'SUDAH_ABSEN_PULANG') throw new Error('status baris pulang: ' + rows[1].status);
+  return true;
+});
+check('Jagat Saksana ditolak bila mulai piket tanpa GPS atau di luar radius 100 m; lepas piket tanpa GPS diterima', () => {
+  const { env, token } = envAttendance({ kategori: 'JAGAT_SAKSANA' });
+  atTime(env, Date.parse('2026-10-15T01:30:00Z'));
+  submit(env, token);
+  atTime(env, Date.parse('2026-10-16T01:30:00Z'));
+  const lepas = submit(env, token, { jenis: 'lepas_piket', gps: null });
+  if (!lepas.ok) throw new Error('lepas piket tanpa GPS seharusnya diterima: ' + lepas.error);
+  const noGps = envAttendance({ kategori: 'JAGAT_SAKSANA' });
+  atTime(noGps.env, Date.parse('2026-10-15T01:30:00Z'));
+  throwsCode('GPS_REQUIRED', () => submit(noGps.env, noGps.token, { gps: null }), 'GPS_REQUIRED');
+  const outside = envAttendance({ kategori: 'JAGAT_SAKSANA' });
+  atTime(outside.env, Date.parse('2026-10-15T01:30:00Z'));
+  const lat101 = OFFICE.lat + 101 / M_PER_DEG_LAT;
+  throwsCode('OUT_OF_RADIUS', () => submit(outside.env, outside.token, { gps: { lat: lat101, lng: OFFICE.lng } }), 'OUT_OF_RADIUS');
+  return true;
+});
+check('Jagat Saksana menerima pulang; Reguler menolak lepas_piket', () => {
+  const jagat = envAttendance({ kategori: 'JAGAT_SAKSANA' });
+  atTime(jagat.env, Date.parse('2026-10-16T01:30:00Z'));
+  if (!submit(jagat.env, jagat.token, { jenis: 'pulang', gps: null }).ok) throw new Error('pulang Jagat ditolak');
+  const reguler = envAttendance();
+  atTime(reguler.env, Date.parse('2026-10-16T01:30:00Z'));
+  throwsCode('INVALID_INPUT', () => submit(reguler.env, reguler.token, { jenis: 'lepas_piket' }), 'INVALID_INPUT');
+  return true;
+});
+check('Jagat Saksana boleh mencatat mulai piket dan lepas piket mandiri pada hari kalender yang sama', () => {
+  const { env, token } = envAttendance({ kategori: 'JAGAT_SAKSANA' });
+  atTime(env, Date.parse('2026-10-15T01:30:00Z')); // 08:30 WIB hari ini
+  const masuk = submit(env, token, {});
+  if (!masuk.ok) throw new Error('mulai piket gagal: ' + masuk.error);
+  atTime(env, Date.parse('2026-10-15T02:30:00Z')); // 09:30 WIB, lepas piket giliran H-1
+  const lepas = submit(env, token, { jenis: 'lepas_piket' });
+  if (!lepas.ok || lepas.tanggal !== '2026-10-15') throw new Error('lepas piket mandiri gagal: ' + JSON.stringify(lepas));
+  const rows = env.sandbox.readObjects_('Absensi');
+  if (rows.length !== 2) throw new Error('baris ' + rows.length);
+  return true;
+});
 check('masuk WFO 07:00:00 → tercatat (baris Absensi + Bukti + file Drive + log)', () => {
   const { env, token } = envAttendance();
   atTime(env, T.open);

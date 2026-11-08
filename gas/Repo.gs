@@ -10,14 +10,14 @@
 
 var SHEET_HEADERS = Object.freeze({
   Pegawai: ['id_pegawai', 'nama', 'nip_nipk', 'jabatan', 'unit_kerja',
-    'status_aktif', 'dibuat_pada', 'dibuat_oleh', 'diubah_pada', 'diubah_oleh'],
+    'status_aktif', 'dibuat_pada', 'dibuat_oleh', 'diubah_pada', 'diubah_oleh', 'kategori'],
   Akun: ['id_akun', 'id_pegawai', 'pin_hash', 'pin_salt', 'pin_algo', 'pin_iterasi',
     'peran', 'status_aktif', 'gagal_login', 'terkunci_sampai', 'diubah_pada', 'diubah_oleh'],
   Sesi: ['id_sesi', 'id_akun', 'token_hash', 'dibuat_pada', 'kedaluwarsa_pada',
     'dicabut_pada', 'agen'],
   Absensi: ['id_absensi', 'id_pegawai', 'tanggal', 'jenis', 'mode_kerja', 'waktu_server',
     'lintang', 'bujur', 'akurasi', 'jarak_meter', 'sumber', 'id_bukti', 'status',
-    'uraian_pekerjaan', 'output_pekerjaan', 'dibuat_pada', 'diubah_pada', 'diubah_oleh'],
+    'uraian_pekerjaan', 'output_pekerjaan', 'dibuat_pada', 'diubah_pada', 'diubah_oleh', 'kategori_pegawai'],
   BuktiAbsensi: ['id_bukti', 'id_absensi', 'drive_file_id', 'path', 'mime', 'ukuran',
     'dibuat_pada'],
   PengajuanSusulan: ['id_pengajuan', 'id_pegawai', 'tanggal_absensi', 'jenis', 'mode_kerja',
@@ -243,9 +243,13 @@ function refreshPulangStatusForDay_(idPegawai, tanggal) {
   var changed = 0;
   for (var r = 1; r < values.length; r++) {
     if (String(values[r][col.id_pegawai]) !== String(idPegawai) ||
-        String(values[r][col.tanggal]) !== String(tanggal) ||
-        String(values[r][col.jenis]) !== 'pulang') continue;
-    var expected = pulangStatusFromServerIso_(values[r][col.waktu_server]) || '';
+        String(values[r][col.tanggal]) !== String(tanggal)) continue;
+    var jenisBaris = String(values[r][col.jenis]);
+    if (jenisBaris !== 'pulang' && jenisBaris !== 'lepas_piket') continue;
+    var isJagat = col.kategori_pegawai >= 0 && String(values[r][col.kategori_pegawai]) === 'JAGAT_SAKSANA';
+    var expected = jenisBaris === 'lepas_piket'
+      ? (jagatLepasPiketStatusFromServerIso_(values[r][col.waktu_server], normalizeBusinessDate_(values[r][col.tanggal])) || '')
+      : ((isJagat ? jagatPulangStatusFromServerIso_(values[r][col.waktu_server], normalizeBusinessDate_(values[r][col.tanggal])) : pulangStatusFromServerIso_(values[r][col.waktu_server])) || '');
     if (String(values[r][col.status] || '') === expected) continue;
     sh.getRange(r + 1, col.status + 1).setValue(expected);
     changed++;
@@ -293,7 +297,8 @@ function reconcileAbsensiStatuses_(apply, limitRaw) {
     tanggal: headerRow.indexOf('tanggal'),
     jenis: headerRow.indexOf('jenis'),
     waktu_server: headerRow.indexOf('waktu_server'),
-    status: headerRow.indexOf('status')
+    status: headerRow.indexOf('status'),
+    kategori_pegawai: headerRow.indexOf('kategori_pegawai')
   };
   ['id_absensi', 'id_pegawai', 'tanggal', 'jenis', 'waktu_server', 'status'].forEach(function (name) {
     if (col[name] < 0) {
@@ -309,7 +314,8 @@ function reconcileAbsensiStatuses_(apply, limitRaw) {
   var i;
   for (i = 1; i < values.length; i++) {
     if (String(values[i][col.jenis]) !== 'masuk') continue;
-    if (!masukStatusFromServerIso_(values[i][col.waktu_server])) continue;
+    var isJagat = col.kategori_pegawai >= 0 && String(values[i][col.kategori_pegawai]) === 'JAGAT_SAKSANA';
+    if (!(isJagat ? jagatMasukStatusFromServerIso_(values[i][col.waktu_server]) : masukStatusFromServerIso_(values[i][col.waktu_server]))) continue;
     catatanMasukValid++;
     validMasuk[String(values[i][col.id_pegawai]) + '|' + String(values[i][col.tanggal])] = true;
   }
@@ -323,9 +329,13 @@ function reconcileAbsensiStatuses_(apply, limitRaw) {
     var key = String(values[i][col.id_pegawai]) + '|' + String(values[i][col.tanggal]);
     var expected = '';
     if (jenis === 'masuk') {
-      expected = masukStatusFromServerIso_(values[i][col.waktu_server]) || '';
-    } else if (jenis === 'pulang') {
-      expected = pulangStatusFromServerIso_(values[i][col.waktu_server]) || '';
+      var isJagatMasuk = col.kategori_pegawai >= 0 && String(values[i][col.kategori_pegawai]) === 'JAGAT_SAKSANA';
+      expected = (isJagatMasuk ? jagatMasukStatusFromServerIso_(values[i][col.waktu_server]) : masukStatusFromServerIso_(values[i][col.waktu_server])) || '';
+    } else if (jenis === 'pulang' || jenis === 'lepas_piket') {
+      var isJagatPenutup = col.kategori_pegawai >= 0 && String(values[i][col.kategori_pegawai]) === 'JAGAT_SAKSANA';
+      expected = (jenis === 'lepas_piket'
+        ? jagatLepasPiketStatusFromServerIso_(values[i][col.waktu_server], normalizeBusinessDate_(values[i][col.tanggal]))
+        : (isJagatPenutup ? jagatPulangStatusFromServerIso_(values[i][col.waktu_server], normalizeBusinessDate_(values[i][col.tanggal])) : pulangStatusFromServerIso_(values[i][col.waktu_server]))) || '';
       if (expected && !validMasuk[key]) pulangTanpaMasuk++;
     }
     var lama = String(values[i][col.status] || '');

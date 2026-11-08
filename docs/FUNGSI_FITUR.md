@@ -60,6 +60,19 @@ Alur data: `Browser/PWA → HTTPS → Apps Script → Sheets + Drive`.
   GPS tidak diwajibkan. Tetap hanya satu catatan pulang per pegawai/tanggal.
 - **Idempoten**: kirim ulang dengan `id_absensi` sama tidak menghasilkan duplikat.
 
+### 3.2a Absensi Jagat Saksana (pegawai berkategori khusus, DEC-P38)
+- Kategori `JAGAT_SAKSANA` diatur admin; alur UI sama, label berubah menjadi
+  **Mulai piket** / **Lepas piket**.
+- **Mulai piket** (`masuk`): `08:00:00`–`10:00:00` WIB, status `TEPAT_WAKTU`,
+  wajib foto. GPS wajib radius 100 m dari titik kantor, tanpa memandang mode kerja.
+- **Lepas piket** (`lepas_piket`): satu catatan `08:00:00`–`10:00:00` WIB pada
+  hari berikutnya, wajib foto, **tanpa GPS**, status `SUDAH_LEPAS_PIKET`.
+  Tanggal bisnis = tanggal mulai giliran (H-1); uraian & output wajib.
+- `pulang` ditolak untuk kategori ini dan `lepas_piket` ditolak untuk Reguler.
+  Mulai piket dan lepas piket boleh tercatat pada hari kalender yang sama.
+  Lepas piket tanpa catatan masuk H-1 tetap diterima; laporan menandai
+  `TANPA_ABSEN_MASUK`. Aplikasi tidak membuat jadwal rotasi.
+
 ### 3.3 Pengajuan Susulan (nonaktif)
 - Aksi pengajuan dan panel susulan tidak tersedia pada aplikasi aktif.
 - Baris historis tidak dihapus otomatis.
@@ -91,8 +104,11 @@ Alur data: `Browser/PWA → HTTPS → Apps Script → Sheets + Drive`.
   laporan diturunkan ulang dari catatan aktual. Catatan pulang valid →
   `SUDAH_ABSEN_PULANG`; belum ada pulang valid → `BELUM_ABSEN_PULANG`. Pulang
   tanpa masuk valid menampilkan `Status Absen Masuk` = `TANPA_ABSEN_MASUK`
-  dan `Status Absen Pulang` = `SUDAH_ABSEN_PULANG`. Rekap tidak menghitung
-  persentase kehadiran atau indikator kebijakan lain.
+  dan `Status Absen Pulang` = `SUDAH_ABSEN_PULANG`. Untuk Jagat Saksana (DEC-P38),
+  penutup giliran memakai `SUDAH_LEPAS_PIKET`/`BELUM_LEPAS_PIKET`, filter jenis
+  menerima `lepas_piket`, hitungan pulang rekap mencakup lepas piket, dan jam
+  efektif tidak dihitung. Rekap tidak menghitung persentase kehadiran atau
+  indikator kebijakan lain.
 
 ### 3.6 Tampilan / PWA
 - Antarmuka **mobile app shell**: app bar + **bilah navigasi bawah**
@@ -120,6 +136,7 @@ Alur data: `Browser/PWA → HTTPS → Apps Script → Sheets + Drive`.
 ABSENSI_KPU/{TAHUN}/{MM_NamaBulan}/{DD}/{NamaPegawai_IDPegawai}/
     Absen_Masuk.jpg
     Absen_Pulang.jpg
+    Absen_LepasPiket.jpg   (khusus Jagat Saksana, DEC-P38)
 ```
 Contoh: `ABSENSI_KPU/2026/10_Oktober/15/Budi_Santoso_PEG-00123/`.
 - Nama bulan berbahasa Indonesia (`10_Oktober`).

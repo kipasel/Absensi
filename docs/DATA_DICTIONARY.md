@@ -15,6 +15,7 @@ Legenda: `PK` kunci utama internal · `FK` referensi · `?` belum tersedia/opsio
 | `nip_nipk` | String | NIP/NIPPPK/identitas resmi (AMB-13) |
 | `jabatan` | String | Jabatan |
 | `unit_kerja` | String | Unit kerja |
+| `kategori` | Enum | `REGULER` atau `JAGAT_SAKSANA`; default `REGULER`, menentukan aturan absensi khusus |
 | `status_aktif` | Boolean | Aktif/nonaktif |
 | `dibuat_pada` | DateTime | Metadata (AMB-17) |
 | `dibuat_oleh` | String | Aktor |
@@ -43,7 +44,7 @@ Legenda: `PK` kunci utama internal · `FK` referensi · `?` belum tersedia/opsio
 | `id_absensi` (PK) | String | ID unik |
 | `id_pegawai` (FK) | String | → Pegawai |
 | `tanggal` | Date | Tanggal absensi (Asia/Jakarta) |
-| `jenis` | Enum | `masuk` \| `pulang` |
+| `jenis` | Enum | `masuk` \| `pulang` \| `lepas_piket` (khusus Jagat Saksana) |
 | `mode_kerja` | Enum | `WFO` \| `WFH` |
 | `waktu_server` | DateTime | Waktu keputusan server; disimpan ISO-8601 UTC (AMB-17), ditampilkan WIB |
 | `lintang` | Number? | Latitude (jika ada) |
@@ -52,9 +53,10 @@ Legenda: `PK` kunci utama internal · `FK` referensi · `?` belum tersedia/opsio
 | `jarak_meter` | Number? | Jarak ke kantor (WFO masuk) |
 | `sumber` | Enum | `reguler` \| `susulan_disetujui` |
 | `id_bukti` (FK)? | String | → BuktiAbsensi |
-| `status` | String | `masuk`: `TEPAT_WAKTU`/`TERLAMBAT` hanya bila `waktu_server` valid dan berada pada jendela masuk; `pulang`: `SUDAH_ABSEN_PULANG` bila `waktu_server` valid pada jendela pulang, selain itu kosong. Bukan indikator ketidakhadiran. |
-| `uraian_pekerjaan` | String | Wajib pada catatan pulang; kosong pada catatan masuk |
-| `output_pekerjaan` | String | Wajib pada catatan pulang; kosong pada catatan masuk |
+| `status` | String | `masuk`: `TEPAT_WAKTU`/`TERLAMBAT` hanya bila `waktu_server` valid dan berada pada jendela masuk; `pulang`: `SUDAH_ABSEN_PULANG` bila `waktu_server` valid pada jendela pulang; `lepas_piket`: `SUDAH_LEPAS_PIKET` bila `waktu_server` valid pada jendela 08.00–10.00 dan tanggal bisnis = H-1; selain itu kosong. Bukan indikator ketidakhadiran. |
+| `uraian_pekerjaan` | String | Wajib pada catatan pulang/lepas piket; kosong pada catatan masuk |
+| `output_pekerjaan` | String | Wajib pada catatan pulang/lepas piket; kosong pada catatan masuk |
+| `kategori_pegawai` | Enum | Snapshot kategori saat absensi dibuat; menjaga interpretasi riwayat bila kategori pegawai berubah |
 | `dibuat_pada` | DateTime | Metadata |
 | `diubah_pada` | DateTime | Metadata |
 | `diubah_oleh` | String | Aktor |
@@ -65,7 +67,7 @@ Legenda: `PK` kunci utama internal · `FK` referensi · `?` belum tersedia/opsio
 | `id_bukti` (PK) | String | ID bukti |
 | `id_absensi` (FK) | String | → Absensi |
 | `drive_file_id` | String | ID file Drive (privat) — referensi utama foto |
-| `path` | String | Path/struktur folder (DEC-P29): `ABSENSI_KPU/YYYY/MM_NamaBulan/DD/NamaPegawai_IDPegawai/Absen_Masuk|Absen_Pulang.jpg` |
+| `path` | String | Path/struktur folder (DEC-P29/DEC-P38): `ABSENSI_KPU/YYYY/MM_NamaBulan/DD/NamaPegawai_IDPegawai/Absen_Masuk|Absen_Pulang|Absen_LepasPiket.jpg` |
 | `mime` | String | Tipe file (`image/jpeg`) |
 | `ukuran` | Number | Ukuran (byte) |
 | `dibuat_pada` | DateTime | Metadata |
@@ -73,10 +75,11 @@ Legenda: `PK` kunci utama internal · `FK` referensi · `?` belum tersedia/opsio
 > Catatan DEC-P29: struktur folder di atas menggantikan usulan lama
 > `YYYY/MM/Foto_Masuk|Foto_Pulang/`. Nama file tetap per jenis; duplikat
 > dicegah oleh batas unik satu catatan untuk setiap jenis per pegawai/tanggal,
-> idempotensi `id_absensi`, dan `LockService`. Catatan pulang boleh berdiri
-> sendiri; status `SUDAH_ABSEN_PULANG` menandai catatan pulang valid. Ketiadaan
+> idempotensi `id_absensi`, dan `LockService`. Catatan pulang/lepas piket boleh
+> berdiri sendiri; status `SUDAH_ABSEN_PULANG`/`SUDAH_LEPAS_PIKET` menandai
+> catatan penutup valid. Ketiadaan
 > catatan masuk diturunkan sebagai `status_masuk` = `TANPA_ABSEN_MASUK` pada
-> laporan, bukan disalin ke status baris pulang.
+> laporan, bukan disalin ke status baris penutup.
 > Foto diamankan via
 > `drive_file_id` (bukan nama file).
 
@@ -151,7 +154,7 @@ Dibuat `report.absensi.exportCsv` sesuai DEC-P07 (CSV saja). Urutan kolom tetap:
 | `id_pegawai` | Absensi | ID internal pegawai |
 | `nama` | Pegawai (join) | Nama pegawai |
 | `nip_nipk` | Pegawai (join) | NIP/NIPK |
-| `jenis` | Absensi | `masuk` / `pulang` |
+| `jenis` | Absensi | `masuk` / `pulang` / `lepas_piket` |
 | `mode_kerja` | Absensi | `WFO` / `WFH_WFA` |
 | `waktu_server` | Absensi | Waktu server; sumber ISO-8601 UTC, ditampilkan `dd/MM/yyyy HH:mm:ss WIB` |
 | `sumber` | Absensi | `reguler` / `susulan_disetujui` |

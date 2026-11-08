@@ -99,6 +99,7 @@ function seedAbsensi(env, opts) {
     sumber: opts.sumber || 'reguler',
     id_bukti: opts.id_bukti === undefined ? 'BKT-TEST' : opts.id_bukti,
     status: opts.status || '',
+    kategori_pegawai: opts.kategori_pegawai || 'REGULER',
     uraian_pekerjaan: opts.uraian_pekerjaan || '',
     output_pekerjaan: opts.output_pekerjaan || '',
     dibuat_pada: waktu,
@@ -719,6 +720,38 @@ check('daftar TIDAK memuat drive_file_id/URL/PIN/token', () => {
 /* ================= Rekapitulasi ================= */
 
 console.log('== Rekapitulasi (hitungan fakta) ==');
+check('filter kategori Jagat Saksana menampilkan rekap Mulai Piket lintas tanggal dan Lepas Piket mandiri', () => {
+  const { env, tokenAdmin } = envAdmin();
+  env.sandbox.handleAdminPegawaiUpdate_({ token: tokenAdmin, id_pegawai: 'PEG-EMP-1', kategori: 'JAGAT_SAKSANA' }, 'POST');
+  seedAbsensi(env, { id_absensi: 'ABS-J-M', id_pegawai: 'PEG-EMP-1', tanggal: '2026-10-15', jenis: 'masuk', waktu_server: '2026-10-15T01:30:00.000Z', kategori_pegawai: 'JAGAT_SAKSANA' });
+  seedAbsensi(env, { id_absensi: 'ABS-J-P', id_pegawai: 'PEG-EMP-1', tanggal: '2026-10-15', jenis: 'pulang', waktu_server: '2026-10-16T01:30:00.000Z', kategori_pegawai: 'JAGAT_SAKSANA' });
+  const monthly = env.sandbox.handleReportMonthlyRecap_({
+    token: tokenAdmin, tanggal_dari: '2026-10-01', tanggal_sampai: '2026-10-31', kategori: 'JAGAT_SAKSANA'
+  }, 'POST');
+  eq('hanya pegawai Jagat', monthly.pegawai.length, 1);
+  eq('kategori', monthly.pegawai[0].kategori, 'JAGAT_SAKSANA');
+  eq('masuk tepat waktu', monthly.pegawai[0].WFO.masuk_tepat_waktu, 1);
+  eq('pulang mulai piket tercatat', monthly.pegawai[0].WFO.pulang, 1);
+  eq('jam efektif 24 jam tidak ditampilkan sebagai kebijakan reguler', monthly.pegawai[0].jam_efektif_detik, 0);
+  const detail = env.sandbox.handleReportAbsensiList_({ token: tokenAdmin, ...RANGE, kategori: 'JAGAT_SAKSANA' }, 'POST');
+  eq('status pulang valid shift', detail.items.find((row) => row.jenis === 'pulang').status_pulang, 'SUDAH_ABSEN_PULANG');
+  return true;
+});
+check('Jagat Saksana: lepas piket mandiri tidak dihitung sebagai pulang dan giliran belum ditutup', () => {
+  const { env, tokenAdmin } = envAdmin();
+  env.sandbox.handleAdminPegawaiUpdate_({ token: tokenAdmin, id_pegawai: 'PEG-EMP-1', kategori: 'JAGAT_SAKSANA' }, 'POST');
+  seedAbsensi(env, { id_absensi: 'ABS-J2-M1', id_pegawai: 'PEG-EMP-1', tanggal: '2026-10-15', jenis: 'masuk', waktu_server: '2026-10-15T01:30:00.000Z', kategori_pegawai: 'JAGAT_SAKSANA' });
+  seedAbsensi(env, { id_absensi: 'ABS-J2-P1', id_pegawai: 'PEG-EMP-1', tanggal: '2026-10-15', jenis: 'lepas_piket', waktu_server: '2026-10-15T02:30:00.000Z', kategori_pegawai: 'JAGAT_SAKSANA' });
+  seedAbsensi(env, { id_absensi: 'ABS-J2-M2', id_pegawai: 'PEG-EMP-1', tanggal: '2026-10-16', jenis: 'masuk', waktu_server: '2026-10-16T01:30:00.000Z', kategori_pegawai: 'JAGAT_SAKSANA' });
+  const rekap = env.sandbox.handleReportRekap_({ token: tokenAdmin, ...RANGE }, 'POST');
+  eq('total', rekap.catatan.total, 3);
+  eq('masuk', rekap.catatan.masuk, 2);
+  eq('lepas piket bukan pulang', rekap.catatan.pulang, 0);
+  const detail = env.sandbox.handleReportAbsensiList_({ token: tokenAdmin, ...RANGE }, 'POST');
+  const hariKedua = detail.items.find((row) => row.tanggal === '2026-10-16' && row.jenis === 'masuk');
+  eq('status penutup giliran belum ada', hariKedua && hariKedua.status_pulang, 'BELUM_ABSEN_PULANG');
+  return true;
+});
 check('rekap: catatan total/masuk/pulang sesuai jumlah baris', () => {
   const { env, tokenAdmin } = envAdmin();
   seedLaporanDasar(env);

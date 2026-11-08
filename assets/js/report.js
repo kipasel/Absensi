@@ -96,7 +96,8 @@
       jenis: (el('report-jenis') && el('report-jenis').value) || '',
       mode_kerja: (el('report-mode') && el('report-mode').value) || '',
       sumber: (el('report-sumber') && el('report-sumber').value) || '',
-      status_pegawai: (el('report-status-pegawai') && el('report-status-pegawai').value) || ''
+      status_pegawai: (el('report-status-pegawai') && el('report-status-pegawai').value) || '',
+      kategori: (el('report-kategori') && el('report-kategori').value) || ''
     };
   }
 
@@ -183,6 +184,7 @@
     (res.pegawai || []).forEach(function (pegawai) {
       var tr = document.createElement('tr');
       cell(tr, pegawai.nama || pegawai.nip_nipk || pegawai.id_pegawai);
+      cell(tr, pegawai.kategori === 'JAGAT_SAKSANA' ? 'Jagat Saksana' : 'Reguler');
       cell(tr, pegawai.WFO.masuk_tepat_waktu);
       cell(tr, pegawai.WFO.masuk_terlambat);
       cell(tr, pegawai.WFO.pulang);
@@ -192,7 +194,7 @@
       var seconds = Number(pegawai.jam_efektif_detik) || 0;
       var hours = Math.floor(seconds / 3600);
       var minutes = Math.floor((seconds % 3600) / 60);
-      cell(tr, hours + ' jam ' + minutes + ' menit; Terpenuhi 7,5 jam: ' +
+      cell(tr, pegawai.kategori === 'JAGAT_SAKSANA' ? 'Tidak dihitung' : hours + ' jam ' + minutes + ' menit; Terpenuhi 7,5 jam: ' +
         (Number(pegawai.hari_terpenuhi_75) || 0) + ' hari; Belum terpenuhi Jam Efektif: ' +
         (Number(pegawai.hari_belum_terpenuhi_75) || 0) + ' hari');
       tbody.appendChild(tr);
@@ -237,7 +239,7 @@
       cell(tr, fmtDate(item.tanggal));
       cell(tr, item.nama || item.id_pegawai);
       cell(tr, item.nip_nipk);
-      cell(tr, item.jenis);
+      cell(tr, item.jenis === 'lepas_piket' ? 'Lepas piket' : item.jenis);
       cell(tr, item.mode_kerja);
       cell(tr, fmtTime(item.waktu_server) || '-');
       cell(tr, item.status_masuk || '-');

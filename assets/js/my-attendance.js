@@ -24,7 +24,9 @@
     card.className = 'history-item';
     var main = document.createElement('div');
     var heading = document.createElement('h3');
-    heading.textContent = item.jenis === 'masuk' ? 'Absen masuk' : 'Absen pulang';
+    heading.textContent = item.jenis === 'masuk'
+      ? 'Absen masuk'
+      : (item.jenis === 'lepas_piket' ? 'Lepas piket' : 'Absen pulang');
     var date = document.createElement('p');
     date.textContent = dateLabel(item.tanggal);
     main.appendChild(heading);

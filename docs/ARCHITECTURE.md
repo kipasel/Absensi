@@ -84,17 +84,21 @@ Google Apps Script Web App  (doGet/doPost; satu-satunya lapisan tepercaya)
   waktu. `status_pulang` = `SUDAH_ABSEN_PULANG` bila ada pulang valid,
   `BELUM_ABSEN_PULANG` bila ada masuk valid tanpa pulang valid. Pulang tanpa
   masuk valid menghasilkan `status_masuk` = `TANPA_ABSEN_MASUK` tanpa membuat
-  catatan masuk.
+  catatan masuk. Untuk kategori Jagat Saksana (DEC-P38), penutup giliran memakai
+  `lepas_piket` dengan status `SUDAH_LEPAS_PIKET`/`BELUM_LEPAS_PIKET`; lepas
+  piket tanpa masuk H-1 juga menghasilkan `status_masuk` = `TANPA_ABSEN_MASUK`.
 - `gas/TimeRule.gs`, `gas/Geo.gs`, `gas/Drive.gs`, `gas/Attendance.gs` — mesin absensi (PHASE 3).
-- `attendance.submit`: validasi sesi, jenis, waktu server, GPS khusus masuk WFO,
-  foto JPEG, dan data pekerjaan untuk pulang dilakukan backend. Pulang tetap
-  boleh dicatat tanpa masuk pada tanggal tersebut. Seluruh pemeriksaan duplikat
-  dan penulisan berjalan di dalam `LockService`; baris pulang valid ditulis
-  dengan status `SUDAH_ABSEN_PULANG` (tidak bergantung pada ada/tidaknya masuk).
-  Bila masuk valid dicatat belakangan, status pulang disegarkan tanpa mengubah
-  timestamp. `Repo.gs` menambahkan header baru ke kanan tanpa mengubah kolom
-  atau baris historis. Status `TERLAMBAT` diberi conditional formatting merah,
-  `TANPA_ABSEN_MASUK` kuning-netral, dan `SUDAH_ABSEN_PULANG` hijau-netral.
+- `attendance.submit`: validasi sesi, jenis per kategori, waktu server, GPS
+  khusus masuk WFO/mulai piket, foto JPEG, dan data pekerjaan untuk catatan
+  penutup dilakukan backend. Pulang/lepas piket tetap boleh dicatat tanpa masuk
+  pada tanggal tersebut. Seluruh pemeriksaan duplikat dan penulisan berjalan di
+  dalam `LockService`; baris pulang valid ditulis dengan status
+  `SUDAH_ABSEN_PULANG` dan baris lepas piket dengan `SUDAH_LEPAS_PIKET` (tidak
+  bergantung pada ada/tidaknya masuk). Bila masuk valid dicatat belakangan,
+  status penutup disegarkan tanpa mengubah timestamp. `Repo.gs` menambahkan
+  header baru ke kanan tanpa mengubah kolom atau baris historis. Status
+  `TERLAMBAT` diberi conditional formatting merah, `TANPA_ABSEN_MASUK`
+  kuning-netral, dan status penutup valid hijau-netral.
   `reconcileAbsensiStatuses()` menyediakan pratinjau/apply untuk memperbaiki
   status historis yang tidak konsisten tanpa menyentuh timestamp/foto.
 - `gas/Bootstrap.gs` — `initializeSheets()` & `seedAdmin()` (manual, tanpa PIN default).
@@ -112,9 +116,10 @@ Google Apps Script Web App  (doGet/doPost; satu-satunya lapisan tepercaya)
   ditetapkan); tidak ada endpoint pengambilan foto.
 
 ## Google Drive
-- Struktur privat (DEC-P29):
-  `ABSENSI_KPU/YYYY/MM_NamaBulan/DD/NamaPegawai_IDPegawai/Absen_Masuk.jpg` &
-  `Absen_Pulang.jpg`. Contoh: `ABSENSI_KPU/2026/10_Oktober/21/Andi_00123/`
+- Struktur privat (DEC-P29/DEC-P38):
+  `ABSENSI_KPU/YYYY/MM_NamaBulan/DD/NamaPegawai_IDPegawai/Absen_Masuk.jpg`,
+  `Absen_Pulang.jpg`, & `Absen_LepasPiket.jpg`. Contoh:
+  `ABSENSI_KPU/2026/10_Oktober/21/Andi_00123/`
   (ilustrasi, bukan data nyata). Nama folder bulan `MM_NamaBulan` (Indonesia);
   folder pegawai memakai `Nama_IDPegawai` (ID internal sebagai kunci).
 - Foto susulan: `ABSENSI_KPU/YYYY/MM_NamaBulan/Foto_Susulan/` (DEC-P24).

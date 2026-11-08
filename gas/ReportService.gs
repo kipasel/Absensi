@@ -162,6 +162,13 @@ function normalizeStatusPegawaiFilter_(raw) {
   return normalizePegawaiFilterStatus_(raw);
 }
 
+function normalizeKategoriFilter_(raw) {
+  var s = String(raw || '').trim().toUpperCase();
+  if (!s || s === 'SEMUA') return '';
+  if (s === 'REGULER' || s === 'JAGAT_SAKSANA') return s;
+  throw AppError_('INVALID_INPUT', 'Kategori pegawai tidak valid.', true);
+}
+
 function parseReportLimit_(raw, fallback) {
   var n = parseInt(raw, 10);
   if (!isFinite(n) || n < 1) return fallback;
@@ -185,7 +192,8 @@ function parseReportFilters_(payload) {
     jenis: normalizeJenisFilter_(payload.jenis),
     mode_kerja: normalizeModeFilterLaporan_(payload.mode_kerja),
     sumber: normalizeSumberFilter_(payload.sumber),
-    status_pegawai: normalizeStatusPegawaiFilter_(payload.status_pegawai)
+    status_pegawai: normalizeStatusPegawaiFilter_(payload.status_pegawai),
+    kategori: normalizeKategoriFilter_(payload.kategori)
   };
   if (idPegawai) {
     var pegawai = findPegawaiById_(idPegawai);
@@ -205,7 +213,8 @@ function pegawaiStatusMap_() {
     map[String(rows[i].id_pegawai)] = {
       aktif: isTruthy_(rows[i].status_aktif),
       nama: String(rows[i].nama),
-      nip_nipk: String(rows[i].nip_nipk)
+      nip_nipk: String(rows[i].nip_nipk),
+      kategori: normalizePegawaiCategory_(rows[i].kategori)
     };
   }
   return map;
@@ -232,6 +241,7 @@ function filterAbsensiRows_(rows, range, filters, statusMap) {
       if (filters.status_pegawai === 'aktif' && !info.aktif) continue;
       if (filters.status_pegawai === 'nonaktif' && info.aktif) continue;
     }
+    if (filters.kategori && normalizePegawaiCategory_(statusMap[String(r.id_pegawai)] && statusMap[String(r.id_pegawai)].kategori) !== filters.kategori) continue;
     out.push(r);
   }
   out.sort(function (a, b) {
@@ -271,22 +281,32 @@ function reportAbsensiDayMap_(rows) {
     var row = rows[i];
     var key = String(row.id_pegawai) + '|' + String(row.tanggal);
     if (!out[key]) out[key] = {
-      ada_masuk: false, ada_pulang: false, waktu_masuk: '', waktu_pulang: '',
+      ada_masuk: false, ada_pulang: false, ada_lepas_piket: false, waktu_masuk: '', waktu_pulang: '',
       status_masuk: '', status_pulang: '', uraian_pekerjaan: '', output_pekerjaan: '',
       jam_efektif_detik: 0, status_jam_efektif: ''
     };
     var jenis = String(row.jenis);
+    var isJagat = String(row.kategori_pegawai || '') === 'JAGAT_SAKSANA';
+    if (isJagat) out[key].jagat = true;
     if (jenis === 'masuk') {
-      var statusMasuk = masukStatusFromServerIso_(row.waktu_server);
+      var statusMasuk = isJagat
+        ? jagatMasukStatusFromServerIso_(row.waktu_server)
+        : masukStatusFromServerIso_(row.waktu_server);
       if (statusMasuk && !out[key].ada_masuk) {
         out[key].ada_masuk = true;
         out[key].waktu_masuk = String(row.waktu_server || '');
         out[key].status_masuk = statusMasuk;
       }
-    } else if (jenis === 'pulang') {
-      if (!pulangStatusFromServerIso_(row.waktu_server)) continue;
-      if (!out[key].ada_pulang) out[key].waktu_pulang = String(row.waktu_server || '');
-      out[key].ada_pulang = true;
+    } else if (jenis === 'pulang' || jenis === 'lepas_piket') {
+      var statusPulang = jenis === 'lepas_piket'
+        ? jagatLepasPiketStatusFromServerIso_(row.waktu_server, row.tanggal)
+        : (isJagat ? jagatPulangStatusFromServerIso_(row.waktu_server, row.tanggal) : pulangStatusFromServerIso_(row.waktu_server));
+      if (!statusPulang) continue;
+      if (jenis === 'lepas_piket') out[key].ada_lepas_piket = true;
+      else {
+        if (!out[key].ada_pulang) out[key].waktu_pulang = String(row.waktu_server || '');
+        out[key].ada_pulang = true;
+      }
       out[key].uraian_pekerjaan = String(row.uraian_pekerjaan || '');
       out[key].output_pekerjaan = String(row.output_pekerjaan || '');
     }
@@ -296,11 +316,12 @@ function reportAbsensiDayMap_(rows) {
     if (!day.ada_masuk) day.status_masuk = day.ada_pulang ? 'TANPA_ABSEN_MASUK' : '';
     day.status_pulang = day.ada_pulang
       ? 'SUDAH_ABSEN_PULANG'
-      : (day.ada_masuk ? 'BELUM_ABSEN_PULANG' : '');
+      : (day.ada_lepas_piket ? 'SUDAH_LEPAS_PIKET'
+        : (day.ada_masuk ? (day.jagat ? 'BELUM_ABSEN_PULANG' : 'BELUM_ABSEN_PULANG') : ''));
     day.kondisi_harian = day.ada_masuk
       ? (day.ada_pulang ? 'ADA_MASUK_DAN_PULANG' : 'ADA_MASUK_TANPA_PULANG')
-      : (day.ada_pulang ? 'TANPA_MASUK_DENGAN_PULANG' : '');
-    if (day.ada_masuk || day.ada_pulang) {
+      : (day.ada_pulang ? 'TANPA_MASUK_DENGAN_PULANG' : (day.ada_lepas_piket ? 'LEPAS_PIKET_MANDIRI' : ''));
+    if ((day.ada_masuk || day.ada_pulang) && !day.jagat) {
       day.jam_efektif_detik = reportEffectiveSeconds_(day.waktu_masuk, day.waktu_pulang);
       day.status_jam_efektif = day.jam_efektif_detik >= 7.5 * 60 * 60
         ? 'Terpenuhi 7,5 jam' : 'Belum terpenuhi Jam Efektif';
@@ -325,12 +346,19 @@ function reportAbsensiFields_(row, statusMap, dayMap) {
   var statusMasuk = String(day.status_masuk || '');
   var statusPulang = String(day.status_pulang || '');
   // Status baris selalu diturunkan dari catatan aktual, bukan menyalin sel lama.
-  var statusBaris = jenis === 'masuk' ? statusMasuk : (jenis === 'pulang' ? statusPulang : '');
+  var isJagat = String(row.kategori_pegawai || '') === 'JAGAT_SAKSANA';
+  var statusBaris = jenis === 'masuk' ? statusMasuk
+    : (jenis === 'lepas_piket'
+      ? jagatLepasPiketStatusFromServerIso_(row.waktu_server, row.tanggal)
+      : (jenis === 'pulang'
+        ? (isJagat ? jagatPulangStatusFromServerIso_(row.waktu_server, row.tanggal) : pulangStatusFromServerIso_(row.waktu_server))
+        : ''));
   return {
     id_absensi: String(row.id_absensi),
     id_pegawai: String(row.id_pegawai),
     nama: info.nama,
     nip_nipk: info.nip_nipk,
+    kategori_pegawai: String(row.kategori_pegawai || 'REGULER'),
     tanggal: String(row.tanggal),
     jenis: jenis,
     mode_kerja: String(row.mode_kerja),
@@ -508,7 +536,8 @@ function handleReportRekap_(payload, method) {
       jenis: filters.jenis,
       mode_kerja: filters.mode_kerja,
       sumber: filters.sumber,
-      status_pegawai: filters.status_pegawai
+      status_pegawai: filters.status_pegawai,
+      kategori: filters.kategori
     },
     catatan: { total: absensi.length, masuk: masuk, pulang: pulang },
     pegawai_unik: pegawaiUnik,
@@ -541,10 +570,12 @@ function handleReportMonthlyRecap_(payload, method) {
     if (filters.id_pegawai && id !== filters.id_pegawai) return;
     if (filters.status_pegawai === 'aktif' && !info.aktif) return;
     if (filters.status_pegawai === 'nonaktif' && info.aktif) return;
+    if (filters.kategori && normalizePegawaiCategory_(info.kategori) !== filters.kategori) return;
     records[id] = {
       id_pegawai: id,
       nama: info.nama,
       nip_nipk: info.nip_nipk,
+      kategori: normalizePegawaiCategory_(info.kategori),
       WFO: { masuk_tepat_waktu: 0, masuk_terlambat: 0, pulang: 0 },
       WFH_WFA: { masuk_tepat_waktu: 0, masuk_terlambat: 0, pulang: 0 },
       jam_efektif_detik: 0,
@@ -568,8 +599,11 @@ function handleReportMonthlyRecap_(payload, method) {
     var day = effectiveDays[dayKey] || (effectiveDays[dayKey] = {
       employee: item, masuk: '', pulang: '', valid: false
     });
+    var isJagat = String(row.kategori_pegawai || '') === 'JAGAT_SAKSANA';
     if (String(row.jenis) === 'masuk') {
-      var statusMasuk = masukStatusFromServerIso_(row.waktu_server);
+      var statusMasuk = isJagat
+        ? jagatMasukStatusFromServerIso_(row.waktu_server)
+        : masukStatusFromServerIso_(row.waktu_server);
       if (statusMasuk === 'TEPAT_WAKTU') {
         item[mode].masuk_tepat_waktu++;
         day.masuk = String(row.waktu_server || ''); day.valid = true;
@@ -577,7 +611,12 @@ function handleReportMonthlyRecap_(payload, method) {
         item[mode].masuk_terlambat++;
         day.masuk = String(row.waktu_server || ''); day.valid = true;
       }
-    } else if (String(row.jenis) === 'pulang' && pulangStatusFromServerIso_(row.waktu_server)) {
+    }
+    var statusPenutup = '';
+    if (String(row.jenis) === 'pulang') statusPenutup = isJagat
+      ? jagatPulangStatusFromServerIso_(row.waktu_server, row.tanggal)
+      : pulangStatusFromServerIso_(row.waktu_server);
+    if (statusPenutup) {
       item[mode].pulang++;
       day.pulang = String(row.waktu_server || ''); day.valid = true;
     }
@@ -586,6 +625,7 @@ function handleReportMonthlyRecap_(payload, method) {
   Object.keys(effectiveDays).forEach(function (key) {
     var day = effectiveDays[key];
     if (!day.valid) return;
+    if (day.employee.kategori === 'JAGAT_SAKSANA') return;
     var seconds = reportEffectiveSeconds_(day.masuk, day.pulang);
     day.employee.jam_efektif_detik += seconds;
     if (seconds >= 7.5 * 60 * 60) day.employee.hari_terpenuhi_75++;
@@ -603,7 +643,7 @@ function handleReportMonthlyRecap_(payload, method) {
     tanggal_dari: range.dari,
     tanggal_sampai: range.sampai,
     pegawai: employees,
-    definisi: 'Hitungan masuk/pulang berasal dari catatan valid. Jam efektif dihitung pada tanggal dengan setidaknya satu catatan valid: mulai pukul 08:00 bila masuk sebelum pukul 08:00, atau dari waktu masuk aktual bila masuk mulai pukul 08:00; maksimum 7 jam 30 menit per hari. Pasangan masuk dan pulang valid diperlukan untuk memperoleh durasi; tanggal dengan satu sisi valid dihitung belum terpenuhi. Tanggal tanpa catatan tidak dihitung sebagai belum terpenuhi.'
+    definisi: 'Hitungan masuk/pulang berasal dari catatan valid; untuk Jagat Saksana, hitungan pulang mencakup catatan lepas piket. Jam efektif dihitung untuk kategori Reguler sesuai DEC-P36; kategori Jagat Saksana tidak diberi hitungan jam efektif karena giliran melintasi tanggal.'
   };
 }
 

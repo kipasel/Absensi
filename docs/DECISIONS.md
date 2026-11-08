@@ -428,3 +428,56 @@ Sumber: jawaban pengguna atas pertanyaan D0–D8 (lihat `docs/PHASE2_AUDIT.md`).
 - Sumber: instruksi pengguna 2026-10-29 dan klarifikasi bahwa perlu pasangan
   valid, durasi dibatasi 7,5 jam, serta ringkasan berupa total durasi dan jumlah
   hari terpenuhi/belum.
+
+### DEC-P37 - Kategori dan aturan absensi Jagat Saksana
+- Tanggal: 2026-11-08; Status: DISETUJUI (instruksi pengguna). **Jendela jam
+  digantikan DEC-P38**; ketentuan kategori, foto, dan GPS tetap berlaku.
+- Data pegawai memiliki kategori `REGULER` (default) atau `JAGAT_SAKSANA`, dapat
+  diubah admin. Kategori tidak mengubah peran akun.
+- Jagat Saksana absen mandiri tanpa jadwal yang dikelola aplikasi. Masuk sah
+  07:00:00–08:00:00 WIB; pulang sah 08:00:00–09:00:00 WIB keesokan harinya;
+  semua batas inklusif. Tanggal bisnis pulang dipasangkan ke tanggal mulai giliran.
+- Foto JPEG wajib untuk masuk dan pulang. GPS hanya wajib untuk absen masuk,
+  dalam radius 100 m dari titik kantor; absen pulang/lepas piket tidak wajib GPS.
+  Backend menentukan kategori dari profil pada sesi, bukan payload klien. Mode
+  kerja yang dipilih tetap direkam.
+- Laporan dapat difilter berdasarkan kategori. Rekap bulanan menampilkan
+  hitungan catatan valid Jagat Saksana; jam efektif 7,5 jam DEC-P36 tidak
+  dihitung untuk kategori ini karena giliran melintasi tanggal. Catatan absensi
+  menyimpan snapshot kategori agar perubahan kategori berikutnya tidak mengubah
+  interpretasi validitas historis.
+- Aplikasi tidak menyimpulkan giliran hadir/libur; rotasi diperiksa manual lewat
+  laporan.
+
+### DEC-P38 - Dua jenis absensi Jagat Saksana: mulai piket & lepas piket
+- Tanggal: 2026-11-08; Status: DISETUJUI (instruksi pengguna). Mengganti jendela
+  jam pada DEC-P37; ketentuan kategori, foto, dan GPS tetap berlaku.
+- **Mulai piket** memakai jenis `masuk`: sah 08:00:00–10:00:00 WIB (inklusif),
+  status `TEPAT_WAKTU`, wajib foto dan GPS radius 100 m.
+- **Lepas piket** memakai jenis baru `lepas_piket`: sah 08:00:00–10:00:00 WIB
+  pada hari berikutnya (inklusif), status `SUDAH_LEPAS_PIKET`, wajib foto tanpa
+  GPS. Tanggal bisnis = tanggal mulai giliran (H-1).
+- Lepas piket dicatat satu kali; tidak ada catatan `pulang` terpisah untuk
+  kategori ini. `pulang` ditolak untuk Jagat dan `lepas_piket` ditolak untuk
+  Reguler. Mulai piket dan lepas piket boleh tercatat pada hari kalender yang
+  sama (pergantian giliran).
+- Lepas piket tetap diterima walau tidak ada catatan masuk pada tanggal mulai
+  giliran; laporan menandai `TANPA_ABSEN_MASUK`. Uraian dan output pekerjaan
+  tetap wajib pada lepas piket, mengikuti aturan catatan penutup.
+- Laporan menerima filter jenis `lepas_piket`; status penutup harian Jagat
+  `SUDAH_LEPAS_PIKET`/`BELUM_LEPAS_PIKET`; hitungan pulang rekap mencakup lepas
+  piket; jam efektif tetap tidak dihitung. Foto disimpan sebagai
+  `Absen_LepasPiket.jpg`.
+
+### DEC-P39 - Rangkaian Mulai Piket dan Lepas Piket mandiri
+- Tanggal: 2026-11-08; Status: DISETUJUI (klarifikasi pengguna). Menggantikan
+  rincian jenis dan waktu DEC-P38.
+- **Mulai piket** memakai `masuk` pukul 08:00:00–08:30:00 WIB dan `pulang`
+  pukul 08:00:00–08:30:00 WIB keesokan hari; semua batas inklusif. Pulang
+  disimpan dengan tanggal bisnis mulai piket (H-1). Foto wajib pada keduanya;
+  GPS radius 100 m hanya untuk masuk.
+- **Lepas piket** memakai `lepas_piket` mandiri, satu kali pada tanggal
+  absensinya sendiri pukul 08:00:00–10:00:00 WIB; foto wajib dan GPS tidak
+  diperlukan. Lepas piket bukan pengganti `pulang` Mulai Piket.
+- Laporan menampilkan Lepas Piket sebagai jenis tersendiri; catatan ini tetap
+  termasuk total absensi, tetapi tidak dihitung sebagai metrik `pulang`.
